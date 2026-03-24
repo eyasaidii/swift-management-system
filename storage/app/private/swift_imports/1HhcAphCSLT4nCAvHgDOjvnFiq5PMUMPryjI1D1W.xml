@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+    <MT700>
+        <Reference>LC20260213001</Reference>
+        <SenderBIC>HSBCGB2L</SenderBIC>
+        <SenderName>HSBC BANK PLC</SenderName>
+        <ReceiverBIC>BTLMTNTT</ReceiverBIC>
+        <ReceiverName>BTL BANK</ReceiverName>
+        <Beneficiary>IMPORT SARL</Beneficiary>
+        <Amount>250000.00</Amount>
+        <Currency>USD</Currency>
+        <ExpiryDate>2026-05-13</ExpiryDate>
+        <Description>Crédit documentaire import marchandises</Description>
+    </MT700>
+</Document>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>MSG20260223001</MsgId>
+            <CreDtTm>2026-02-23T10:30:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>INSTR12345</InstrId>
+                <EndToEndId>E2E12345</EndToEndId>
+                <TxId>TX12345</TxId>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="EUR">15000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-02-23</IntrBkSttlmDt>
+            <Dbtr>
+                <Nm>ABC IMPORT SARL</Nm>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN5910006035183598478831</IBAN>
+                </Id>
+            </DbtrAcct>
+            <Cdtr>
+                <Nm>XYZ TRADING LTD</Nm>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>FR7630006000011234567890189</IBAN>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>Invoice 2026-INV-45</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

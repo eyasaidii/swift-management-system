@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG456</MsgId>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>REF456</InstrId>
+        <EndToEndId>E2E456</EndToEndId>
+        <UETR>660e8400-e29b-41d4-a716-446655440001</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">2500.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-02-22</IntrBkSttlmDt>
+      <InstgAgt><FinInstnId><BICFI>SENDRBICXXX</BICFI></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><BICFI>RECVBICXXX</BICFI></FinInstnId></InstdAgt>
+      <Dbtr><Nm>Alice Sender</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>TN59000000000000999999</IBAN></Id></DbtrAcct>
+      <Cdtr><Nm>Bob Receiver</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>TN59000000000000111111</IBAN></Id></CdtrAcct>
+      <CdtrAgt><FinInstnId><BICFI>CREDTBICYYY</BICFI></FinInstnId></CdtrAgt>
+      <RmtInf><Ustrd>Invoice 456</Ustrd></RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>OUT20260223002</MsgId>
+            <CreDtTm>2026-02-23T11:15:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>INST67890</InstrId>
+                <EndToEndId>E2E67890</EndToEndId>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="USD">25000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-02-24</IntrBkSttlmDt>
+            <Dbtr>
+                <Nm>TUNISIAN EXPORT SA</Nm>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN1212345678901234567890</IBAN>
+                </Id>
+            </DbtrAcct>
+            <Cdtr>
+                <Nm>AMERICAN SUPPLIER INC</Nm>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <Othr>
+                        <Id>123456789</Id>
+                    </Othr>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>Payment contract 2026-EXP-99</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>
