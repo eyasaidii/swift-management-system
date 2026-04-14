@@ -228,9 +228,9 @@
 <?php
     $user        = auth()->user();
     $primaryRole = $user ? $user->getRoleNames()->first() : null;
-    $canViewReceived = in_array($primaryRole, ['admin','international-admin','international-user','backoffice','monetique']);
-    $canViewEmitted  = in_array($primaryRole, ['admin','international-admin','international-user','chargee','chef-agence']);
-    $canViewAdmin    = in_array($primaryRole, ['admin','international-admin']);
+    $canViewReceived = in_array($primaryRole, ['super-admin','swift-manager','swift-operator','backoffice','monetique']);
+    $canViewEmitted  = in_array($primaryRole, ['super-admin','swift-manager','swift-operator','chargee','chef-agence']);
+    $canViewAdmin    = in_array($primaryRole, ['super-admin','swift-manager']);
     $receivedCategories = $receivedCategories ?? [];
     $emittedCategories  = $emittedCategories  ?? [];
     $receivedTotal      = $receivedTotal      ?? 0;

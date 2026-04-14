@@ -45,6 +45,9 @@ class AuthenticatedSessionController extends Controller
         $primaryRole = $user->getRoleNames()->first();
 
         return match($primaryRole) {
+            'super-admin' => redirect()->route('admin.dashboard'),
+            'swift-manager' => redirect()->route('international-admin.dashboard'),
+            'swift-operator' => redirect()->route('international-user.dashboard'),
             'admin' => redirect()->route('admin.dashboard'),
             'international-admin' => redirect()->route('international-admin.dashboard'),
             'international-user' => redirect()->route('international-user.dashboard'),

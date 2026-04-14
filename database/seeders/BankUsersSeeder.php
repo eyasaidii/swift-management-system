@@ -20,21 +20,21 @@ class BankUsersSeeder extends Seeder
                 'name' => 'Admin System',
                 'email' => 'admin@btl.ma',
                 'password' => Hash::make('Admin123!'),
-                'role' => 'admin',
+                'role' => 'super-admin',
                 'email_verified_at' => now(), // Ajout de la vérification d'email
             ],
             [
-                'name' => 'International Admin',
+                'name' => 'Swift Manager',
                 'email' => 'int.admin@btl.ma',
                 'password' => Hash::make('IntAdmin123!'),
-                'role' => 'international-admin',
+                'role' => 'swift-manager',
                 'email_verified_at' => now(),
             ],
             [
-                'name' => 'International User',
+                'name' => 'Swift Operator',
                 'email' => 'int.user@btl.ma',
                 'password' => Hash::make('IntUser123!'),
-                'role' => 'international-user',
+                'role' => 'swift-operator',
                 'email_verified_at' => now(),
             ],
             [

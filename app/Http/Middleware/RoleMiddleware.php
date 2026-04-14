@@ -33,8 +33,8 @@ class RoleMiddleware
 
         $user = Auth::user();
         
-        // ✅ Si l'utilisateur a le rôle admin, il a tous les droits
-        if ($user->hasRole('admin')) {
+        // ✅ Si l'utilisateur a le rôle super-admin, il a tous les droits
+        if ($user->hasRole('super-admin')) {
             return $next($request);
         }
         

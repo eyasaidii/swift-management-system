@@ -15,15 +15,15 @@ class BankRolesSeeder extends Seeder
 
         // DÉFINIR LES RÔLES AVEC LEURS PERMISSIONS
         $bankRoles = [
-            'admin' => [
-                'display_name' => 'Administrateur Système',
+            'super-admin' => [
+                'display_name' => 'Super-Admin Système',
                 'color' => 'danger',
                 'icon' => 'fas fa-crown',
                 'permissions' => [] // Sera rempli automatiquement
             ],
 
-            'international-admin' => [
-                'display_name' => 'Administrateur International',
+            'swift-manager' => [
+                'display_name' => 'Swift Manager',
                 'color' => 'primary',
                 'icon' => 'fas fa-globe-americas',
                 'permissions' => [
@@ -39,9 +39,8 @@ class BankRolesSeeder extends Seeder
                     'sanctions-screening', 'view-sanctions-list',
                 ]
             ],
-
-            'international-user' => [
-                'display_name' => 'Agent International',
+            'swift-operator' => [
+                'display_name' => 'Swift Operator',
                 'color' => 'info',
                 'icon' => 'fas fa-user-tie',
                 'permissions' => [
@@ -131,7 +130,7 @@ class BankRolesSeeder extends Seeder
 
         // Récupérer toutes les permissions pour l'admin
         $allPermissions = Permission::pluck('name')->toArray();
-        $bankRoles['admin']['permissions'] = $allPermissions;
+        $bankRoles['super-admin']['permissions'] = $allPermissions;
 
         // CRÉER LES RÔLES ET ASSIGNER LES PERMISSIONS
         $this->command->info('Création/Mise à jour des rôles...');

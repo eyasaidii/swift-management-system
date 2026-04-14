@@ -14,9 +14,9 @@ class TransactionPolicy
     {
         // Seuls certains rôles peuvent lister les transactions
         return $user->hasAnyRole([
-            'admin',
-            'international-admin',
-            'international-user',
+            'super-admin',
+            'swift-manager',
+            'swift-operator',
             'backoffice',
             'monetique',
             'chef-agence',

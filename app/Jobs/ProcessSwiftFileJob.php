@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\MessageSwift;
 use App\Models\SwiftMessageDetail;
+use App\Services\AnomalyService;                          // ← AJOUT IA
 use App\Services\MxToMtService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,6 +29,7 @@ use App\Helpers\SwiftParser;
  *   5. MessageSwift::create() avec TOUS les champs financiers
  *      → L'Observer created() se déclenche avec amount/currency/value_date ✅
  *      → La Transaction est créée automatiquement ✅
+ *   6. AnomalyService::analyze() — analyse IA automatique              ← AJOUT IA
  */
 class ProcessSwiftFileJob implements ShouldQueue
 {
@@ -129,8 +131,28 @@ class ProcessSwiftFileJob implements ShouldQueue
                 }
             }
 
-            // 9. Mise à jour via common_mapping (sans re-déclencher l'observer si pas nécessaire)
+            // 9. Mise à jour via common_mapping
             $this->applyCommonMapping($message, $parsedData, $mtType);
+
+            // =========================================================
+            // 10. ANALYSE IA — Détection d'anomalies automatique       ← AJOUT IA
+            // =========================================================
+            try {
+                $result = app(AnomalyService::class)->analyze($message->fresh());
+                Log::info('Analyse IA SWIFT reçu', [
+                    'message_id' => $message->id,
+                    'reference'  => $message->REFERENCE,
+                    'score'      => $result['score'],
+                    'niveau'     => $result['niveau_risque'],
+                    'raisons'    => $result['raisons'],
+                ]);
+            } catch (Throwable $e) {
+                Log::warning('Analyse IA échouée (non bloquant)', [
+                    'message_id' => $message->id,
+                    'error'      => $e->getMessage(),
+                ]);
+            }
+            // =========================================================
 
             Log::info('Import SWIFT réussi', [
                 'file'      => basename($this->filePath),
@@ -147,7 +169,8 @@ class ProcessSwiftFileJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            MessageSwift::create([
+            // Créer un message d'erreur
+            $errorMessage = MessageSwift::create([
                 'TYPE_MESSAGE'       => 'ERROR',
                 'REFERENCE'          => 'IMPORT-FAILED-' . basename($this->filePath),
                 'XML_BRUT'           => $this->xmlContent ?? 'Contenu non lu',
@@ -155,6 +178,18 @@ class ProcessSwiftFileJob implements ShouldQueue
                 'CREATED_BY'         => $this->importedBy,
                 'TRANSLATION_ERRORS' => json_encode(['error' => $e->getMessage()]),
             ]);
+
+            // =========================================================
+            // ANALYSE IA sur le message d'erreur aussi                 ← AJOUT IA
+            // =========================================================
+            try {
+                app(AnomalyService::class)->analyze($errorMessage->fresh());
+            } catch (Throwable $iaException) {
+                Log::warning('Analyse IA erreur message échouée', [
+                    'error' => $iaException->getMessage(),
+                ]);
+            }
+            // =========================================================
 
             $this->fail($e);
         } finally {
@@ -312,13 +347,12 @@ class ProcessSwiftFileJob implements ShouldQueue
                     $senderName    = $val("//*[local-name()='Dbtr']/*[local-name()='Nm']");
                     $receiverName  = $val("//*[local-name()='Cdtr']/*[local-name()='Nm']");
                     $description   = $val("//*[local-name()='RmtInf']/*[local-name()='Ustrd']");
-                    $opCode        = 'CRED'; // Toujours CRED en MT103
+                    $opCode        = 'CRED';
                     $chargeBearRaw = $val("//*[local-name()='ChrgBr']") ?? 'SHAR';
                     $chargeBear    = match(strtoupper($chargeBearRaw)) {
                         'SHAR' => 'SHA', 'DEBT' => 'BEN', 'CRED' => 'OUR', default => 'SHA',
                     };
 
-                    // Tag 50K : IBAN + nom + adresse postale
                     $debtorIban     = $val("//*[local-name()='DbtrAcct']//*[local-name()='IBAN']")
                                    ?? $val("//*[local-name()='DbtrAcct']//*[local-name()='Id']/*[local-name()='Othr']/*[local-name()='Id']");
                     $debtorAdrNodes = $xml->xpath("//*[local-name()='Dbtr']/*[local-name()='PstlAdr']/*[local-name()='AdrLine']");
@@ -328,23 +362,19 @@ class ProcessSwiftFileJob implements ShouldQueue
                     if ($senderName) $tag50 .= $senderName;
                     if ($debtorAddr) $tag50 .= "\n" . $debtorAddr;
 
-                    // Tag 59 : bénéficiaire + adresse
                     $creditorAdrNodes = $xml->xpath("//*[local-name()='Cdtr']/*[local-name()='PstlAdr']/*[local-name()='AdrLine']");
                     $creditorAddr     = implode("\n", array_map('strval', $creditorAdrNodes ?? []));
                     $tag59 = $receiverName ?? '';
                     if ($creditorAddr) $tag59 .= "\n" . $creditorAddr;
 
-                    // Tag 26T : purpose
                     $purposeRaw = $val("//*[local-name()='Purp']/*[local-name()='Prtry']")
                                ?? $val("//*[local-name()='Purp']/*[local-name()='Cd']");
                     $tag26T = $purposeRaw ? preg_replace('/^:26T:/', '', trim($purposeRaw)) : null;
 
-                    // Tag 53B : settlement account
                     $sttlmIban = $val("//*[local-name()='SttlmAcct']//*[local-name()='IBAN']")
                               ?? $val("//*[local-name()='SttlmAcct']//*[local-name()='Id']/*[local-name()='Othr']/*[local-name()='Id']");
                     $tag53B = $sttlmIban ? '/C/' . $sttlmIban : null;
 
-                    // Format date MT (YYMMDD)
                     $dateMT = date('ymd', strtotime($valDate));
                     $amtMT  = number_format($amount, 2, ',', '');
 

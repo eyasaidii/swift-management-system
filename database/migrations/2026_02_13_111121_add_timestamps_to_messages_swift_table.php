@@ -11,11 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('messages_swift', function (Blueprint $table) {
-            // ✅ Ajouter les colonnes de timestamp manquantes
-            $table->timestamp('CREATED_AT')->nullable();
-            $table->timestamp('UPDATED_AT')->nullable();
-        });
+        // Ajouter les colonnes seulement si elles n'existent pas (compatibilité SQLite)
+        if (!Schema::hasColumn('messages_swift', 'CREATED_AT') || !Schema::hasColumn('messages_swift', 'UPDATED_AT')) {
+            Schema::table('messages_swift', function (Blueprint $table) {
+                if (!Schema::hasColumn('messages_swift', 'CREATED_AT')) {
+                    $table->timestamp('CREATED_AT')->nullable();
+                }
+                if (!Schema::hasColumn('messages_swift', 'UPDATED_AT')) {
+                    $table->timestamp('UPDATED_AT')->nullable();
+                }
+            });
+        }
     }
 
     /**
@@ -23,8 +29,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('messages_swift', function (Blueprint $table) {
-            $table->dropColumn(['CREATED_AT', 'UPDATED_AT']);
-        });
+        if (Schema::hasColumn('messages_swift', 'CREATED_AT') || Schema::hasColumn('messages_swift', 'UPDATED_AT')) {
+            Schema::table('messages_swift', function (Blueprint $table) {
+                if (Schema::hasColumn('messages_swift', 'CREATED_AT')) {
+                    $table->dropColumn('CREATED_AT');
+                }
+                if (Schema::hasColumn('messages_swift', 'UPDATED_AT')) {
+                    $table->dropColumn('UPDATED_AT');
+                }
+            });
+        }
     }
 };

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MessageSwiftController;
+use App\Http\Controllers\AnomalySwiftController;              // ← AJOUT IA
 use App\Http\Controllers\PermissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,9 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
         $primaryRole = $user->getRoleNames()->first();
         return match($primaryRole) {
+            'super-admin'         => redirect()->route('admin.dashboard'),
+            'swift-manager'       => redirect()->route('international-admin.dashboard'),
+            'swift-operator'      => redirect()->route('international-user.dashboard'),
             'admin'               => redirect()->route('admin.dashboard'),
             'international-admin' => redirect()->route('international-admin.dashboard'),
             'international-user'  => redirect()->route('international-user.dashboard'),
@@ -42,7 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ============ ADMIN ============
-    Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->middleware('role:super-admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -78,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ============ INTERNATIONAL ADMIN ============
-    Route::prefix('international-admin')->middleware('role:international-admin')->name('international-admin.')->group(function () {
+    Route::prefix('international-admin')->middleware('role:swift-manager')->name('international-admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'internationalAdmin'])->name('dashboard');
         Route::get('/correspondent-banks', [DashboardController::class, 'correspondentBanks'])->name('correspondent-banks');
         Route::get('/foreign-exchange', [DashboardController::class, 'foreignExchange'])->name('foreign-exchange');
@@ -88,13 +92,20 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ============ INTERNATIONAL USER ============
-    Route::prefix('international-user')->middleware('role:international-user')->name('international-user.')->group(function () {
+    Route::prefix('international-user')->middleware('role:swift-operator')->name('international-user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'internationalUser'])->name('dashboard');
         Route::get('/my-transactions', [DashboardController::class, 'myInternationalTransactions'])->name('my-transactions');
         Route::get('/transactions/create', [DashboardController::class, 'createInternationalTransaction'])->name('transactions.create');
         Route::post('/transactions', [DashboardController::class, 'storeInternationalTransaction'])->name('transactions.store');
         Route::get('/swift-messages', [DashboardController::class, 'swiftMessages'])->name('swift-messages');
     });
+
+    // Aliases de route pour nouveaux slugs de rôle (compatibilité vues)
+    Route::get('/swift-manager/dashboard', [DashboardController::class, 'internationalAdmin'])
+        ->name('swift-manager.dashboard')->middleware(['auth', 'role:swift-manager']);
+
+    Route::get('/swift-operator/dashboard', [DashboardController::class, 'internationalUser'])
+        ->name('swift-operator.dashboard')->middleware(['auth', 'role:swift-operator']);
 
     // ============ BACKOFFICE ============
     Route::prefix('backoffice')->middleware('role:backoffice')->name('backoffice.')->group(function () {
@@ -143,74 +154,97 @@ Route::middleware(['auth'])->group(function () {
 
     // ============================================================
     // ROUTES SWIFT — ORDRE CRITIQUE
-    // Segments fixes AVANT wildcard /{id}
     // ============================================================
     Route::prefix('swift')->name('swift.')->group(function () {
 
-        // 1. Routes sans paramètre
+        // Routes sans paramètre
         Route::get('/',      [MessageSwiftController::class, 'index'])->name('index');
         Route::get('/creer', [MessageSwiftController::class, 'create'])->name('create');
         Route::post('/',     [MessageSwiftController::class, 'store'])->name('store');
 
-        // 2. Import
+        // Import
         Route::middleware('can:import,App\\Models\\MessageSwift')->group(function () {
             Route::get('/importer',  [MessageSwiftController::class, 'importForm'])->name('import.form');
             Route::post('/importer', [MessageSwiftController::class, 'import'])->name('import');
         });
 
-        // 3. Export + Export Center
-        Route::middleware('role:admin,backoffice,monetique,chef-agence,international-admin,international-user')
+        // Export + Export Center
+        Route::middleware('role:super-admin,backoffice,monetique,chef-agence,swift-manager,swift-operator')
             ->group(function () {
                 Route::get('/exporter',      [MessageSwiftController::class, 'export'])->name('export');
-                // FIX 1 : export-center dans le bon controller, pas TransactionController
                 Route::get('/export-center', [DashboardController::class, 'exportCenter'])->name('export-center');
             });
 
-        // 4. Champs AJAX — AVANT /{id}
+        // Champs AJAX — AVANT /{id}
         Route::get('/fields/{type}', [MessageSwiftController::class, 'getFields'])->name('fields');
 
-        // 5. Actions sur message — AVANT /{id}
-        Route::get('/{id}/view-mt',    [MessageSwiftController::class, 'viewMt'])->name('view-mt');
-        Route::get('/{id}/view-mx',    [MessageSwiftController::class, 'viewMx'])->name('view-mx');
-        Route::patch('/{id}/process',  [MessageSwiftController::class, 'process'])->name('process');
-        Route::patch('/{id}/reject',   [MessageSwiftController::class, 'reject'])->name('reject');
+        // =========================================================
+        // ROUTES IA — ANOMALIES (avant /{id} — ORDRE CRITIQUE)     ← AJOUT IA
+        // =========================================================
+       Route::middleware('role:super-admin,swift-manager')->group(function () {
+ 
+    // Liste + filtres
+    Route::get('/anomalies',
+        [AnomalySwiftController::class, 'index'])
+        ->name('anomalies.index');
+ 
+    // Analyser tous les messages
+    Route::post('/anomalies/analyze-all',
+        [AnomalySwiftController::class, 'analyzeAll'])
+        ->name('anomalies.analyze-all');
+ 
+    // ← NOUVEAU : analyser un seul message (appelé depuis swift.show)
+    Route::post('/anomalies/analyze/{id}',
+        [AnomalySwiftController::class, 'analyzeSingle'])
+        ->name('anomalies.analyze-single');
+ 
+    // Détail d'une anomalie
+    Route::get('/anomalies/{id}',
+        [AnomalySwiftController::class, 'show'])
+        ->name('anomalies.show');
+ 
+    // Marquer vérifiée
+    Route::patch('/anomalies/{id}/verify',
+        [AnomalySwiftController::class, 'verify'])
+        ->name('anomalies.verify');
+ 
+    // Re-analyser une anomalie existante
+    Route::post('/anomalies/{id}/reanalyze',
+        [AnomalySwiftController::class, 'reanalyze'])
+        ->name('anomalies.reanalyze');
+});
+        // =========================================================
 
-        // FIX : approveMessage (authorize() est réservé par Laravel)
-        Route::patch('/{id}/authorize', [MessageSwiftController::class, 'approveMessage'])
-            ->name('authorize')
-            ->middleware('role:admin,international-admin');
+        // Actions sur message — AVANT /{id}
+        Route::get('/{id}/view-mt',     [MessageSwiftController::class, 'viewMt'])->name('view-mt');
+        Route::get('/{id}/view-mx',     [MessageSwiftController::class, 'viewMx'])->name('view-mx');
+        Route::patch('/{id}/process',   [MessageSwiftController::class, 'process'])->name('process');
+        Route::patch('/{id}/reject',    [MessageSwiftController::class, 'reject'])->name('reject');
+        Route::patch('/{id}/authorize', [MessageSwiftController::class, 'approveMessage'])->name('authorize')->middleware('role:super-admin,swift-manager');
+        Route::patch('/{id}/suspend',   [MessageSwiftController::class, 'suspend'])->name('suspend')->middleware('role:super-admin,swift-manager');
+        Route::delete('/{id}',          [MessageSwiftController::class, 'destroy'])->name('destroy')->middleware('role:super-admin,swift-manager');
 
-        Route::patch('/{id}/suspend', [MessageSwiftController::class, 'suspend'])
-            ->name('suspend')
-            ->middleware('role:admin,international-admin');
-
-        Route::delete('/{id}', [MessageSwiftController::class, 'destroy'])->name('destroy')->middleware('role:admin,international-admin');
-
-        // 6. Détail — EN DERNIER
-        Route::get('/{id}', [MessageSwiftController::class, 'show'])->name('show');
+        // Détail et PDF — EN DERNIER
+        Route::get('/{id}',     [MessageSwiftController::class, 'show'])->name('show');
         Route::get('/{id}/pdf', [MessageSwiftController::class, 'downloadPdf'])->name('pdf');
-
-        // FIX 3 : supprimé le groupe transactions imbriqué dans swift
-        // (TransactionController n'existe pas, causait une erreur)
     });
 
     // ───────────────────────────────────────────────
     // ROUTES PARTAGÉES
     // ───────────────────────────────────────────────
-
-    Route::middleware('role:admin,international-admin,international-user,compliance-officer')
+    Route::middleware('role:super-admin,swift-manager,swift-operator,compliance-officer')
         ->prefix('swift-legacy')->name('swift-legacy.')->group(function () {
             Route::get('/messages', [DashboardController::class, 'allSwiftMessages'])->name('messages');
             Route::post('/messages/import', [DashboardController::class, 'importSwift'])->name('messages.import');
         });
 
-    Route::middleware('role:admin,backoffice,monetique,chef-agence,chargee')
+    Route::middleware('role:super-admin,backoffice,monetique,chef-agence,chargee')
         ->prefix('transactions')->name('transactions.')->group(function () {
             Route::get('/', [DashboardController::class, 'allTransactions'])->name('index');
             Route::get('/export', [DashboardController::class, 'exportTransactions'])->name('export');
         });
 
-    Route::middleware('role:admin,chef-agence,compliance-officer')
+    Route::middleware('role:super-admin,chef-agence,compliance-officer')
         ->prefix('reports')->name('reports.')->group(function () {
             Route::get('/', [DashboardController::class, 'allReports'])->name('index');
             Route::get('/generate', [DashboardController::class, 'generateReport'])->name('generate');
@@ -222,7 +256,6 @@ Route::middleware(['auth'])->group(function () {
 // ───────────────────────────────────────────────
 // AUTHENTIFICATION COMPLÉMENTAIRE
 // ───────────────────────────────────────────────
-
 Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->name('password.email');
@@ -232,10 +265,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', \App\Http\Controllers\Auth\EmailVerificationPromptController::class)->name('verification.notice');
-    Route::get('verify-email/{id}/{hash}', \App\Http\Controllers\Auth\VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-    Route::post('email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')->name('verification.send');
+    Route::get('verify-email/{id}/{hash}', \App\Http\Controllers\Auth\VerifyEmailController::class)->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationNotificationController::class, 'store'])->middleware('throttle:6,1')->name('verification.send');
     Route::get('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'store']);
     Route::put('password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('password.update');
@@ -244,7 +275,6 @@ Route::middleware('auth')->group(function () {
 // ───────────────────────────────────────────────
 // DEBUG (supprimer en production)
 // ───────────────────────────────────────────────
-
 Route::get('/debug-user', function () {
     if (!auth()->check()) return "Non connecté";
     $user = auth()->user();
@@ -274,10 +304,6 @@ Route::get('/debug-swift-permissions', function () {
         ],
     ]);
 })->middleware('auth');
-
-// ───────────────────────────────────────────────
-// FALLBACK
-// ───────────────────────────────────────────────
 
 Route::fallback(function () {
     if (auth()->check()) return redirect()->route('dashboard');

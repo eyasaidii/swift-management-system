@@ -78,21 +78,21 @@ class BankPermissionsSeeder extends Seeder
         $this->command->info('✅ ' . count($allPermissions) . ' permissions créées');
 
         // Récupérer les rôles
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $internationalAdmin = Role::firstOrCreate(['name' => 'international-admin', 'guard_name' => 'web']);
-        $internationalUser = Role::firstOrCreate(['name' => 'international-user', 'guard_name' => 'web']);
+        $admin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $internationalAdmin = Role::firstOrCreate(['name' => 'swift-manager', 'guard_name' => 'web']);
+        $internationalUser = Role::firstOrCreate(['name' => 'swift-operator', 'guard_name' => 'web']);
         $chefAgence = Role::firstOrCreate(['name' => 'chef-agence', 'guard_name' => 'web']);
         $chargee = Role::firstOrCreate(['name' => 'chargee', 'guard_name' => 'web']);
         $backoffice = Role::firstOrCreate(['name' => 'backoffice', 'guard_name' => 'web']);
         $monetique = Role::firstOrCreate(['name' => 'monetique', 'guard_name' => 'web']);
 
-        // Admin : toutes les permissions
+        // Super-admin : toutes les permissions
         $admin->syncPermissions(Permission::all());
 
-        // International-admin : toutes les permissions
+        // Swift manager : toutes les permissions
         $internationalAdmin->syncPermissions(Permission::all());
 
-        // International-user : toutes les permissions
+        // Swift operator : toutes les permissions
         $internationalUser->syncPermissions(Permission::all());
 
         // Backoffice : voit tous les messages reçus, peut importer et exporter

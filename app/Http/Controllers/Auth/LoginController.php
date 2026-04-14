@@ -34,12 +34,15 @@ class LoginController extends Controller
             // 🔥 Redirection selon rôle
             switch ($user->role) {
 
+                case 'super-admin':
                 case 'admin':
                     return redirect('/admin/dashboard');
 
+                case 'swift-manager':
                 case 'international-admin':
                     return redirect('/international-admin/dashboard');
 
+                case 'swift-operator':
                 case 'international-user':
                     return redirect('/international-user/dashboard');
 

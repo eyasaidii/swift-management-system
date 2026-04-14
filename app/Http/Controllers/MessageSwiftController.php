@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\SwiftParser;
 use App\Models\MessageSwift;
 use App\Jobs\ProcessSwiftFileJob;
+use App\Services\AnomalyService;                          // ← AJOUT IA
 use App\Services\UniversalMtToMxConverter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +34,7 @@ class MessageSwiftController extends Controller
             default => null,
         };
 
-        $isGlobal = $user->hasRole(['admin', 'international-admin', 'international-user']);
+        $isGlobal = $user->hasRole(['super-admin', 'swift-manager', 'swift-operator']);
 
         $query = $isGlobal
             ? MessageSwift::with('creator')
@@ -63,9 +64,9 @@ class MessageSwiftController extends Controller
 
         $stats = [
             'total'   => (clone $base)->count(),
-            'in'      => ($user->can('view-received-messages') || $user->hasRole('admin'))
+            'in'      => ($user->can('view-received-messages') || $user->hasRole('super-admin'))
                              ? (clone $base)->where('DIRECTION', 'IN')->count()  : 0,
-            'out'     => ($user->can('view-emitted-messages') || $user->hasRole('admin'))
+            'out'     => ($user->can('view-emitted-messages') || $user->hasRole('super-admin'))
                              ? (clone $base)->where('DIRECTION', 'OUT')->count() : 0,
             'pending' => (clone $base)->where('STATUS', 'pending')->count(),
         ];
@@ -127,10 +128,9 @@ class MessageSwiftController extends Controller
 
     public function show($id)
     {
-        $message = MessageSwift::with('creator', 'details')->findOrFail($id);
+        $message = MessageSwift::with(['creator', 'details', 'transaction', 'anomaly'])->findOrFail($id); // ← 'anomaly' ajouté
         abort_unless($message->isReadableBy(auth()->user()), 403,
             'Vous n\'êtes pas autorisé à voir ce message.');
-
         return view('swift.show', compact('message'));
     }
 
@@ -152,7 +152,7 @@ class MessageSwiftController extends Controller
     }
 
     // =========================================================
-    // STORE — avec fix transaction automatique
+    // STORE — avec création automatique de la transaction
     // =========================================================
 
     public function store(Request $request)
@@ -172,9 +172,6 @@ class MessageSwiftController extends Controller
         }
         $request->validate($rules);
 
-        // ── Étape 1 : Créer le message SANS les champs financiers ──
-        // On ne met PAS amount/currency/value_date ici pour éviter que
-        // l'observer created() se déclenche avec des données vides/nulles.
         $message = MessageSwift::create([
             'TYPE_MESSAGE' => $type,
             'DIRECTION'    => 'OUT',
@@ -183,7 +180,6 @@ class MessageSwiftController extends Controller
             'CREATED_AT'   => now(),
         ]);
 
-        // ── Étape 2 : Sauvegarder les tags MT (details) ──
         $details = $request->input('details', []);
         foreach ($details as $tag => $value) {
             if (!empty($value)) {
@@ -191,11 +187,9 @@ class MessageSwiftController extends Controller
             }
         }
 
-        // ── Étape 3 : Extraire les champs financiers ──
         $commonMapping = Config::get("swift_fields.{$type}.common_mapping", []);
         $updateData    = [];
 
-        // 3a. Via common_mapping (config)
         foreach ($commonMapping as $field => $tag) {
             $value = $details[$tag] ?? null;
             if (!$value) continue;
@@ -210,9 +204,6 @@ class MessageSwiftController extends Controller
             }
         }
 
-        // 3b. Fallback direct sur le tag 32A si pas extrait via common_mapping
-        // Garantit que AMOUNT/CURRENCY/VALUE_DATE sont TOUJOURS renseignés
-        // (nécessaire pour que l'Observer created() puisse créer la Transaction)
         if (empty($updateData['AMOUNT']) && !empty($details['32A'])) {
             [$date, $currency, $amount] = SwiftParser::parse32A($details['32A']);
             if ($date)     $updateData['VALUE_DATE'] = $updateData['VALUE_DATE'] ?? $date;
@@ -220,27 +211,12 @@ class MessageSwiftController extends Controller
             if ($amount)   $updateData['AMOUNT']     = $updateData['AMOUNT']     ?? $amount;
         }
 
-        // 3c. Autres champs dénormalisés si pas déjà renseignés via mapping
         if (empty($updateData['SENDER_NAME'])   && !empty($details['50']))  $updateData['SENDER_NAME']   = $details['50'];
-        if (empty($updateData['SENDER_NAME'])   && !empty($details['50K'])) {
-            $lines50K = explode("\n", $details['50K']);
-            foreach ($lines50K as $line) {
-                $line = trim($line);
-                if ($line && !str_starts_with($line, '/')) {
-                    $updateData['SENDER_NAME'] = $line;
-                    break;
-                }
-            }
-        }
         if (empty($updateData['RECEIVER_NAME']) && !empty($details['59']))  $updateData['RECEIVER_NAME'] = $details['59'];
         if (empty($updateData['SENDER_BIC'])    && !empty($details['52A'])) $updateData['SENDER_BIC']    = $details['52A'];
         if (empty($updateData['RECEIVER_BIC'])  && !empty($details['57A'])) $updateData['RECEIVER_BIC']  = $details['57A'];
         if (empty($updateData['DESCRIPTION'])   && !empty($details['70']))  $updateData['DESCRIPTION']   = $details['70'];
 
-        // ── Sanitisation des longueurs pour Oracle ──
-        // SENDER_BIC / RECEIVER_BIC : max 11 caractères (standard BIC SWIFT)
-        // CURRENCY                  : max 3 caractères (ISO 4217)
-        // SENDER_NAME / RECEIVER_NAME : max 255 caractères
         if (!empty($updateData['SENDER_BIC']))    $updateData['SENDER_BIC']    = substr(trim($updateData['SENDER_BIC']),    0, 11);
         if (!empty($updateData['RECEIVER_BIC']))  $updateData['RECEIVER_BIC']  = substr(trim($updateData['RECEIVER_BIC']),  0, 11);
         if (!empty($updateData['CURRENCY']))      $updateData['CURRENCY']      = substr(strtoupper(trim($updateData['CURRENCY'])), 0, 3);
@@ -248,10 +224,8 @@ class MessageSwiftController extends Controller
         if (!empty($updateData['RECEIVER_NAME'])) $updateData['RECEIVER_NAME'] = substr(trim($updateData['RECEIVER_NAME']), 0, 255);
         if (!empty($updateData['REFERENCE']))     $updateData['REFERENCE']     = substr(trim($updateData['REFERENCE']),     0, 100);
 
-        // ── Étape 4 : Catégorie ──
         $updateData['CATEGORIE'] = $message->determineCategorie();
 
-        // ── Étape 5 : Sauvegarder tous les champs ──
         if (!empty($updateData)) {
             $message->update($updateData);
         } else {
@@ -259,8 +233,7 @@ class MessageSwiftController extends Controller
             $message->save();
         }
 
-        // ── Étape 6 : Créer la Transaction DIRECTEMENT ──
-        // On ne dépend PAS de l'Observer pour garantir la création
+        // Création directe de la transaction
         try {
             $txAmount   = (float) ($updateData['AMOUNT']   ?? $message->AMOUNT   ?? $message->amount   ?? 0);
             $txCurrency = $updateData['CURRENCY']   ?? $message->CURRENCY ?? $message->currency ?? null;
@@ -286,7 +259,7 @@ class MessageSwiftController extends Controller
             \Log::warning("Transaction OUT non créée #{$message->id} : {$e->getMessage()}");
         }
 
-        // ── Étape 7 : Générer le XML MX ──
+        // Génération du XML
         try {
             $message->load('details');
             $xmlContent = app(UniversalMtToMxConverter::class)->convert($message);
@@ -296,6 +269,20 @@ class MessageSwiftController extends Controller
         } catch (\Throwable $e) {
             \Log::warning("Échec génération XML #{$message->id} : {$e->getMessage()}");
         }
+
+        // =========================================================
+        // ANALYSE IA — Détection d'anomalies après création         ← AJOUT IA
+        // =========================================================
+        try {
+            $message->refresh();
+            $result = app(AnomalyService::class)->analyze($message);
+            if ($result['niveau_risque'] === 'HIGH') {
+                \Log::warning("SWIFT IA — Message #{$message->id} score critique : {$result['score']}/100 — " . implode(', ', $result['raisons']));
+            }
+        } catch (\Throwable $e) {
+            \Log::warning("SWIFT IA — Analyse anomalie échouée #{$message->id} : {$e->getMessage()}");
+        }
+        // =========================================================
 
         return redirect()->route('swift.index')
             ->with('success', 'Message SWIFT émis créé avec succès !');
@@ -318,8 +305,8 @@ class MessageSwiftController extends Controller
         $direction = $message->DIRECTION ?? $message->direction ?? null;
 
         $canProcess =
-            $user->hasRole('admin')
-            || $user->hasRole('international-admin')
+            $user->hasRole('super-admin')
+            || $user->hasRole('swift-manager')
             || ($user->hasRole(['chef-agence', 'chargee']) && $direction === 'OUT');
 
         if (! $canProcess) {
@@ -327,6 +314,16 @@ class MessageSwiftController extends Controller
         }
 
         $message->update(['STATUS' => 'processed', 'PROCESSED_AT' => now()]);
+
+        // =========================================================
+        // ANALYSE IA — Re-analyse après traitement                  ← AJOUT IA
+        // =========================================================
+        try {
+            app(AnomalyService::class)->analyze($message->fresh());
+        } catch (\Throwable $e) {
+            \Log::warning("SWIFT IA — Re-analyse échouée #{$message->id} : {$e->getMessage()}");
+        }
+        // =========================================================
 
         $reference = $message->REFERENCE ?? $message->reference ?? "#{$id}";
 
@@ -350,8 +347,8 @@ class MessageSwiftController extends Controller
         $direction = $message->DIRECTION ?? $message->direction ?? null;
 
         $canReject =
-            $user->hasRole('admin')
-            || $user->hasRole('international-admin')
+            $user->hasRole('super-admin')
+            || $user->hasRole('swift-manager')
             || ($user->hasRole(['chef-agence', 'chargee']) && $direction === 'OUT');
 
         if (! $canReject) {
@@ -359,6 +356,16 @@ class MessageSwiftController extends Controller
         }
 
         $message->update(['STATUS' => 'rejected', 'PROCESSED_AT' => now()]);
+
+        // =========================================================
+        // ANALYSE IA — Re-analyse après rejet                       ← AJOUT IA
+        // =========================================================
+        try {
+            app(AnomalyService::class)->analyze($message->fresh());
+        } catch (\Throwable $e) {
+            \Log::warning("SWIFT IA — Re-analyse rejet échouée #{$message->id} : {$e->getMessage()}");
+        }
+        // =========================================================
 
         $reference = $message->REFERENCE ?? $message->reference ?? "#{$id}";
 
@@ -375,8 +382,8 @@ class MessageSwiftController extends Controller
         $message = MessageSwift::findOrFail($id);
         $user    = Auth::user();
 
-        if (! $user->hasRole(['admin', 'international-admin'])) {
-            abort(403, 'Seul l\'international-admin peut autoriser un message.');
+        if (! $user->hasRole(['super-admin', 'swift-manager'])) {
+            abort(403, 'Seul le Swift Manager (ou super-admin) peut autoriser un message.');
         }
 
         if ($message->status !== 'processed') {
@@ -406,7 +413,7 @@ class MessageSwiftController extends Controller
         $message = MessageSwift::findOrFail($id);
         $user    = Auth::user();
 
-        if (! $user->hasRole(['admin', 'international-admin'])) {
+        if (! $user->hasRole(['super-admin', 'swift-manager'])) {
             abort(403, 'Action non autorisée.');
         }
 
@@ -418,7 +425,7 @@ class MessageSwiftController extends Controller
             'STATUS'             => 'suspended',
             'AUTHORIZED_BY'      => $user->id,
             'AUTHORIZED_AT'      => now(),
-            'AUTHORIZATION_NOTE' => request('note', 'Suspendu par l\'international-admin'),
+            'AUTHORIZATION_NOTE' => request('note', 'Suspendu par le Swift Manager'),
         ]);
 
         $reference = $message->REFERENCE ?? $message->reference ?? "#{$id}";
@@ -519,7 +526,7 @@ class MessageSwiftController extends Controller
     public function export(Request $request)
     {
         $user     = Auth::user();
-        $isGlobal = $user->hasRole(['admin', 'international-admin', 'international-user']);
+        $isGlobal = $user->hasRole(['super-admin', 'swift-manager', 'swift-operator']);
         $query    = $isGlobal ? MessageSwift::query() : MessageSwift::readable($user);
 
         if ($request->filled('direction')) {
@@ -566,7 +573,6 @@ class MessageSwiftController extends Controller
         $white      = 'FFFFFF';
         $grayLight  = 'F5F5F5';
 
-        // Titre
         $sheet->mergeCells('A1:L1');
         $sheet->setCellValue('A1', 'BTL Bank — Tunisian Libyan Bank');
         $sheet->getStyle('A1')->applyFromArray([
@@ -586,7 +592,6 @@ class MessageSwiftController extends Controller
         $sheet->getRowDimension(2)->setRowHeight(18);
         $sheet->getRowDimension(3)->setRowHeight(8);
 
-        // En-têtes
         $headers = [
             'A' => 'DATE',        'B' => 'TYPE',             'C' => 'DIRECTION',
             'D' => 'RÉFÉRENCE',   'E' => 'ÉMETTEUR',         'F' => 'BIC ÉMETTEUR',
@@ -604,7 +609,6 @@ class MessageSwiftController extends Controller
         ]);
         $sheet->getRowDimension(4)->setRowHeight(22);
 
-        // Données
         $row = 5;
         foreach ($messages as $i => $m) {
             $bg = ($i % 2 === 0) ? $white : $grayLight;
@@ -649,7 +653,6 @@ class MessageSwiftController extends Controller
             $row++;
         }
 
-        // Ligne total
         $sheet->mergeCells("A{$row}:H{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL — ' . count($messages) . ' message(s)');
         $sheet->setCellValue("I{$row}", "=SUM(I5:I" . ($row - 1) . ")");
@@ -660,7 +663,6 @@ class MessageSwiftController extends Controller
         $sheet->getStyle("I{$row}")->getNumberFormat()->setFormatCode('#,##0.00');
         $sheet->getRowDimension($row)->setRowHeight(20);
 
-        // Largeurs colonnes
         foreach ([
             'A' => 18, 'B' => 12, 'C' => 10, 'D' => 20,
             'E' => 30, 'F' => 14, 'G' => 30, 'H' => 14,
@@ -672,7 +674,6 @@ class MessageSwiftController extends Controller
         $sheet->freezePane('A5');
         $sheet->setAutoFilter('A4:L4');
 
-        // Onglet Résumé
         $summary = $spreadsheet->createSheet();
         $summary->setTitle('Résumé');
 
@@ -772,7 +773,6 @@ class MessageSwiftController extends Controller
 
     // =========================================================
     // SIDEBAR — getSidebarCategories()
-    // FIX ORACLE : colonnes selectRaw() retournées en minuscules
     // =========================================================
 
     public function getSidebarCategories(string $direction): array
@@ -801,8 +801,8 @@ class MessageSwiftController extends Controller
             $types = $typesData->map(function ($row) {
                 $attrs = $row->getAttributes();
 
-                $typeName = $attrs['TYPE_MESSAGE']   // MySQL / SQLite
-                         ?? $attrs['type_message']   // Oracle
+                $typeName = $attrs['TYPE_MESSAGE']
+                         ?? $attrs['type_message']
                          ?? null;
 
                 $count = (int) (
@@ -861,6 +861,9 @@ class MessageSwiftController extends Controller
             'admin'               => 'admin.dashboard',
             'international-admin' => 'international-admin.dashboard',
             'international-user'  => 'international-user.dashboard',
+            'super-admin'         => 'admin.dashboard',
+            'swift-manager'       => 'international-admin.dashboard',
+            'swift-operator'      => 'international-user.dashboard',
             'backoffice'          => 'backoffice.dashboard',
             'chef-agence'         => 'chef-agence.dashboard',
             'chargee'             => 'chargee.dashboard',

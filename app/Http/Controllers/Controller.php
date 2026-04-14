@@ -137,7 +137,7 @@ class Controller extends BaseController
      */
     protected function isAdmin()
     {
-        return $this->userHasRole('admin');
+        return $this->userHasRole('super-admin');
     }
     
     /**
@@ -145,7 +145,7 @@ class Controller extends BaseController
      */
     protected function isInternationalUser()
     {
-        return $this->userHasAnyRole(['international-admin', 'international-user']);
+        return $this->userHasAnyRole(['swift-manager', 'swift-operator']);
     }
     
     /**
@@ -246,8 +246,8 @@ class Controller extends BaseController
         $userRole = $this->getUserPrimaryRole();
         
         switch ($userRole) {
-            case 'admin':
-                // Admin peut tout faire
+            case 'super-admin':
+                // Super-admin peut tout faire
                 break;
                 
             case 'chef-agence':
@@ -274,7 +274,7 @@ class Controller extends BaseController
         $stats = [];
         
         switch ($role) {
-            case 'admin':
+            case 'super-admin':
                 $stats = [
                     'total_users' => \App\Models\User::count(),
                     'active_users' => \App\Models\User::where('is_active', true)->count(),
@@ -282,8 +282,8 @@ class Controller extends BaseController
                     'total_alerts' => 0, // À remplacer par votre modèle
                 ];
                 break;
-                
-            case 'international-admin':
+
+            case 'swift-manager':
                 $stats = [
                     'international_transactions' => 125,
                     'pending_authorizations' => 7,
@@ -291,8 +291,8 @@ class Controller extends BaseController
                     'fx_operations' => 45,
                 ];
                 break;
-                
-            case 'international-user':
+
+            case 'swift-operator':
                 $stats = [
                     'my_transactions' => 18,
                     'pending_transactions' => 5,

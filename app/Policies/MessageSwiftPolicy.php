@@ -11,9 +11,9 @@ class MessageSwiftPolicy
     public function viewAny(User $user): bool
     {
         return $user->hasAnyRole([
-            'admin',
-            'international-admin',
-            'international-user',
+            'super-admin',
+            'swift-manager',
+            'swift-operator',
             'backoffice',
             'monetique',
             'chef-agence',
@@ -33,20 +33,20 @@ class MessageSwiftPolicy
 
     public function update(User $user, MessageSwift $messageSwift): bool
     {
-        return $user->hasRole(['admin', 'international-admin']);
+        return $user->hasRole(['super-admin', 'swift-manager']);
     }
 
-   public function delete(User $user, MessageSwift $messageSwift): bool
-{
-    return $user->hasRole(['admin', 'international-admin']);
-}
+    public function delete(User $user, MessageSwift $messageSwift): bool
+    {
+        return $user->hasRole(['super-admin', 'swift-manager']);
+    }
 
     public function import(User $user): bool
     {
         return $user->hasAnyRole([
-            'admin',
-            'international-admin',
-            'international-user',
+            'super-admin',
+            'swift-manager',
+            'swift-operator',
             'chargee',
             'chef-agence'
         ]);
@@ -55,9 +55,9 @@ class MessageSwiftPolicy
     public function export(User $user): bool
     {
         return $user->hasAnyRole([
-            'admin',
-            'international-admin',
-            'international-user',
+            'super-admin',
+            'swift-manager',
+            'swift-operator',
             'backoffice',
             'monetique',
             'chef-agence',
@@ -67,22 +67,22 @@ class MessageSwiftPolicy
 
     public function process(User $user, MessageSwift $messageSwift): bool
     {
-        return $user->hasRole('international-admin') || $user->hasRole('admin');
+        return $user->hasRole('swift-manager') || $user->hasRole('super-admin');
     }
 
     public function authorize(User $user, MessageSwift $messageSwift): bool
     {
         return $user->hasAnyRole([
-            'admin',
-            'international-admin'
+            'super-admin',
+            'swift-manager'
         ]);
     }
 
     public function suspend(User $user, MessageSwift $messageSwift): bool
     {
         return $user->hasAnyRole([
-            'admin',
-            'international-admin'
+            'super-admin',
+            'swift-manager'
         ]);
     }
 }

@@ -14,50 +14,53 @@ class MessageSwift extends Model
     use HasFactory;
 
     protected $table = 'messages_swift';
-    
+
     const CREATED_AT = 'CREATED_AT';
     const UPDATED_AT = 'UPDATED_AT';
 
     protected $primaryKey = 'id';
 
     const TYPES = [
-        'MT103' => 'MT103 - Paiement client',
-        'MT101' => 'MT101 - Demande de transfert',
-        'MT202' => 'MT202 - Transfert interbancaire',
-        'MT210' => 'MT210 - Avis d\'encaissement',
-        'MT300' => 'MT300 - Confirmation de change',
-        'MT320' => 'MT320 - Prêt/Emprunt',
-        'MT700' => 'MT700 - Crédit documentaire',
-        'MT760' => 'MT760 - Garantie / SBLC',
-        'MT940' => 'MT940 - Relevé de compte détaillé',
-        'MT910' => 'MT910 - Avis de crédit',
-        'PACS.008' => 'PACS.008 - Paiement (ISO 20022)',
+        'MT103'   => 'MT103 - Paiement client',
+        'MT101'   => 'MT101 - Demande de transfert',
+        'MT202'   => 'MT202 - Transfert interbancaire',
+        'MT210'   => 'MT210 - Avis d\'encaissement',
+        'MT300'   => 'MT300 - Confirmation de change',
+        'MT320'   => 'MT320 - Prêt/Emprunt',
+        'MT700'   => 'MT700 - Crédit documentaire',
+        'MT760'   => 'MT760 - Garantie / SBLC',
+        'MT940'   => 'MT940 - Relevé de compte détaillé',
+        'MT910'   => 'MT910 - Avis de crédit',
+        'PACS.008'=> 'PACS.008 - Paiement (ISO 20022)',
     ];
 
     const CATEGORIES = [
         'PACS' => 'PACS Messages',
         'CAMT' => 'CAMT Messages',
-        '1' => 'Category 1 - Paiements client',
-        '2' => 'Category 2 - Transferts financiers',
-        '3' => 'Category 3 - Trésorerie',
-        '4' => 'Category 4 - Encaissements',
-        '5' => 'Category 5 - Titres',
-        '7' => 'Category 7 - Crédits documentaires',
-        '9' => 'Category 9 - Comptes et relevés',
+        '1'    => 'Category 1 - Paiements client',
+        '2'    => 'Category 2 - Transferts financiers',
+        '3'    => 'Category 3 - Trésorerie',
+        '4'    => 'Category 4 - Encaissements',
+        '5'    => 'Category 5 - Titres',
+        '7'    => 'Category 7 - Crédits documentaires',
+        '9'    => 'Category 9 - Comptes et relevés',
     ];
 
     const DIRECTION = [
-        'IN' => 'Reçu',
+        'IN'  => 'Reçu',
         'OUT' => 'Émis',
     ];
 
     const STATUS = [
-        'pending' => 'En attente',
+        'pending'   => 'En attente',
         'processed' => 'Traité',
-        'rejected' => 'Rejeté',
+        'rejected'  => 'Rejeté',
         'cancelled' => 'Annulé',
     ];
 
+    // =========================================================
+    // FILLABLE — TOUTES les colonnes de MESSAGES_SWIFT
+    // =========================================================
     protected $fillable = [
         'TYPE_MESSAGE',
         'CATEGORIE',
@@ -81,19 +84,29 @@ class MessageSwift extends Model
         'PROCESSED_AT',
         'METADATA',
         'TRANSLATION_ERRORS',
+        'AUTHORIZED_BY',        // ← FIX : note autorisation
+        'AUTHORIZED_AT',        // ← FIX : date autorisation
+        'AUTHORIZATION_NOTE',   // ← FIX : note stockée en base
     ];
 
+    // =========================================================
+    // CASTS
+    // =========================================================
     protected $casts = [
-        'amount'          => 'decimal:2',
-        'value_date'      => 'date',
-        'processed_at'    => 'datetime',
-        'metadata'        => 'array',
+        'amount'             => 'decimal:2',
+        'value_date'         => 'date',
+        'processed_at'       => 'datetime',
+        'authorized_at'      => 'datetime',   // ← FIX
+        'metadata'           => 'array',
         'translation_errors' => 'array',
-        'created_at'      => 'datetime',
-        'updated_at'      => 'datetime',
+        'created_at'         => 'datetime',
+        'updated_at'         => 'datetime',
     ];
 
-    // Accesseurs et mutateurs
+    // =========================================================
+    // ACCESSEURS
+    // =========================================================
+
     public function getCreatedAtAttribute($value)
     {
         return $value ? Carbon::parse($value) : null;
@@ -109,10 +122,19 @@ class MessageSwift extends Model
         return $value ? Carbon::parse($value) : null;
     }
 
+    public function getAuthorizedAtAttribute($value)         // ← FIX
+    {
+        return $value ? Carbon::parse($value) : null;
+    }
+
     public function getValueDateAttribute($value)
     {
         return $value ? Carbon::parse($value) : null;
     }
+
+    // =========================================================
+    // MUTATEURS
+    // =========================================================
 
     public function setCreatedAtAttribute($value)
     {
@@ -141,6 +163,15 @@ class MessageSwift extends Model
         }
     }
 
+    public function setAuthorizedAtAttribute($value)         // ← FIX
+    {
+        if ($value instanceof Carbon) {
+            $this->attributes['AUTHORIZED_AT'] = $value->format('Y-m-d H:i:s');
+        } else {
+            $this->attributes['AUTHORIZED_AT'] = $value;
+        }
+    }
+
     public function setValueDateAttribute($value)
     {
         if ($value instanceof Carbon) {
@@ -150,15 +181,38 @@ class MessageSwift extends Model
         }
     }
 
+    // =========================================================
+    // RELATIONS
+    // =========================================================
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'CREATED_BY');
+    }
+
+    public function authorizer()                              // ← FIX : relation vers le manager qui a autorisé
+    {
+        return $this->belongsTo(User::class, 'AUTHORIZED_BY');
     }
 
     public function details()
     {
         return $this->hasMany(SwiftMessageDetail::class, 'message_id');
     }
+
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class, 'message_swift_id');
+    }
+
+    public function anomaly()
+    {
+        return $this->hasOne(AnomalySwift::class, 'message_id');
+    }
+
+    // =========================================================
+    // HELPERS
+    // =========================================================
 
     public function getTagValue($tag)
     {
@@ -173,7 +227,7 @@ class MessageSwift extends Model
 
         try {
             $xml = new SimpleXMLElement($this->XML_BRUT);
-            $ns = $xml->getDocNamespaces(true);
+            $ns  = $xml->getDocNamespaces(true);
 
             $defaultNs = reset($ns) ?: '';
 
@@ -193,37 +247,39 @@ class MessageSwift extends Model
         }
     }
 
-    public function determineCategorie()
+    public function determineCategorie(): string
     {
         $type = strtoupper($this->TYPE_MESSAGE ?? '');
 
         if (str_starts_with($type, 'PACS')) return 'PACS';
         if (str_starts_with($type, 'CAMT')) return 'CAMT';
-        if (str_starts_with($type, 'MT1')) return '1';
-        if (str_starts_with($type, 'MT2')) return '2';
-        if (str_starts_with($type, 'MT3')) return '3';
-        if (str_starts_with($type, 'MT4')) return '4';
-        if (str_starts_with($type, 'MT5')) return '5';
-        if (str_starts_with($type, 'MT7')) return '7';
-        if (str_starts_with($type, 'MT9')) return '9';
+        if (str_starts_with($type, 'MT1'))  return '1';
+        if (str_starts_with($type, 'MT2'))  return '2';
+        if (str_starts_with($type, 'MT3'))  return '3';
+        if (str_starts_with($type, 'MT4'))  return '4';
+        if (str_starts_with($type, 'MT5'))  return '5';
+        if (str_starts_with($type, 'MT7'))  return '7';
+        if (str_starts_with($type, 'MT9'))  return '9';
 
         return 'AUTRE';
     }
 
-    // ==================== PERMISSIONS ====================
+    // =========================================================
+    // PERMISSIONS
+    // =========================================================
 
     public function scopeReadable($query, $user)
     {
-        if ($user->hasRole(['admin', 'international-admin', 'international-user'])) {
+        if ($user->hasRole(['super-admin', 'swift-manager', 'swift-operator'])) {
             return $query;
         }
 
         $permissions = $user->getAllPermissions()->pluck('name');
 
-        $canViewAllIn = $permissions->contains('view-received-messages');
+        $canViewAllIn  = $permissions->contains('view-received-messages');
         $canViewAllOut = $permissions->contains('view-emitted-messages');
 
-        $inTypes = [];
+        $inTypes  = [];
         $outTypes = [];
 
         foreach ($permissions as $perm) {
@@ -263,20 +319,19 @@ class MessageSwift extends Model
 
     public function isReadableBy(User $user): bool
     {
-        if ($user->hasRole(['admin', 'international-admin', 'international-user'])) {
+        if ($user->hasRole(['super-admin', 'swift-manager', 'swift-operator'])) {
             return true;
         }
 
-        $direction = $this->direction; // minuscule
+        $direction = $this->direction;
 
-        if ($direction === 'IN' && $user->can('view-received-messages')) {
-            return true;
-        }
-        if ($direction === 'OUT' && $user->can('view-emitted-messages')) {
-            return true;
-        }
+        if ($direction === 'IN'  && $user->can('view-received-messages')) return true;
+        if ($direction === 'OUT' && $user->can('view-emitted-messages'))  return true;
 
-        $permName = $direction === 'IN' ? 'IN.' . $this->TYPE_MESSAGE : 'OUT.' . $this->TYPE_MESSAGE;
+        $permName = $direction === 'IN'
+            ? 'IN.'  . $this->TYPE_MESSAGE
+            : 'OUT.' . $this->TYPE_MESSAGE;
+
         return $user->can($permName);
     }
 
@@ -290,17 +345,16 @@ class MessageSwift extends Model
     {
         $types = self::TYPES;
 
-        if ($user->hasRole(['admin', 'international-admin', 'international-user'])) {
+        if ($user->hasRole(['super-admin', 'swift-manager', 'swift-operator'])) {
             return $types;
         }
 
-        $prefix = $direction === 'IN' ? 'IN.' : 'OUT.';
+        $prefix         = $direction === 'IN' ? 'IN.' : 'OUT.';
         $permittedTypes = [];
 
         foreach ($user->getAllPermissions() as $perm) {
             if (Str::startsWith($perm->name, $prefix)) {
-                $type = substr($perm->name, strlen($prefix));
-                $permittedTypes[] = $type;
+                $permittedTypes[] = substr($perm->name, strlen($prefix));
             }
         }
 
@@ -318,7 +372,9 @@ class MessageSwift extends Model
         }, ARRAY_FILTER_USE_KEY);
     }
 
-    // ==================== FORMATEURS ====================
+    // =========================================================
+    // FORMATEURS
+    // =========================================================
 
     public function getFormattedAmountAttribute(): string
     {
@@ -341,28 +397,28 @@ class MessageSwift extends Model
         return self::CATEGORIES[$categorie] ?? $categorie;
     }
 
-    public function getFormattedCreatedAt($format = 'd/m/Y H:i:s'): string
+    public function getFormattedCreatedAt(string $format = 'd/m/Y H:i:s'): string
     {
         return $this->CREATED_AT ? $this->CREATED_AT->format($format) : '-';
     }
 
-    public function getFormattedUpdatedAt($format = 'd/m/Y H:i:s'): string
+    public function getFormattedUpdatedAt(string $format = 'd/m/Y H:i:s'): string
     {
         return $this->UPDATED_AT ? $this->UPDATED_AT->format($format) : '-';
     }
 
-    public function getFormattedProcessedAt($format = 'd/m/Y H:i:s'): string
+    public function getFormattedProcessedAt(string $format = 'd/m/Y H:i:s'): string
     {
         return $this->PROCESSED_AT ? $this->PROCESSED_AT->format($format) : '-';
     }
 
-    public function getFormattedValueDate($format = 'd/m/Y'): string
+    public function getFormattedAuthorizedAt(string $format = 'd/m/Y H:i:s'): string // ← FIX
     {
-        return $this->VALUE_DATE ? $this->VALUE_DATE->format($format) : '-';
+        return $this->AUTHORIZED_AT ? $this->AUTHORIZED_AT->format($format) : '-';
     }
 
-    public function transaction()
+    public function getFormattedValueDate(string $format = 'd/m/Y'): string
     {
-        return $this->hasOne(Transaction::class, 'message_swift_id');
+        return $this->VALUE_DATE ? $this->VALUE_DATE->format($format) : '-';
     }
 }

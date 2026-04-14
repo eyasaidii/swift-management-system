@@ -49,7 +49,8 @@ class UserController extends Controller
         $availableRoles = $this->getAvailableRoles();
         $stats = $this->getUserStatistics();
 
-        return view('admin.users.index', compact(
+        // Changement : admin.users.index -> super-admin.users.index
+        return view('super-admin.users.index', compact(
             'users', 
             'stats', 
             'availableRoles', 
@@ -67,7 +68,8 @@ class UserController extends Controller
         
         $availableRoles = $this->getAvailableRoles();
         
-        return view('admin.users.create', compact('availableRoles'));
+        // Changement : admin.users.create -> super-admin.users.create
+        return view('super-admin.users.create', compact('availableRoles'));
     }
 
     /**
@@ -114,7 +116,8 @@ class UserController extends Controller
         
         $user->load('roles');
         
-        return view('admin.users.show', compact('user'));
+        // Changement : admin.users.show -> super-admin.users.show
+        return view('super-admin.users.show', compact('user'));
     }
 
     /**
@@ -127,8 +130,8 @@ class UserController extends Controller
         $availableRoles = $this->getAvailableRoles();
         $currentRole = $user->getRoleNames()->first();
         
-        // ✅ Utilisation du fichier modifier.blade.php
-        return view('admin.users.modifier', compact('user', 'availableRoles', 'currentRole'));
+        // Changement : admin.users.modifier -> super-admin.users.modifier
+        return view('super-admin.users.modifier', compact('user', 'availableRoles', 'currentRole'));
     }
 
     /**
@@ -263,7 +266,7 @@ class UserController extends Controller
         
         $allRoles = User::getBankRoles();
         
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('super-admin')) {
             return $allRoles;
         }
         

@@ -15,11 +15,11 @@ class ImportSwiftPermissionSeeder extends Seeder
 
         // Roles to assign by default
         $roles = [
-            'admin',
+            'super-admin',
             'backoffice',
             'monetique',
-            'international-admin',
-            'international-user'
+            'swift-manager',
+            'swift-operator'
         ];
 
         foreach ($roles as $r) {

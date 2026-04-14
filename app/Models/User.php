@@ -33,23 +33,23 @@ class User extends Authenticatable
     public static function getBankRoles(): array
     {
         return [
-            'admin' => [
-                'name' => 'Administrateur',
-                'description' => 'Accès complet au système',
+            'super-admin' => [
+                'name' => 'Super-Admin',
+                'description' => 'Accès complet au système et gestion technique',
                 'color' => 'danger',
                 'icon' => 'fas fa-crown',
                 'level' => 100, // Niveau de permission
             ],
-            'international-admin' => [
-                'name' => 'Admin International',
-                'description' => 'Gestion des opérations internationales',
+            'swift-manager' => [
+                'name' => 'Swift Manager',
+                'description' => 'Supervision des opérations SWIFT',
                 'color' => 'primary',
                 'icon' => 'fas fa-globe-americas',
                 'level' => 90,
             ],
-            'international-user' => [
-                'name' => 'Utilisateur International',
-                'description' => 'Consultation opérations internationales',
+            'swift-operator' => [
+                'name' => 'Swift Operator',
+                'description' => 'Opérateur SWIFT - gestion et consultation',
                 'color' => 'info',
                 'icon' => 'fas fa-user-tie',
                 'level' => 80,
@@ -171,13 +171,13 @@ class User extends Authenticatable
 
     public function scopeAdmins($query)
     {
-        return $this->scopeByRole($query, 'admin');
+        return $this->scopeByRole($query, 'super-admin');
     }
 
     public function scopeInternational($query)
     {
         return $query->whereHas('roles', function ($q) {
-            $q->whereIn('name', ['international-admin', 'international-user']);
+            $q->whereIn('name', ['swift-manager', 'swift-operator']);
         });
     }
 
@@ -212,9 +212,9 @@ class User extends Authenticatable
     public function canAccessSection(string $section): bool
     {
         $accessRules = [
-            'admin' => ['all'],
-            'international-admin' => ['international', 'reports', 'dashboard'],
-            'international-user' => ['international', 'dashboard'],
+            'super-admin' => ['all'],
+            'swift-manager' => ['international', 'reports', 'dashboard'],
+            'swift-operator' => ['international', 'dashboard'],
             'backoffice' => ['backoffice', 'transactions', 'dashboard'],
             'monetique' => ['monetique', 'transactions', 'dashboard'],
             'chef-agence' => ['agency', 'clients', 'dashboard'],

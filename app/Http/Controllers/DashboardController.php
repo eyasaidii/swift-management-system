@@ -16,7 +16,7 @@ class DashboardController extends Controller
 
     private function isGlobalRole(): bool
     {
-        return Auth::user()->hasRole(['admin', 'international-admin', 'international-user']);
+        return Auth::user()->hasRole(['super-admin', 'swift-manager', 'swift-operator']);
     }
 
     private function baseQuery()
@@ -66,9 +66,9 @@ class DashboardController extends Controller
         $swiftController = app(MessageSwiftController::class);
 
         $canSeeReceived = $user->can('view-received-messages')
-            || $user->hasRole(['admin', 'international-admin', 'international-user', 'backoffice', 'monetique']);
+            || $user->hasRole(['super-admin', 'swift-manager', 'swift-operator', 'backoffice', 'monetique']);
         $canSeeEmitted  = $user->can('view-emitted-messages')
-            || $user->hasRole(['admin', 'international-admin', 'international-user', 'chef-agence', 'chargee']);
+            || $user->hasRole(['super-admin', 'swift-manager', 'swift-operator', 'chef-agence', 'chargee']);
 
         $receivedCategories = $canSeeReceived ? $swiftController->getSidebarCategories('IN')  : [];
         $emittedCategories  = $canSeeEmitted  ? $swiftController->getSidebarCategories('OUT') : [];
@@ -122,19 +122,20 @@ class DashboardController extends Controller
         return $this->formatVolume($volumeByDevise[$firstCcy], $firstCcy);
     }
 
-  private function getVolumeTransactions(string $direction = 'IN'): \Illuminate\Support\Collection
-{
-    try {
-        return DB::table('transactions')
-            ->join('messages_swift', 'transactions.message_swift_id', '=', 'messages_swift.id')
-            ->where('messages_swift.direction', $direction)
-            ->selectRaw('transactions.devise, SUM(transactions.montant) as total, COUNT(*) as nb')
-            ->groupBy('transactions.devise')
-            ->get(); // get() retourne une Collection, pas toArray()
-    } catch (\Throwable $e) {
-        return collect(); // Collection vide au lieu de []
+    private function getVolumeTransactions(string $direction = 'IN'): \Illuminate\Support\Collection
+    {
+        try {
+            return DB::table('transactions')
+                ->join('messages_swift', 'transactions.message_swift_id', '=', 'messages_swift.id')
+                ->where('messages_swift.direction', $direction)
+                ->selectRaw('transactions.devise, SUM(transactions.montant) as total, COUNT(*) as nb')
+                ->groupBy('transactions.devise')
+                ->get();
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
-}
+
     // =========================================================
     // EXPORT CENTER
     // =========================================================
@@ -153,7 +154,7 @@ class DashboardController extends Controller
     }
 
     // =========================================================
-    // ADMIN
+    // ADMIN → SUPER-ADMIN
     // =========================================================
 
     public function admin(Request $request)
@@ -171,14 +172,14 @@ class DashboardController extends Controller
             ->map(fn($v, $k) => $this->formatVolume((float)$v, $k))
             ->implode(' / ') ?: '$0';
 
-        return view('admin.dashboard', array_merge(
+        return view('super-admin.dashboard', array_merge(
             compact('messages', 'totalCount', 'receivedCount', 'emittedCount', 'pendingCount', 'volumeByDevise', 'volumeFormatted'),
             $sidebarData
         ));
     }
 
     // =========================================================
-    // INTERNATIONAL ADMIN
+    // INTERNATIONAL ADMIN → SWIFT MANAGER
     // =========================================================
 
     public function internationalAdmin(Request $request)
@@ -200,7 +201,7 @@ class DashboardController extends Controller
         $suspendedCount  = (clone $base)->where('STATUS', 'suspended')->count();
         $transactions    = $messages;
 
-        return view('international-admin.dashboard', array_merge(
+        return view('swift-manager.dashboard', array_merge(
             compact('messages', 'transactions', 'transCount', 'volumeFormatted', 'volumeByDevise',
                     'bankCount', 'pendingAuth', 'authorizedToday', 'suspendedCount'),
             $sidebarData
@@ -208,7 +209,7 @@ class DashboardController extends Controller
     }
 
     // =========================================================
-    // INTERNATIONAL USER
+    // INTERNATIONAL USER → SWIFT OPERATOR
     // =========================================================
 
     public function internationalUser(Request $request)
@@ -228,14 +229,14 @@ class DashboardController extends Controller
         $pendingAuth  = (clone $base)->where('STATUS', 'processed')->count();
         $transactions = $messages;
 
-        return view('international-user.dashboard', array_merge(
+        return view('swift-operator.dashboard', array_merge(
             compact('messages', 'transactions', 'transCount', 'volumeFormatted', 'volumeByDevise', 'bankCount', 'pendingAuth'),
             $sidebarData
         ));
     }
 
     // =========================================================
-    // BACKOFFICE — FIX : volumeParDevise AVANT le return
+    // BACKOFFICE
     // =========================================================
 
     public function backoffice(Request $request)
@@ -249,7 +250,6 @@ class DashboardController extends Controller
         $inCount      = (clone $base)->where('DIRECTION', 'IN')->count();
         $pendingCount = (clone $base)->where('STATUS', 'pending')->count();
 
-        // Volume depuis table transactions (AVANT le return)
         $volumeParDevise = $this->getVolumeTransactions('IN');
 
         return view('backoffice.dashboard', array_merge(
