@@ -568,6 +568,30 @@ class MessageSwiftController extends Controller
         $sheet       = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Messages SWIFT');
 
+        // Insert BTL logo if available (inline image)
+        try {
+            $logoPath = public_path('images/logo-btl.png');
+            if (file_exists($logoPath)) {
+                $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
+                $img = @imagecreatefrompng($logoPath);
+                if ($img) {
+                    ob_start();
+                    imagepng($img);
+                    $imgData = ob_get_clean();
+                    imagedestroy($img);
+                    $gdImage = imagecreatefromstring($imgData);
+                    $drawing->setImageResource($gdImage);
+                    $drawing->setRenderingFunction(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_PNG);
+                    $drawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_PNG);
+                    $drawing->setHeight(36);
+                    $drawing->setCoordinates('A1');
+                    $drawing->setWorksheet($sheet);
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore image errors
+        }
+
         $greenBtl   = '1A5C38';
         $greenLight = 'E8F5E9';
         $white      = 'FFFFFF';
@@ -612,7 +636,6 @@ class MessageSwiftController extends Controller
         $row = 5;
         foreach ($messages as $i => $m) {
             $bg = ($i % 2 === 0) ? $white : $grayLight;
-
             $sheet->setCellValue('A' . $row, optional($m->CREATED_AT ?? $m->created_at)->format('d/m/Y H:i') ?? '—');
             $sheet->setCellValue('B' . $row, $m->TYPE_MESSAGE  ?? $m->type_message  ?? '—');
             $sheet->setCellValue('C' . $row, ($m->DIRECTION    ?? $m->direction) === 'IN' ? 'REÇU' : 'ÉMIS');
@@ -624,8 +647,8 @@ class MessageSwiftController extends Controller
             $sheet->setCellValue('I' . $row, (float)($m->AMOUNT ?? $m->amount ?? 0));
             $sheet->setCellValue('J' . $row, $m->CURRENCY      ?? $m->currency      ?? '—');
             $sheet->setCellValue('K' . $row, optional($m->VALUE_DATE ?? $m->value_date)->format('d/m/Y') ?? '—');
-
             $status = $m->STATUS ?? $m->status ?? '—';
+            $statusNormalized = strtolower($status);
             $sheet->setCellValue('L' . $row, strtoupper($status));
 
             $sheet->getStyle("A{$row}:L{$row}")->applyFromArray([
@@ -633,10 +656,11 @@ class MessageSwiftController extends Controller
                 'borders'   => ['allBorders' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'E0E0E0']]],
                 'alignment' => ['vertical' => 'center'],
             ]);
-            $sheet->getStyle("I{$row}")->getNumberFormat()->setFormatCode('#,##0.00');
+            // Format amount with space thousands and comma decimals for francophone format
+            $sheet->getStyle("I{$row}")->getNumberFormat()->setFormatCode('# ##0,00');
             $sheet->getStyle("I{$row}")->getAlignment()->setHorizontal('right');
 
-            $statusColor = match($status) {
+            $statusColor = match($statusNormalized) {
                 'authorized' => $greenBtl,
                 'processed'  => '1565C0',
                 'pending'    => 'F57F17',
@@ -652,6 +676,11 @@ class MessageSwiftController extends Controller
             $sheet->getRowDimension($row)->setRowHeight(18);
             $row++;
         }
+
+        // Apply final amount formatting on the whole column (in case no rows)
+        $lastDataRow = max(5, $row - 1);
+        $sheet->getStyle("I5:I{$lastDataRow}")->getNumberFormat()->setFormatCode('# ##0,00');
+        $sheet->getStyle("I5:I{$lastDataRow}")->getAlignment()->setHorizontal('right');
 
         $sheet->mergeCells("A{$row}:H{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL — ' . count($messages) . ' message(s)');

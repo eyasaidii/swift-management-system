@@ -1,9 +1,9 @@
-{{-- resources/views/swift/export-center.blade.php --}}
-@extends('layouts.app')
 
-@section('title', 'Export Center - BTL Bank')
 
-@section('content')
+
+<?php $__env->startSection('title', 'Export Center - BTL Bank'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -13,21 +13,22 @@
             </h1>
             <p class="text-muted mb-0">Exportez vos messages SWIFT en Excel ou CSV</p>
         </div>
-        <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
+        <a href="<?php echo e(url()->previous()); ?>" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Retour
         </a>
     </div>
 
-    @if(session('success'))
+    <?php if(session('success')): ?>
         <div class="alert alert-success alert-dismissible fade show">
-            {{ session('success') }}
+            <?php echo e(session('success')); ?>
+
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    @endif
+    <?php endif; ?>
 
     <div class="row g-4">
 
-        {{-- Formulaire d'export --}}
+        
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
@@ -36,9 +37,9 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('swift.export') }}">
+                    <form method="GET" action="<?php echo e(route('swift.export')); ?>">
 
-                        {{-- Choix du format --}}
+                        
                         <div class="mb-4">
                             <label class="form-label fw-bold">Format d'export</label>
                             <div class="row g-3">
@@ -93,7 +94,7 @@
             </div>
         </div>
 
-        {{-- Historique des exports --}}
+        
         <div class="col-lg-4">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white">
@@ -102,40 +103,43 @@
                     </h5>
                 </div>
                 <div class="card-body p-0">
-                    @if(isset($exportJobs) && $exportJobs->count() > 0)
+                    <?php if(isset($exportJobs) && $exportJobs->count() > 0): ?>
                         <div class="list-group list-group-flush">
-                            @foreach($exportJobs as $job)
+                            <?php $__currentLoopData = $exportJobs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $job): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <div class="list-group-item px-3 py-2">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <span class="badge {{ $job->format === 'xlsx' ? 'bg-success' : 'bg-secondary' }} me-2">
-                                                {{ strtoupper($job->format) }}
+                                            <span class="badge <?php echo e($job->format === 'xlsx' ? 'bg-success' : 'bg-secondary'); ?> me-2">
+                                                <?php echo e(strtoupper($job->format)); ?>
+
                                             </span>
                                             <small class="text-muted">
-                                                {{ \Carbon\Carbon::parse($job->date_demande)->format('d/m/Y H:i') }}
+                                                <?php echo e(\Carbon\Carbon::parse($job->date_demande)->format('d/m/Y H:i')); ?>
+
                                             </small>
                                         </div>
-                                        <span class="badge {{ $job->statut === 'completed' ? 'bg-success' : 'bg-warning text-dark' }}">
-                                            {{ $job->statut === 'completed' ? 'OK' : $job->statut }}
+                                        <span class="badge <?php echo e($job->statut === 'completed' ? 'bg-success' : 'bg-warning text-dark'); ?>">
+                                            <?php echo e($job->statut === 'completed' ? 'OK' : $job->statut); ?>
+
                                         </span>
                                     </div>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fas fa-inbox fa-2x mb-3 d-block opacity-25"></i>
                             <p class="small">Aucun export réalisé</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
-                @if(isset($exportJobs) && $exportJobs->count() > 0)
+                <?php if(isset($exportJobs) && $exportJobs->count() > 0): ?>
                     <div class="card-footer bg-white text-center">
                         <small class="text-muted">
-                            {{ $exportJobs->count() }} export(s) réalisé(s)
+                            <?php echo e($exportJobs->count()); ?> export(s) réalisé(s)
                         </small>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
 
@@ -163,4 +167,5 @@ function selectFormat(format) {
     }
 }
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/resources/views/swift/export-center.blade.php ENDPATH**/ ?>

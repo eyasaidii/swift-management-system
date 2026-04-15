@@ -226,14 +226,14 @@
 
 <div class="watermark">BTL BANK</div>
 
-{{-- EN-TÊTE --}}
+
 <div class="header">
     <div class="header-top">
         <div class="header-logo">
             <div style="display:flex; align-items:center; gap:12px;">
-                @if($logo)
-                    <img src="{{ $logo }}" alt="BTL Bank" style="height:48px; display:block;">
-                @endif
+                <?php if($logo): ?>
+                    <img src="<?php echo e($logo); ?>" alt="BTL Bank" style="height:48px; display:block;">
+                <?php endif; ?>
                 <div>
                     <h1>BTL BANK</h1>
                     <p>Tunisian Libyan Bank — Plateforme SWIFT</p>
@@ -243,15 +243,16 @@
         <div class="header-ref">
             <div class="doc-title">Avis de virement SWIFT</div>
             <div class="doc-ref">
-                Réf : {{ $message->REFERENCE ?? $message->reference ?? '—' }}<br>
-                Émis le : {{ now()->format('d/m/Y à H:i') }}
+                Réf : <?php echo e($message->REFERENCE ?? $message->reference ?? '—'); ?><br>
+                Émis le : <?php echo e(now()->format('d/m/Y à H:i')); ?>
+
             </div>
         </div>
     </div>
 </div>
 
-{{-- BANDE STATUT --}}
-@php
+
+<?php
     $status = $message->STATUS ?? $message->status ?? 'pending';
     $statusLabel = match($status) {
         'authorized' => 'Autorisé — Virement approuvé',
@@ -261,27 +262,31 @@
         'rejected'   => 'Rejeté',
         default      => strtoupper($status),
     };
-@endphp
-<div class="status-bar status-{{ $status }}">
-    {{ $statusLabel }}
+?>
+<div class="status-bar status-<?php echo e($status); ?>">
+    <?php echo e($statusLabel); ?>
+
 </div>
 
 <div class="body">
 
-    {{-- MONTANT EN ÉVIDENCE --}}
+    
     <div class="amount-box">
         <div class="amount-label">Montant du virement</div>
         <div class="amount-value">
-            {{ number_format((float)($message->AMOUNT ?? $message->amount ?? 0), 2, ',', ' ') }}
-            {{ $message->CURRENCY ?? $message->currency ?? '' }}
+            <?php echo e(number_format((float)($message->AMOUNT ?? $message->amount ?? 0), 2, ',', ' ')); ?>
+
+            <?php echo e($message->CURRENCY ?? $message->currency ?? ''); ?>
+
         </div>
         <div class="amount-date">
             Date valeur :
-            {{ optional($message->VALUE_DATE ?? $message->value_date)->format('d/m/Y') ?? '—' }}
+            <?php echo e(optional($message->VALUE_DATE ?? $message->value_date)->format('d/m/Y') ?? '—'); ?>
+
         </div>
     </div>
 
-    {{-- ÉMETTEUR / BÉNÉFICIAIRE --}}
+    
     <div class="two-col">
         <div class="col-left">
             <div class="section">
@@ -290,15 +295,15 @@
                     <table class="info-table">
                         <tr>
                             <td class="label">Nom</td>
-                            <td class="value">{{ $message->SENDER_NAME ?? $message->sender_name ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->SENDER_NAME ?? $message->sender_name ?? '—'); ?></td>
                         </tr>
                         <tr>
                             <td class="label">BIC</td>
-                            <td class="value">{{ $message->SENDER_BIC ?? $message->sender_bic ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->SENDER_BIC ?? $message->sender_bic ?? '—'); ?></td>
                         </tr>
                         <tr>
                             <td class="label">Compte</td>
-                            <td class="value">{{ $message->SENDER_ACCOUNT ?? $message->sender_account ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->SENDER_ACCOUNT ?? $message->sender_account ?? '—'); ?></td>
                         </tr>
                     </table>
                 </div>
@@ -311,15 +316,15 @@
                     <table class="info-table">
                         <tr>
                             <td class="label">Nom</td>
-                            <td class="value">{{ $message->RECEIVER_NAME ?? $message->receiver_name ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->RECEIVER_NAME ?? $message->receiver_name ?? '—'); ?></td>
                         </tr>
                         <tr>
                             <td class="label">BIC</td>
-                            <td class="value">{{ $message->RECEIVER_BIC ?? $message->receiver_bic ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->RECEIVER_BIC ?? $message->receiver_bic ?? '—'); ?></td>
                         </tr>
                         <tr>
                             <td class="label">Compte</td>
-                            <td class="value">{{ $message->RECEIVER_ACCOUNT ?? $message->receiver_account ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->RECEIVER_ACCOUNT ?? $message->receiver_account ?? '—'); ?></td>
                         </tr>
                     </table>
                 </div>
@@ -327,7 +332,7 @@
         </div>
     </div>
 
-    {{-- INFORMATIONS GÉNÉRALES --}}
+    
     <div class="section">
         <div class="section-title">Informations du message</div>
         <div class="section-body">
@@ -336,17 +341,18 @@
                     <table class="info-table">
                         <tr>
                             <td class="label">Type message</td>
-                            <td class="value">{{ $message->TYPE_MESSAGE ?? $message->type_message ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->TYPE_MESSAGE ?? $message->type_message ?? '—'); ?></td>
                         </tr>
                         <tr>
                             <td class="label">Direction</td>
                             <td class="value">
-                                {{ ($message->DIRECTION ?? $message->direction) === 'IN' ? 'Reçu (IN)' : 'Émis (OUT)' }}
+                                <?php echo e(($message->DIRECTION ?? $message->direction) === 'IN' ? 'Reçu (IN)' : 'Émis (OUT)'); ?>
+
                             </td>
                         </tr>
                         <tr>
                             <td class="label">Catégorie</td>
-                            <td class="value">{{ $message->CATEGORIE ?? $message->categorie ?? '—' }}</td>
+                            <td class="value"><?php echo e($message->CATEGORIE ?? $message->categorie ?? '—'); ?></td>
                         </tr>
                     </table>
                 </div>
@@ -355,80 +361,84 @@
                         <tr>
                             <td class="label">Créé le</td>
                             <td class="value">
-                                {{ optional($message->CREATED_AT ?? $message->created_at)->format('d/m/Y H:i') ?? '—' }}
+                                <?php echo e(optional($message->CREATED_AT ?? $message->created_at)->format('d/m/Y H:i') ?? '—'); ?>
+
                             </td>
                         </tr>
                         <tr>
                             <td class="label">Traité le</td>
                             <td class="value">
-                                {{ optional($message->PROCESSED_AT ?? $message->processed_at)->format('d/m/Y H:i') ?? '—' }}
+                                <?php echo e(optional($message->PROCESSED_AT ?? $message->processed_at)->format('d/m/Y H:i') ?? '—'); ?>
+
                             </td>
                         </tr>
-                        @if($message->AUTHORIZED_AT ?? $message->authorized_at)
+                        <?php if($message->AUTHORIZED_AT ?? $message->authorized_at): ?>
                         <tr>
                             <td class="label">Autorisé le</td>
                             <td class="value">
-                                {{ optional($message->AUTHORIZED_AT ?? $message->authorized_at)->format('d/m/Y H:i') }}
+                                <?php echo e(optional($message->AUTHORIZED_AT ?? $message->authorized_at)->format('d/m/Y H:i')); ?>
+
                             </td>
                         </tr>
-                        @endif
+                        <?php endif; ?>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- NOTE D'AUTORISATION --}}
-    @if($message->AUTHORIZATION_NOTE ?? $message->authorization_note)
+    
+    <?php if($message->AUTHORIZATION_NOTE ?? $message->authorization_note): ?>
     <div class="section">
         <div class="section-title">Note d'autorisation</div>
         <div class="section-body">
             <p style="font-size:10px; color:#333;">
-                {{ $message->AUTHORIZATION_NOTE ?? $message->authorization_note }}
+                <?php echo e($message->AUTHORIZATION_NOTE ?? $message->authorization_note); ?>
+
             </p>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- DÉTAILS SPÉCIFIQUES MT --}}
-    @if($message->details && $message->details->count())
+    
+    <?php if($message->details && $message->details->count()): ?>
     <div class="section">
         <div class="section-title">
-            Champs spécifiques ({{ $message->TYPE_MESSAGE ?? $message->type_message }})
+            Champs spécifiques (<?php echo e($message->TYPE_MESSAGE ?? $message->type_message); ?>)
         </div>
         <div class="section-body">
             <table class="tags-table">
-                @foreach($message->details as $detail)
+                <?php $__currentLoopData = $message->details; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detail): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <tr>
-                    <td class="tag-name">{{ $detail->tag_name }}</td>
-                    <td>{{ $detail->tag_value }}</td>
+                    <td class="tag-name"><?php echo e($detail->tag_name); ?></td>
+                    <td><?php echo e($detail->tag_value); ?></td>
                 </tr>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </table>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- NOTICE --}}
+    
     <div class="notice">
         Ce document est généré automatiquement par la Plateforme des Messages SWIFT de BTL Bank.
         Il constitue un avis informatif et ne remplace pas les documents officiels de virement.
-        Référence unique : {{ $message->REFERENCE ?? $message->reference }}.
+        Référence unique : <?php echo e($message->REFERENCE ?? $message->reference); ?>.
     </div>
 
 </div>
 
-{{-- PIED DE PAGE --}}
+
 <div class="footer">
     <div class="footer-inner">
         <div class="footer-left">
             BTL Bank — Tunisian Libyan Bank | Plateforme SWIFT
         </div>
         <div class="footer-right">
-            Généré le {{ now()->format('d/m/Y à H:i') }} | Document confidentiel
+            Généré le <?php echo e(now()->format('d/m/Y à H:i')); ?> | Document confidentiel
         </div>
     </div>
 </div>
 
 </body>
-</html>
+</html><?php /**PATH /var/www/resources/views/swift/pdf-transaction.blade.php ENDPATH**/ ?>
