@@ -105,23 +105,15 @@
                                     </a>
 
                                     <?php if($msg->mt_content): ?>
-                                        <a href="<?php echo e(route('swift.view-mt', $msg->id)); ?>" class="btn btn-outline-success" title="Voir MT" target="_blank">
-                                            <i class="fas fa-file-alt"></i> View MT
-                                        </a>
+                                        <button type="button" class="btn btn-outline-success open-raw-file" data-url="<?php echo e(route('swift.view-mt', $msg->id)); ?>" data-title="MT"><i class="fas fa-file-alt"></i> View MT</button>
                                     <?php else: ?>
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de MT">
-                                            <i class="fas fa-file-alt"></i> MT
-                                        </button>
+                                        <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i> MT</button>
                                     <?php endif; ?>
 
                                     <?php if($msg->xml_brut): ?>
-                                        <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" class="btn btn-outline-dark" title="Voir XML" target="_blank">
-                                            <i class="fas fa-code"></i> View MX
-                                        </a>
+                                        <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i> View MX</a>
                                     <?php else: ?>
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de XML">
-                                            <i class="fas fa-code"></i> MX
-                                        </button>
+                                        <button class="btn btn-outline-secondary disabled" title="Pas de XML"><i class="fas fa-code"></i> MX</button>
                                     <?php endif; ?>
 
                                     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal<?php echo e($msg->id); ?>">

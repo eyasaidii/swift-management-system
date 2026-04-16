@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Colonne déjà nullable dans la migration de création — skip si Oracle
+        if (config('database.default') === 'oracle') {
+            return;
+        }
         Schema::table('messages_swift', function (Blueprint $table) {
-            // Rendre IMPORT_JOB_ID nullable pour Oracle
             $table->unsignedBigInteger('IMPORT_JOB_ID')->nullable()->change();
         });
     }

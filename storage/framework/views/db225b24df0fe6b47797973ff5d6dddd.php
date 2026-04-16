@@ -68,37 +68,6 @@ unset($__errorArgs, $__bag); ?>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6 mb-3">
-        <label for="telephone" class="form-label">
-            <i class="fas fa-phone me-2"></i>Téléphone
-        </label>
-        <input type="tel" 
-               class="form-control <?php $__errorArgs = ['telephone'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" 
-               id="telephone" 
-               name="telephone" 
-               value="<?php echo e(old('telephone', $user->telephone ?? '')); ?>" 
-               placeholder="+212 6 12 34 56 78">
-        <?php $__errorArgs = ['telephone'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-            <div class="invalid-feedback"><?php echo e($message); ?></div>
-        <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-    </div>
-</div>
-
 
 <div class="mb-4">
     <label class="form-label">

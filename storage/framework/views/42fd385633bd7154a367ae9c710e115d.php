@@ -11,6 +11,9 @@
             <p class="text-muted">Administration des comptes utilisateurs BTL Bank</p>
         </div>
         <div>
+            <a href="<?php echo e(route('admin.dashboard')); ?>" class="btn btn-outline-primary me-2">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard SWIFT
+            </a>
             <a href="<?php echo e(route('admin.users.create')); ?>" class="btn btn-success">
                 <i class="fas fa-plus me-2"></i>Nouvel utilisateur
             </a>

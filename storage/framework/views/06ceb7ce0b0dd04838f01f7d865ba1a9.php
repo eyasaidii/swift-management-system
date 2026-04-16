@@ -311,15 +311,13 @@
                                     </a>
                                     <?php $hasMt = !empty($tx->MT_CONTENT ?? $tx->mt_content); ?>
                                     <?php if($hasMt): ?>
-                                        <a href="<?php echo e(route('swift.view-mt', $tx->id)); ?>"
-                                           class="btn btn-outline-secondary btn-sm" target="_blank">MT</a>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm open-raw-file" data-url="<?php echo e(route('swift.view-mt', $tx->id)); ?>" data-title="MT">MT</button>
                                     <?php else: ?>
                                         <button class="btn btn-outline-secondary btn-sm" disabled>MT</button>
                                     <?php endif; ?>
                                     <?php $hasMx = !empty($tx->XML_BRUT ?? $tx->xml_brut); ?>
                                     <?php if($hasMx): ?>
-                                        <a href="<?php echo e(route('swift.view-mx', $tx->id)); ?>"
-                                           class="btn btn-outline-info btn-sm" target="_blank">&lt;/&gt;</a>
+                                        <a href="<?php echo e(route('swift.view-mx', $tx->id)); ?>" target="_blank" class="btn btn-outline-info btn-sm" title="MX">&lt;/&gt;</a>
                                     <?php else: ?>
                                         <button class="btn btn-outline-info btn-sm" disabled>&lt;/&gt;</button>
                                     <?php endif; ?>

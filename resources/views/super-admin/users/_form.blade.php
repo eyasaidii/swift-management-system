@@ -40,23 +40,6 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6 mb-3">
-        <label for="telephone" class="form-label">
-            <i class="fas fa-phone me-2"></i>Téléphone
-        </label>
-        <input type="tel" 
-               class="form-control @error('telephone') is-invalid @enderror" 
-               id="telephone" 
-               name="telephone" 
-               value="{{ old('telephone', $user->telephone ?? '') }}" 
-               placeholder="+212 6 12 34 56 78">
-        @error('telephone')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
-
 {{-- SECTION RÔLE --}}
 <div class="mb-4">
     <label class="form-label">

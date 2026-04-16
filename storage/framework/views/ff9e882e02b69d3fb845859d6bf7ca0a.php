@@ -91,85 +91,24 @@
                             <p><strong>Statut :</strong>
                                 <?php switch($message->status):
                                     case ('pending'): ?>
-                                        <span class="badge bg-warning text-dark">⏳ En attente</span> <?php break; ?>
+                                        <span class="badge bg-warning text-dark">⏳ En attente</span>
+                                        <?php break; ?>
                                     <?php case ('processed'): ?>
-                                        <span class="badge bg-info text-dark">🔵 À autoriser</span> <?php break; ?>
+                                        <span class="badge bg-info text-dark">🔵 À autoriser</span>
+                                        <?php break; ?>
                                     <?php case ('authorized'): ?>
-                                        <span class="badge bg-success">✅ Autorisé</span> <?php break; ?>
+                                        <span class="badge bg-success">✅ Autorisé</span>
+                                        <?php break; ?>
                                     <?php case ('suspended'): ?>
-                                        <span class="badge bg-danger">⛔ Suspendu</span> <?php break; ?>
+                                        <span class="badge bg-danger">⛔ Suspendu</span>
+                                        <?php break; ?>
                                     <?php case ('rejected'): ?>
-                                        <span class="badge bg-danger">❌ Rejeté</span> <?php break; ?>
+                                        <span class="badge bg-danger">❌ Rejeté</span>
+                                        <?php break; ?>
                                     <?php default: ?>
                                         <span class="badge bg-secondary"><?php echo e($message->status); ?></span>
                                 <?php endswitch; ?>
                             </p>
-                            <?php if($message->processed_at): ?>
-                                <p><strong>Traité le :</strong>
-                                    <?php echo e(\Carbon\Carbon::parse($message->processed_at)->format('d/m/Y H:i')); ?>
-
-                                </p>
-                            <?php endif; ?>
-                            <?php if($message->authorized_at ?? $message->AUTHORIZED_AT): ?>
-                                <p><strong>Autorisé le :</strong>
-                                    <?php echo e(\Carbon\Carbon::parse($message->authorized_at ?? $message->AUTHORIZED_AT)->format('d/m/Y H:i')); ?>
-
-                                </p>
-                            <?php endif; ?>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Montant :</strong>
-                                <span class="fw-bold fs-5 text-success">
-                                    <?php echo e(number_format($message->amount, 2)); ?> <?php echo e($message->currency); ?>
-
-                                </span>
-                            </p>
-                            <p><strong>Date valeur :</strong>
-                                <?php echo e($message->value_date?->format('d/m/Y') ?? '—'); ?>
-
-                            </p>
-                            <p><strong>Émetteur :</strong>
-                                <?php echo e($message->sender_name ?? '—'); ?>
-
-                                <?php if($message->sender_bic): ?>
-                                    <small class="text-muted font-monospace">(<?php echo e($message->sender_bic); ?>)</small>
-                                <?php endif; ?>
-                            </p>
-                            <p><strong>Bénéficiaire :</strong>
-                                <?php echo e($message->receiver_name ?? '—'); ?>
-
-                                <?php if($message->receiver_bic): ?>
-                                    <small class="text-muted font-monospace">(<?php echo e($message->receiver_bic); ?>)</small>
-                                <?php endif; ?>
-                            </p>
-                            <?php if($message->description): ?>
-                                <p><strong>Description :</strong> <?php echo e($message->description); ?></p>
-                            <?php endif; ?>
-
-                            
-                            <?php if($message->authorization_note ?? $message->AUTHORIZATION_NOTE): ?>
-                                <div class="mt-2 p-3 rounded border-start border-4 border-success"
-                                     style="background: #f0fff4;">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <i class="fas fa-shield-alt text-success"></i>
-                                        <strong class="text-success small text-uppercase"
-                                                style="letter-spacing:.05em">Note d'autorisation</strong>
-                                    </div>
-                                    <p class="mb-1 fst-italic text-dark">
-                                        "<?php echo e($message->authorization_note ?? $message->AUTHORIZATION_NOTE); ?>"
-                                    </p>
-                                    <?php if($message->authorizer): ?>
-                                        <small class="text-muted">
-                                            <i class="fas fa-user me-1"></i><?php echo e($message->authorizer->name); ?>
-
-                                            <?php if($message->authorized_at ?? $message->AUTHORIZED_AT): ?>
-                                                — <?php echo e(\Carbon\Carbon::parse($message->authorized_at ?? $message->AUTHORIZED_AT)->format('d/m/Y H:i')); ?>
-
-                                            <?php endif; ?>
-                                        </small>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
                             
 
                         </div>
@@ -519,10 +458,12 @@
                     <?php endif; ?>
 
                     <?php if($message->mt_content): ?>
-                        <a href="<?php echo e(route('swift.view-mt', $message->id)); ?>" target="_blank"
-                           class="btn btn-outline-secondary">
+                        <button type="button"
+                                class="btn btn-outline-secondary open-raw-file"
+                                data-url="<?php echo e(route('swift.view-mt', $message->id)); ?>"
+                                data-title="MT Content">
                             <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </a>
+                        </button>
                     <?php else: ?>
                         <button class="btn btn-outline-secondary disabled">
                             <i class="fas fa-file-alt me-2"></i>Voir MT
@@ -530,8 +471,7 @@
                     <?php endif; ?>
 
                     <?php if($message->xml_brut): ?>
-                        <a href="<?php echo e(route('swift.view-mx', $message->id)); ?>" target="_blank"
-                           class="btn btn-outline-info">
+                        <a href="<?php echo e(route('swift.view-mx', $message->id)); ?>" target="_blank" class="btn btn-outline-info" title="MX (XML)">
                             <i class="fas fa-code me-2"></i>Voir MX
                         </a>
                     <?php else: ?>
@@ -677,6 +617,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 '/swift/' + btn.getAttribute('data-id') + '/suspend';
         });
     }
+
+        // Raw file viewer — use global modal from layout
+        // (no duplicate modal creation needed here)
 
 });
 </script>

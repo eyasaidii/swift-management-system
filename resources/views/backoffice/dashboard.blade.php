@@ -126,14 +126,14 @@
                                     <a href="{{ route('swift.show', $msg->id) }}" class="btn btn-outline-primary" title="Détail"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('swift.pdf', $msg->id) }}" class="btn btn-outline-danger" title="PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
                                     @if($msg->mt_content)
-                                        <a href="{{ route('swift.view-mt', $msg->id) }}" class="btn btn-outline-secondary" title="MT" target="_blank"><i class="fas fa-file-alt"></i></a>
+                                            <button type="button" class="btn btn-outline-secondary open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT"><i class="fas fa-file-alt"></i></button>
                                     @else
                                         <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i></button>
                                     @endif
                                     @if($msg->xml_brut)
-                                        <a href="{{ route('swift.view-mx', $msg->id) }}" class="btn btn-outline-dark" title="MX" target="_blank"><i class="fas fa-code"></i></a>
+                                            <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
                                     @else
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de MX"><i class="fas fa-code"></i></button>
+                                        <button class="btn btn-outline-secondary disabled" title="Pas de XML"><i class="fas fa-code"></i></button>
                                     @endif
                                 </div>
                             </td>

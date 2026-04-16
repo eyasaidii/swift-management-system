@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>BTLMTNTT-20260416-002</MsgId>
+            <CreDtTm>2026-04-16T11:15:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>INSTR-2026041600002</InstrId>
+                <EndToEndId>E2E-OMAR-TRADING-0388</EndToEndId>
+                <UETR>b2c3d4e5-f6a7-8901-bcde-f12345678901</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="USD">87500.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-04-17</IntrBkSttlmDt>
+            <ChrgBr>DEBT</ChrgBr>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>CITIUS33</BICFI>
+                    <Nm>Citibank NA New York</Nm>
+                </FinInstnId>
+            </InstdAgt>
+            <Dbtr>
+                <Nm>OMAR BEN ALI TRADING COMPANY</Nm>
+                <PstlAdr>
+                    <StrtNm>Zone Industrielle Poudriere II</StrtNm>
+                    <TwnNm>Sfax</TwnNm>
+                    <Ctry>TN</Ctry>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN5910006035987654321098</IBAN>
+                </Id>
+            </DbtrAcct>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </DbtrAgt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>CITIUS33</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>GLOBAL IMPORTS LLC</Nm>
+                <PstlAdr>
+                    <StrtNm>350 Fifth Avenue Suite 1200</StrtNm>
+                    <TwnNm>New York</TwnNm>
+                    <Ctry>US</Ctry>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <Othr>
+                        <Id>36284719205</Id>
+                    </Othr>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>PO-2026-0388 MACHINERY PARTS ORDER - SHIPPING BATCH 12</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

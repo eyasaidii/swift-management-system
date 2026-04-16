@@ -99,23 +99,15 @@
                                     </a>
 
                                     @if($msg->mt_content)
-                                        <a href="{{ route('swift.view-mt', $msg->id) }}" class="btn btn-outline-success" title="Voir MT" target="_blank">
-                                            <i class="fas fa-file-alt"></i> View MT
-                                        </a>
+                                        <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT"><i class="fas fa-file-alt"></i> View MT</button>
                                     @else
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de MT">
-                                            <i class="fas fa-file-alt"></i> MT
-                                        </button>
+                                        <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i> MT</button>
                                     @endif
 
                                     @if($msg->xml_brut)
-                                        <a href="{{ route('swift.view-mx', $msg->id) }}" class="btn btn-outline-dark" title="Voir XML" target="_blank">
-                                            <i class="fas fa-code"></i> View MX
-                                        </a>
+                                        <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i> View MX</a>
                                     @else
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de XML">
-                                            <i class="fas fa-code"></i> MX
-                                        </button>
+                                        <button class="btn btn-outline-secondary disabled" title="Pas de XML"><i class="fas fa-code"></i> MX</button>
                                     @endif
 
                                     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $msg->id }}">

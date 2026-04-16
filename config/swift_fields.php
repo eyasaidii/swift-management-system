@@ -141,8 +141,11 @@ return [
     'MT940' => [
         'label' => 'Relevé de compte détaillé (MT940)',
         'common_mapping' => [
-            'REFERENCE' => '20',
+            'REFERENCE'   => '20',
             'DESCRIPTION' => '61',
+            'AMOUNT'      => '62F',
+            'CURRENCY'    => '62F',
+            'VALUE_DATE'  => '62F',
         ],
         'fields' => [
             '20' => ['label' => 'Référence transaction (20)', 'type' => 'text', 'required' => true],

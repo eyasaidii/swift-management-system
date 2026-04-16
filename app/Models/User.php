@@ -232,18 +232,4 @@ class User extends Authenticatable
                in_array($section, $accessRules[$userRole]);
     }
 
-    /**
-     * Événements du modèle
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Attribuer un rôle par défaut si aucun rôle n'est défini
-        static::created(function ($user) {
-            if ($user->roles->isEmpty()) {
-                $user->assignRole('chargee'); // Rôle par défaut
-            }
-        });
-    }
 }

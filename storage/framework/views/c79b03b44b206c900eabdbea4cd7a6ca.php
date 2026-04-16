@@ -467,6 +467,71 @@
         });
     });
 </script>
+<script>
+        // Global raw viewer modal (for MT / MX) — available on all pages
+        document.addEventListener('DOMContentLoaded', function () {
+                if (document.getElementById('modalRawFile') == null) {
+                        const rawModalEl = document.createElement('div');
+                        rawModalEl.innerHTML = `
+                        <div class="modal fade" id="modalRawFile" tabindex="-1">
+                            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalRawTitle">SWIFT Message</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body" style="padding:0;">
+                                        <iframe id="modalRawIframe" src="about:blank" style="width:100%; height:65vh; border:0; min-height:300px;"></iframe>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                        <button type="button" class="btn btn-primary" id="modalRawPrint">Imprimer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                        document.body.appendChild(rawModalEl);
+                }
+
+                const rawModalElNode = document.getElementById('modalRawFile');
+                const rawModal = new bootstrap.Modal(rawModalElNode);
+
+                function openRawFile(url, title) {
+                    const iframe = document.getElementById('modalRawIframe');
+                    const titleEl = document.getElementById('modalRawTitle');
+                    if (!iframe || !titleEl) return;
+                    titleEl.textContent = title || 'SWIFT Message';
+                    iframe.src = url;
+                    rawModal.show();
+                }
+
+                document.addEventListener('click', function (e) {
+                        const el = e.target.closest && e.target.closest('.open-raw-file');
+                        if (!el) return;
+                        e.preventDefault();
+                        const url = el.getAttribute('data-url');
+                        const title = el.getAttribute('data-title') || el.textContent.trim();
+                        if (url) openRawFile(url, title);
+                });
+
+                document.getElementById('modalRawPrint')?.addEventListener('click', function () {
+                    const container = document.getElementById('modalRawContainer');
+                    if (!container) return;
+                    // expand all details for printing
+                    container.querySelectorAll('details').forEach(d => d.open = true);
+                    // open a new window with the container content and minimal styles
+                    const w = window.open('', '_blank');
+                    const styles = document.getElementById('xml-tree-styles')?.outerHTML || '';
+                    const headStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(l=>l.outerHTML).join('\n');
+                    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Imprimer SWIFT</title>'+headStyles+styles+'<style>body{font-family:monospace;padding:18px}</style></head><body>');
+                    w.document.write(container.innerHTML);
+                    w.document.write('</body></html>');
+                    w.document.close();
+                    w.focus();
+                    setTimeout(()=>{ try { w.print(); w.close(); } catch (err) { console.error(err); } }, 300);
+                });
+        });
+</script>
 <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html><?php /**PATH /var/www/resources/views/layouts/app.blade.php ENDPATH**/ ?>

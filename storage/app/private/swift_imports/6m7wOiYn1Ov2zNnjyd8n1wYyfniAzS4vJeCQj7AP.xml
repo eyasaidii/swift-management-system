@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>BTLMTNTT-20260416-003</MsgId>
+            <CreDtTm>2026-04-16T14:00:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>INSTR-2026041600003</InstrId>
+                <EndToEndId>E2E-SALAH-SCOLARITE</EndToEndId>
+                <UETR>c3d4e5f6-a7b8-9012-cdef-123456789012</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="GBP">12800.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-04-18</IntrBkSttlmDt>
+            <ChrgBr>CRED</ChrgBr>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>HSBCGB2L</BICFI>
+                    <Nm>HSBC UK Bank plc</Nm>
+                </FinInstnId>
+            </InstdAgt>
+            <Dbtr>
+                <Nm>AHMED SALAH BEN YOUSSEF</Nm>
+                <PstlAdr>
+                    <StrtNm>Rue du Lac Leman 45</StrtNm>
+                    <TwnNm>Les Berges du Lac</TwnNm>
+                    <Ctry>TN</Ctry>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN5910006035111222333444</IBAN>
+                </Id>
+            </DbtrAcct>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </DbtrAgt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>HSBCGB2L</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>UNIVERSITY OF LONDON - FINANCE OFFICE</Nm>
+                <PstlAdr>
+                    <StrtNm>Senate House Malet Street</StrtNm>
+                    <TwnNm>London</TwnNm>
+                    <Ctry>GB</Ctry>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>GB29NWBK60161331926819</IBAN>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>TUITION FEES ACADEMIC YEAR 2026-2027 STUDENT ID STU-284619</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

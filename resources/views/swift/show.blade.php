@@ -87,77 +87,24 @@
                             <p><strong>Statut :</strong>
                                 @switch($message->status)
                                     @case('pending')
-                                        <span class="badge bg-warning text-dark">⏳ En attente</span> @break
+                                        <span class="badge bg-warning text-dark">⏳ En attente</span>
+                                        @break
                                     @case('processed')
-                                        <span class="badge bg-info text-dark">🔵 À autoriser</span> @break
+                                        <span class="badge bg-info text-dark">🔵 À autoriser</span>
+                                        @break
                                     @case('authorized')
-                                        <span class="badge bg-success">✅ Autorisé</span> @break
+                                        <span class="badge bg-success">✅ Autorisé</span>
+                                        @break
                                     @case('suspended')
-                                        <span class="badge bg-danger">⛔ Suspendu</span> @break
+                                        <span class="badge bg-danger">⛔ Suspendu</span>
+                                        @break
                                     @case('rejected')
-                                        <span class="badge bg-danger">❌ Rejeté</span> @break
+                                        <span class="badge bg-danger">❌ Rejeté</span>
+                                        @break
                                     @default
                                         <span class="badge bg-secondary">{{ $message->status }}</span>
                                 @endswitch
                             </p>
-                            @if($message->processed_at)
-                                <p><strong>Traité le :</strong>
-                                    {{ \Carbon\Carbon::parse($message->processed_at)->format('d/m/Y H:i') }}
-                                </p>
-                            @endif
-                            @if($message->authorized_at ?? $message->AUTHORIZED_AT)
-                                <p><strong>Autorisé le :</strong>
-                                    {{ \Carbon\Carbon::parse($message->authorized_at ?? $message->AUTHORIZED_AT)->format('d/m/Y H:i') }}
-                                </p>
-                            @endif
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Montant :</strong>
-                                <span class="fw-bold fs-5 text-success">
-                                    {{ number_format($message->amount, 2) }} {{ $message->currency }}
-                                </span>
-                            </p>
-                            <p><strong>Date valeur :</strong>
-                                {{ $message->value_date?->format('d/m/Y') ?? '—' }}
-                            </p>
-                            <p><strong>Émetteur :</strong>
-                                {{ $message->sender_name ?? '—' }}
-                                @if($message->sender_bic)
-                                    <small class="text-muted font-monospace">({{ $message->sender_bic }})</small>
-                                @endif
-                            </p>
-                            <p><strong>Bénéficiaire :</strong>
-                                {{ $message->receiver_name ?? '—' }}
-                                @if($message->receiver_bic)
-                                    <small class="text-muted font-monospace">({{ $message->receiver_bic }})</small>
-                                @endif
-                            </p>
-                            @if($message->description)
-                                <p><strong>Description :</strong> {{ $message->description }}</p>
-                            @endif
-
-                            {{-- ===== NOTE D'AUTORISATION ===== --}}
-                            @if($message->authorization_note ?? $message->AUTHORIZATION_NOTE)
-                                <div class="mt-2 p-3 rounded border-start border-4 border-success"
-                                     style="background: #f0fff4;">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <i class="fas fa-shield-alt text-success"></i>
-                                        <strong class="text-success small text-uppercase"
-                                                style="letter-spacing:.05em">Note d'autorisation</strong>
-                                    </div>
-                                    <p class="mb-1 fst-italic text-dark">
-                                        "{{ $message->authorization_note ?? $message->AUTHORIZATION_NOTE }}"
-                                    </p>
-                                    @if($message->authorizer)
-                                        <small class="text-muted">
-                                            <i class="fas fa-user me-1"></i>{{ $message->authorizer->name }}
-                                            @if($message->authorized_at ?? $message->AUTHORIZED_AT)
-                                                — {{ \Carbon\Carbon::parse($message->authorized_at ?? $message->AUTHORIZED_AT)->format('d/m/Y H:i') }}
-                                            @endif
-                                        </small>
-                                    @endif
-                                </div>
-                            @endif
                             {{-- ================================ --}}
 
                         </div>
@@ -498,10 +445,12 @@
                     @endif
 
                     @if($message->mt_content)
-                        <a href="{{ route('swift.view-mt', $message->id) }}" target="_blank"
-                           class="btn btn-outline-secondary">
+                        <button type="button"
+                                class="btn btn-outline-secondary open-raw-file"
+                                data-url="{{ route('swift.view-mt', $message->id) }}"
+                                data-title="MT Content">
                             <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </a>
+                        </button>
                     @else
                         <button class="btn btn-outline-secondary disabled">
                             <i class="fas fa-file-alt me-2"></i>Voir MT
@@ -509,8 +458,7 @@
                     @endif
 
                     @if($message->xml_brut)
-                        <a href="{{ route('swift.view-mx', $message->id) }}" target="_blank"
-                           class="btn btn-outline-info">
+                        <a href="{{ route('swift.view-mx', $message->id) }}" target="_blank" class="btn btn-outline-info" title="MX (XML)">
                             <i class="fas fa-code me-2"></i>Voir MX
                         </a>
                     @else
@@ -656,6 +604,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 '/swift/' + btn.getAttribute('data-id') + '/suspend';
         });
     }
+
+        // Raw file viewer — use global modal from layout
+        // (no duplicate modal creation needed here)
 
 });
 </script>

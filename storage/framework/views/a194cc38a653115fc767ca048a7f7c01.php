@@ -46,7 +46,6 @@
                         <div class="col-md-6">
                             <p><strong>Nom complet :</strong> <?php echo e($user->name); ?></p>
                             <p><strong>Email :</strong> <?php echo e($user->email); ?></p>
-                            <p><strong>Téléphone :</strong> <?php echo e($user->telephone ?? 'Non renseigné'); ?></p>
                         </div>
                         <div class="col-md-6">
                             <p>

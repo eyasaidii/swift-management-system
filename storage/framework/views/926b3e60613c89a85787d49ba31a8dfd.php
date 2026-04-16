@@ -208,19 +208,14 @@
 
                                         
                                         <?php if($msg->mt_content): ?>
-                                            <a href="<?php echo e(route('swift.view-mt', $msg->id)); ?>"
-                                               class="btn btn-outline-secondary"
-                                               title="Voir MT" target="_blank">MT</a>
+                                            <button type="button" class="btn btn-outline-secondary open-raw-file" data-url="<?php echo e(route('swift.view-mt', $msg->id)); ?>" data-title="MT">MT</button>
                                         <?php else: ?>
-                                            <button class="btn btn-outline-secondary disabled"
-                                                    title="MT non disponible">MT</button>
+                                            <button class="btn btn-outline-secondary disabled" title="MT non disponible">MT</button>
                                         <?php endif; ?>
 
                                         
                                         <?php if($msg->xml_brut): ?>
-                                            <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>"
-                                               class="btn btn-outline-dark"
-                                               title="Voir XML MX" target="_blank">&lt;/&gt;</a>
+                                            <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" target="_blank" class="btn btn-outline-dark" title="MX">&lt;/&gt;</a>
                                         <?php else: ?>
                                             <button class="btn btn-outline-secondary disabled"
                                                     title="MX non disponible">&lt;/&gt;</button>

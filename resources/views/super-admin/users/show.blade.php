@@ -44,7 +44,6 @@
                         <div class="col-md-6">
                             <p><strong>Nom complet :</strong> {{ $user->name }}</p>
                             <p><strong>Email :</strong> {{ $user->email }}</p>
-                            <p><strong>Téléphone :</strong> {{ $user->telephone ?? 'Non renseigné' }}</p>
                         </div>
                         <div class="col-md-6">
                             <p>

@@ -491,12 +491,20 @@ class ProcessSwiftFileJob implements ShouldQueue
                     $dateMT      = date('ymd', strtotime($valDate));
                     $closingAmtMT= number_format($closingAmt, 2, ',', '');
 
+                    $accountOwner = $val("//*[local-name()='Acct']/*[local-name()='Ownr']/*[local-name()='Nm']");
+                    $svcrBic      = $val("//*[local-name()='Acct']/*[local-name()='Svcr']//*[local-name()='BICFI']");
+                    $svcrName     = $val("//*[local-name()='Acct']/*[local-name()='Svcr']//*[local-name()='Nm']");
+
                     $data = array_merge($data, [
-                        'reference'  => $ref,
-                        'amount'     => $closingAmt,
-                        'currency'   => $closingCcy,
-                        'value_date' => $valDate,
-                        'details'    => [
+                        'reference'    => $ref,
+                        'amount'       => $closingAmt,
+                        'currency'     => $closingCcy,
+                        'value_date'   => $valDate,
+                        'sender_name'  => $accountOwner ?? $svcrName ?? $account,
+                        'sender_bic'   => $svcrBic,
+                        'receiver_name'=> $svcrName ?? $accountOwner,
+                        'receiver_bic' => $svcrBic,
+                        'details'      => [
                             '20'  => $ref,
                             '25'  => $account,
                             '62F' => "C{$dateMT}{$closingCcy}{$closingAmtMT}",

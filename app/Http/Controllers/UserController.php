@@ -101,7 +101,7 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        $user->assignRole($request->role);
+        $user->syncRoles([$request->role]);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Utilisateur créé avec succès.');

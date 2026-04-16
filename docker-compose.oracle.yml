@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  oracle:
+    build:
+      context: ./docker/oracle
+      dockerfile: Dockerfile
+    container_name: btl_oracle
+    restart: unless-stopped
+    environment:
+      - ORACLE_PASSWORD=123
+      - ORACLE_CHARACTERSET=AL32UTF8
+    # No host port published to avoid exposing the DB to the host.
+    # The app can reach this container via the Docker network name `oracle` on port 1521.
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./docker/oracle/init-user.sql:/opt/oracle/scripts/setup/init-user.sql:ro
+      # Place your export dump here before building: ./docker/oracle/dumps/backup.dmp
+      - ./docker/oracle/dumps:/opt/oracle/dumps:ro
+    networks:
+      - btl_network
+
+networks:
+  btl_network:
+    external: false
+
+volumes:
+  oracle-data:
+    driver: local

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>DEUTDEFF-20260416-SUSP001</MsgId>
+            <CreDtTm>2026-04-16T03:22:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>SUSP-2026041600001</InstrId>
+                <EndToEndId>NOTPROVIDED</EndToEndId>
+                <UETR>f6a7b8c9-d0e1-2345-fghi-567890123456</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="USD">495000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-04-16</IntrBkSttlmDt>
+            <ChrgBr>SHAR</ChrgBr>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>DEUTDEFF</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+            <Dbtr>
+                <Nm>APEX TRADING FZE</Nm>
+                <PstlAdr>
+                    <TwnNm>Dubai</TwnNm>
+                    <Ctry>AE</Ctry>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>AE070331234567890123456</IBAN>
+                </Id>
+            </DbtrAcct>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BICFI>DEUTDEFF</BICFI>
+                </FinInstnId>
+            </DbtrAgt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>IMPORT GENERAL TRADING</Nm>
+                <PstlAdr>
+                    <TwnNm>Tunis</TwnNm>
+                    <Ctry>TN</Ctry>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>TN5910006035999888777666</IBAN>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>CONSULTING SERVICES</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

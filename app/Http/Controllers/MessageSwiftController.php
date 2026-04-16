@@ -172,6 +172,14 @@ class MessageSwiftController extends Controller
         }
         $request->validate($rules);
 
+        // Vérifier l'unicité de la référence (tag 20)
+        $reference = $request->input('details.20');
+        if ($reference && MessageSwift::where('REFERENCE', $reference)->exists()) {
+            return redirect()->back()
+                ->withErrors(['details.20' => 'Cette référence existe déjà. Veuillez utiliser une référence unique.'])
+                ->withInput();
+        }
+
         $message = MessageSwift::create([
             'TYPE_MESSAGE' => $type,
             'DIRECTION'    => 'OUT',
@@ -199,6 +207,15 @@ class MessageSwiftController extends Controller
                 if ($date)     $updateData['VALUE_DATE'] = $date;
                 if ($currency) $updateData['CURRENCY']   = $currency;
                 if ($amount)   $updateData['AMOUNT']     = $amount;
+            } elseif ($tag === '32B') {
+                [$currency, $amount] = SwiftParser::parse32B($value);
+                if ($currency) $updateData['CURRENCY'] = $currency;
+                if ($amount)   $updateData['AMOUNT']   = $amount;
+            } elseif (in_array($tag, ['60F', '62F'])) {
+                [$date, $currency, $amount] = SwiftParser::parseBalance($value);
+                if ($date)     $updateData['VALUE_DATE'] = $date;
+                if ($currency) $updateData['CURRENCY']   = $currency;
+                if ($amount)   $updateData['AMOUNT']     = $amount;
             } else {
                 $updateData[$field] = $value;
             }
@@ -211,11 +228,20 @@ class MessageSwiftController extends Controller
             if ($amount)   $updateData['AMOUNT']     = $updateData['AMOUNT']     ?? $amount;
         }
 
+        if (empty($updateData['AMOUNT']) && !empty($details['32B'])) {
+            [$currency, $amount] = SwiftParser::parse32B($details['32B']);
+            if ($currency) $updateData['CURRENCY'] = $updateData['CURRENCY'] ?? $currency;
+            if ($amount)   $updateData['AMOUNT']   = $updateData['AMOUNT']   ?? $amount;
+        }
+
         if (empty($updateData['SENDER_NAME'])   && !empty($details['50']))  $updateData['SENDER_NAME']   = $details['50'];
+        if (empty($updateData['SENDER_NAME'])   && !empty($details['25']))  $updateData['SENDER_NAME']   = $details['25'];
         if (empty($updateData['RECEIVER_NAME']) && !empty($details['59']))  $updateData['RECEIVER_NAME'] = $details['59'];
+        if (empty($updateData['RECEIVER_NAME']) && !empty($details['58A'])) $updateData['RECEIVER_NAME'] = $details['58A'];
         if (empty($updateData['SENDER_BIC'])    && !empty($details['52A'])) $updateData['SENDER_BIC']    = $details['52A'];
         if (empty($updateData['RECEIVER_BIC'])  && !empty($details['57A'])) $updateData['RECEIVER_BIC']  = $details['57A'];
         if (empty($updateData['DESCRIPTION'])   && !empty($details['70']))  $updateData['DESCRIPTION']   = $details['70'];
+        if (empty($updateData['DESCRIPTION'])   && !empty($details['45A'])) $updateData['DESCRIPTION']   = $details['45A'];
 
         if (!empty($updateData['SENDER_BIC']))    $updateData['SENDER_BIC']    = substr(trim($updateData['SENDER_BIC']),    0, 11);
         if (!empty($updateData['RECEIVER_BIC']))  $updateData['RECEIVER_BIC']  = substr(trim($updateData['RECEIVER_BIC']),  0, 11);

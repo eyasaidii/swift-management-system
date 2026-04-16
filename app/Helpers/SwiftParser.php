@@ -42,4 +42,25 @@ class SwiftParser
         }
         return [null, null];
     }
+
+    /**
+     * Parse les tags 60F/62F (Solde ouverture/clôture)
+     * Format: C/D JJMMAA DEV MONTANT (ex: C260415EUR1250000,50)
+     * Retourne [date, devise, montant]
+     */
+    public static function parseBalance($value)
+    {
+        $value = preg_replace('/\s+/', '', $value);
+        $pattern = '/^[CD](\d{2})(\d{2})(\d{2})([A-Z]{3})([\d,]+)$/';
+        if (preg_match($pattern, $value, $matches)) {
+            $day = $matches[1];
+            $month = $matches[2];
+            $year = $matches[3];
+            $currency = $matches[4];
+            $amount = str_replace(',', '.', $matches[5]);
+            $date = '20' . $year . '-' . $month . '-' . $day;
+            return [$date, $currency, (float)$amount];
+        }
+        return [null, null, null];
+    }
 }

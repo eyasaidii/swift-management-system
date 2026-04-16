@@ -24,11 +24,6 @@
                     <i class="fas fa-file-import me-2"></i>Importer
                 </a>
             <?php endif; ?>
-            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('export', App\Models\MessageSwift::class)): ?>
-                <a href="<?php echo e(route('swift.export')); ?>" class="btn btn-info">
-                    <i class="fas fa-download me-2"></i>Exporter
-                </a>
-            <?php endif; ?>
         </div>
     </div>
 
@@ -171,22 +166,14 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <?php if($msg->mt_content): ?>
-                                            <a href="<?php echo e(route('swift.view-mt', $msg->id)); ?>" class="btn btn-outline-success" title="Voir MT" target="_blank">
-                                                <i class="fas fa-file-alt"></i>
-                                            </a>
+                                            <button type="button" class="btn btn-outline-success open-raw-file" data-url="<?php echo e(route('swift.view-mt', $msg->id)); ?>" data-title="MT"><i class="fas fa-file-alt"></i></button>
                                         <?php else: ?>
-                                            <button class="btn btn-outline-secondary disabled" title="Pas de MT">
-                                                <i class="fas fa-file-alt"></i>
-                                            </button>
+                                            <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i></button>
                                         <?php endif; ?>
                                         <?php if($msg->xml_brut): ?>
-                                            <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" class="btn btn-outline-dark" title="Voir XML" target="_blank">
-                                                <i class="fas fa-code"></i>
-                                            </a>
+                                            <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
                                         <?php else: ?>
-                                            <button class="btn btn-outline-secondary disabled" title="Pas de XML">
-                                                <i class="fas fa-code"></i>
-                                            </button>
+                                            <button class="btn btn-outline-secondary disabled" title="Pas de XML"><i class="fas fa-code"></i></button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
