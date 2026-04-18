@@ -1,0 +1,65 @@
+# ============================================================
+# Docker Compose — Production (Nginx + PHP-FPM + Oracle)
+# ============================================================
+
+services:
+  # ── Nginx Reverse Proxy ──────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: btl_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/var/www/public:ro
+    depends_on:
+      - app
+    networks:
+      - btl_network
+
+  # ── Application PHP-FPM ─────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: btl_swift_app
+    restart: unless-stopped
+    volumes:
+      - ./storage:/var/www/storage
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    networks:
+      - btl_network
+
+  # ── Oracle Database ─────────────────────────────────────
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: btl_oracle
+    restart: unless-stopped
+    environment:
+      - ORACLE_PASSWORD=oracle
+    ports:
+      - "1522:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    networks:
+      - btl_network
+
+volumes:
+  oracle_data:
+
+networks:
+  btl_network:
+    driver: bridge

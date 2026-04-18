@@ -2,3 +2,14 @@ node_modules
 vendor
 .git
 .env
+.env.local
+.github
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+docs
+*.md
+docker-compose*.yml
+Makefile
