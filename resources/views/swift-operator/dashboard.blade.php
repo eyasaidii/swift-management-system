@@ -79,7 +79,7 @@
 
     <!-- Stats -->
     <div class="row g-4 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white text-center shadow">
                 <div class="card-body">
                     <h6>Transactions 24h</h6>
@@ -87,23 +87,22 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-success text-white text-center shadow">
                 <div class="card-body">
                     <h6>Volume Traité</h6>
-                    <h3>{{ number_format($volume ?? 0, 2) }} {{ $currency ?? 'USD' }}</h3>
+                    <h3>{{ $volumeFormatted ?? '0' }}</h3>
+                    @if(isset($volumeByDevise) && count($volumeByDevise) > 1)
+                        <div class="mt-1" style="font-size:11px;opacity:.85">
+                            @foreach($volumeByDevise as $devise => $vol)
+                                <span>{{ $devise }}: {{ number_format($vol, 0) }}</span><br>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white text-center shadow">
-                <div class="card-body">
-                    <h6>Banques Correspondantes</h6>
-                    <h3>{{ $bankCount ?? 0 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-warning text-white text-center shadow">
                 <div class="card-body">
                     <h6>En attente</h6>
@@ -165,16 +164,8 @@
                                         <a href="{{ route('swift.show', $msg->id) }}" class="btn btn-outline-info" title="Détail">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if($msg->mt_content)
-                                            <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT"><i class="fas fa-file-alt"></i></button>
-                                        @else
-                                            <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i></button>
-                                        @endif
-                                        @if($msg->xml_brut)
-                                            <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
-                                        @else
-                                            <button class="btn btn-outline-secondary disabled" title="Pas de XML"><i class="fas fa-code"></i></button>
-                                        @endif
+                                        <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT"><i class="fas fa-file-alt"></i></button>
+                                        <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
                                     </div>
                                 </td>
                             </tr>

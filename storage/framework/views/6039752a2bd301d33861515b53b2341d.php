@@ -218,16 +218,8 @@
                                 <div class="btn-group btn-group-sm">
                                     <a href="<?php echo e(route('swift.show', $msg->id)); ?>" class="btn btn-outline-primary" title="Détail"><i class="fas fa-eye"></i></a>
                                     <a href="<?php echo e(route('swift.pdf', $msg->id)); ?>" class="btn btn-outline-danger" title="PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                                    <?php if($msg->mt_content): ?>
-                                        <button type="button" class="btn btn-outline-secondary open-raw-file" data-url="<?php echo e(route('swift.view-mt', $msg->id)); ?>" data-title="MT"><i class="fas fa-file-alt"></i></button>
-                                    <?php else: ?>
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de MT"><i class="fas fa-file-alt"></i></button>
-                                    <?php endif; ?>
-                                    <?php if($msg->xml_brut): ?>
-                                        <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
-                                    <?php else: ?>
-                                        <button class="btn btn-outline-secondary disabled" title="Pas de MX"><i class="fas fa-code"></i></button>
-                                    <?php endif; ?>
+                                    <button type="button" class="btn btn-outline-secondary open-raw-file" data-url="<?php echo e(route('swift.view-mt', $msg->id)); ?>" data-title="MT"><i class="fas fa-file-alt"></i></button>
+                                    <a href="<?php echo e(route('swift.view-mx', $msg->id)); ?>" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i></a>
                                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $msg)): ?>
                                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal<?php echo e($msg->id); ?>"><i class="fas fa-trash"></i></button>
                                     <?php endif; ?>

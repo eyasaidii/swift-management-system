@@ -170,16 +170,8 @@
                                            class="btn btn-outline-info" title="Détail">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if($msg->mt_content)
-                                            <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT">MT</button>
-                                        @else
-                                            <button class="btn btn-outline-secondary disabled" title="MT non disponible (en attente de traitement)">MT</button>
-                                        @endif
-                                        @if($msg->xml_brut)
-                                            <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX">&lt;/&gt;</a>
-                                        @else
-                                            <button class="btn btn-outline-secondary disabled" title="MX non disponible">&lt;/&gt;</button>
-                                        @endif
+                                        <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $msg->id) }}" data-title="MT">MT</button>
+                                        <a href="{{ route('swift.view-mx', $msg->id) }}" target="_blank" class="btn btn-outline-dark" title="MX">&lt;/&gt;</a>
                                     </div>
                                 </td>
                             </tr>

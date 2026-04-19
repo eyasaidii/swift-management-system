@@ -146,7 +146,7 @@
 
     {{-- Statistiques --}}
     <div class="row g-4 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white text-center shadow h-100">
                 <div class="card-body py-3">
                     <h6><i class="fas fa-exchange-alt me-1"></i>Transactions</h6>
@@ -154,7 +154,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-success text-white text-center shadow h-100">
                 <div class="card-body py-3">
                     <h6><i class="fas fa-dollar-sign me-1"></i>Volume Traité</h6>
@@ -169,15 +169,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white text-center shadow h-100">
-                <div class="card-body py-3">
-                    <h6><i class="fas fa-university me-1"></i>Banques Correspondantes</h6>
-                    <h2 class="mb-0 fw-bold">{{ $bankCount ?? 0 }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-warning text-white text-center shadow h-100">
                 <div class="card-body py-3">
                     <h6><i class="fas fa-clock me-1"></i>En attente autorisation</h6>
@@ -300,23 +292,13 @@
                             </td>
 
                             <td>
-                                <div class="d-flex gap-1 flex-wrap">
+                                <div class="btn-group btn-group-sm">
                                     <a href="{{ route('swift.show', $tx->id) }}"
-                                       class="btn btn-outline-primary btn-sm" title="Voir détail">
+                                       class="btn btn-outline-primary" title="Voir détail">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @php $hasMt = !empty($tx->MT_CONTENT ?? $tx->mt_content); @endphp
-                                    @if($hasMt)
-                                        <button type="button" class="btn btn-outline-secondary btn-sm open-raw-file" data-url="{{ route('swift.view-mt', $tx->id) }}" data-title="MT">MT</button>
-                                    @else
-                                        <button class="btn btn-outline-secondary btn-sm" disabled>MT</button>
-                                    @endif
-                                    @php $hasMx = !empty($tx->XML_BRUT ?? $tx->xml_brut); @endphp
-                                    @if($hasMx)
-                                        <a href="{{ route('swift.view-mx', $tx->id) }}" target="_blank" class="btn btn-outline-info btn-sm" title="MX">&lt;/&gt;</a>
-                                    @else
-                                        <button class="btn btn-outline-info btn-sm" disabled>&lt;/&gt;</button>
-                                    @endif
+                                    <button type="button" class="btn btn-outline-success open-raw-file" data-url="{{ route('swift.view-mt', $tx->id) }}" data-title="MT"><i class="fas fa-file-alt"></i> MT</button>
+                                    <a href="{{ route('swift.view-mx', $tx->id) }}" target="_blank" class="btn btn-outline-dark" title="MX"><i class="fas fa-code"></i> MX</a>
                                 </div>
                             </td>
                         </tr>

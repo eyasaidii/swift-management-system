@@ -30,6 +30,7 @@ class MessageSwift extends Model
         'MT700'   => 'MT700 - Crédit documentaire',
         'MT760'   => 'MT760 - Garantie / SBLC',
         'MT940'   => 'MT940 - Relevé de compte détaillé',
+        'MT900'   => 'MT900 - Avis de débit',
         'MT910'   => 'MT910 - Avis de crédit',
         'PACS.008'=> 'PACS.008 - Paiement (ISO 20022)',
     ];
@@ -319,7 +320,7 @@ class MessageSwift extends Model
 
     public function isReadableBy(User $user): bool
     {
-        if ($user->hasRole(['super-admin', 'swift-manager', 'swift-operator'])) {
+        if ($user->hasRole(['super-admin', 'swift-manager', 'swift-operator', 'backoffice', 'monetique', 'chef-agence', 'chargee'])) {
             return true;
         }
 

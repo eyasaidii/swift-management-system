@@ -6,6 +6,7 @@ use App\Helpers\SwiftParser;
 use App\Models\MessageSwift;
 use App\Jobs\ProcessSwiftFileJob;
 use App\Services\AnomalyService;                          // ← AJOUT IA
+use App\Services\SwiftMtBuilder;
 use App\Services\UniversalMtToMxConverter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -240,6 +241,7 @@ class MessageSwiftController extends Controller
         if (empty($updateData['RECEIVER_NAME']) && !empty($details['58A'])) $updateData['RECEIVER_NAME'] = $details['58A'];
         if (empty($updateData['SENDER_BIC'])    && !empty($details['52A'])) $updateData['SENDER_BIC']    = $details['52A'];
         if (empty($updateData['RECEIVER_BIC'])  && !empty($details['57A'])) $updateData['RECEIVER_BIC']  = $details['57A'];
+        if (empty($updateData['DESCRIPTION'])   && !empty($details['72']))  $updateData['DESCRIPTION']   = $details['72'];
         if (empty($updateData['DESCRIPTION'])   && !empty($details['70']))  $updateData['DESCRIPTION']   = $details['70'];
         if (empty($updateData['DESCRIPTION'])   && !empty($details['45A'])) $updateData['DESCRIPTION']   = $details['45A'];
 
@@ -294,6 +296,16 @@ class MessageSwiftController extends Controller
             }
         } catch (\Throwable $e) {
             \Log::warning("Échec génération XML #{$message->id} : {$e->getMessage()}");
+        }
+
+        // Génération du MT_CONTENT (enveloppe SWIFT complète)
+        try {
+            $mtContent = app(SwiftMtBuilder::class)->build($message, $details);
+            if ($mtContent) {
+                $message->update(['MT_CONTENT' => $mtContent]);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning("Échec génération MT_CONTENT #{$message->id} : {$e->getMessage()}");
         }
 
         // =========================================================
@@ -476,8 +488,20 @@ class MessageSwiftController extends Controller
 
     public function viewMx($id)
     {
-        $message = MessageSwift::findOrFail($id);
+        $message = MessageSwift::with('details')->findOrFail($id);
         $xml     = $message->XML_BRUT ?? $message->xml_brut ?? null;
+
+        // Génération à la volée si XML absent
+        if (empty($xml)) {
+            try {
+                $xml = app(UniversalMtToMxConverter::class)->convert($message);
+                if ($xml) {
+                    $message->update(['XML_BRUT' => $xml]);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning("Génération XML à la volée échouée #{$id} : {$e->getMessage()}");
+            }
+        }
 
         if (empty($xml)) {
             $ref = $message->REFERENCE ?? $message->reference ?? $id;
@@ -496,8 +520,21 @@ class MessageSwiftController extends Controller
 
     public function viewMt($id)
     {
-        $message = MessageSwift::findOrFail($id);
+        $message = MessageSwift::with('details')->findOrFail($id);
         $mt      = $message->MT_CONTENT ?? $message->mt_content ?? null;
+
+        // Génération à la volée si MT absent
+        if (empty($mt)) {
+            try {
+                $details = $message->details->pluck('tag_value', 'tag_name')->toArray();
+                $mt = app(SwiftMtBuilder::class)->build($message, $details);
+                if ($mt) {
+                    $message->update(['MT_CONTENT' => $mt]);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning("Génération MT à la volée échouée #{$id} : {$e->getMessage()}");
+            }
+        }
 
         if (empty($mt)) {
             $ref = $message->REFERENCE ?? $message->reference ?? $id;

@@ -156,6 +156,25 @@ return [
             '62F' => ['label' => 'Solde de clôture (62F)', 'type' => 'text', 'required' => true],
         ],
     ],
+    'MT900' => [
+        'label' => 'Avis de débit (MT900)',
+        'common_mapping' => [
+            'REFERENCE'   => '20',
+            'AMOUNT'      => '32A',
+            'CURRENCY'    => '32A',
+            'VALUE_DATE'  => '32A',
+            'DESCRIPTION' => '72',
+            'SENDER_NAME' => '52A',
+        ],
+        'fields' => [
+            '20'  => ['label' => 'Référence transaction (20)', 'type' => 'text', 'required' => true, 'maxlength' => 16],
+            '21'  => ['label' => 'Référence liée (21)', 'type' => 'text', 'required' => true, 'maxlength' => 16],
+            '25'  => ['label' => 'Identification du compte (25)', 'type' => 'text', 'required' => true],
+            '32A' => ['label' => 'Date valeur / Devise / Montant (32A)', 'type' => 'text', 'required' => true, 'placeholder' => 'JJMMAA DEV MONTANT (ex: 251208TND10148891,555)'],
+            '52A' => ['label' => 'Institution ordonnatrice (52A)', 'type' => 'textarea', 'required' => false],
+            '72'  => ['label' => 'Informations complémentaires (72)', 'type' => 'textarea', 'required' => false],
+        ],
+    ],
     'MT910' => [
         'label' => 'Avis de crédit (MT910)',
         'common_mapping' => [

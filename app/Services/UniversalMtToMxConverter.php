@@ -28,6 +28,7 @@ class UniversalMtToMxConverter
             'MT320' => $this->convertMT320($message),
             'MT700' => $this->convertMT700($message),
             'MT760' => $this->convertMT760($message),
+            'MT900' => $this->convertMT900($message),
             'MT910' => $this->convertMT910($message),
             default => null,
         };
@@ -549,6 +550,55 @@ class UniversalMtToMxConverter
     {
         return $this->stub('tsin.009.001.01', $message->REFERENCE ?? 'REF', 'MT760');
     }
+    private function convertMT900(MessageSwift $message): string
+    {
+        $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
+        $ref     = $d['20'] ?? $message->REFERENCE ?? 'REF';
+        $relRef  = $d['21'] ?? $ref;
+        $account = $d['25'] ?? '';
+
+        [$valueDate, $currency, $amount] = $this->parse32A($d['32A'] ?? '');
+        if (!$valueDate) $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
+        if (!$currency)  $currency  = $message->CURRENCY ?? 'TND';
+        if (!$amount)    $amount    = (float) ($message->AMOUNT ?? 0);
+
+        $instgBic = $this->cleanBic($d['52A'] ?? $message->SENDER_BIC ?? '');
+        $narrative = $d['72'] ?? '';
+
+        $xml  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        $xml .= "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.054.001.08\">\n";
+        $xml .= "  <BkToCstmrDbtCdtNtfctn>\n";
+        $xml .= "    <GrpHdr>\n";
+        $xml .= "      <MsgId>{$ref}</MsgId>\n";
+        $xml .= "      <CreDtTm>{$valueDate}T00:00:00</CreDtTm>\n";
+        $xml .= "    </GrpHdr>\n";
+        $xml .= "    <Ntfctn>\n";
+        $xml .= "      <Id>{$ref}</Id>\n";
+        $xml .= "      <Acct><Id><Othr><Id>{$account}</Id></Othr></Id></Acct>\n";
+        $xml .= "      <Ntry>\n";
+        $xml .= "        <Amt Ccy=\"{$currency}\">{$amount}</Amt>\n";
+        $xml .= "        <CdtDbtInd>DBIT</CdtDbtInd>\n";
+        $xml .= "        <Sts>BOOK</Sts>\n";
+        $xml .= "        <BookgDt><Dt>{$valueDate}</Dt></BookgDt>\n";
+        $xml .= "        <ValDt><Dt>{$valueDate}</Dt></ValDt>\n";
+        $xml .= "        <NtryDtls><TxDtls>\n";
+        $xml .= "          <Refs><EndToEndId>{$relRef}</EndToEndId></Refs>\n";
+        if ($instgBic) {
+            $xml .= "          <RltdAgts><DbtrAgt><FinInstnId><BICFI>{$instgBic}</BICFI></FinInstnId></DbtrAgt></RltdAgts>\n";
+        }
+        if ($narrative) {
+            $narEsc = htmlspecialchars($narrative, ENT_XML1, 'UTF-8');
+            $xml .= "          <AddtlTxInf>{$narEsc}</AddtlTxInf>\n";
+        }
+        $xml .= "        </TxDtls></NtryDtls>\n";
+        $xml .= "      </Ntry>\n";
+        $xml .= "    </Ntfctn>\n";
+        $xml .= "  </BkToCstmrDbtCdtNtfctn>\n";
+        $xml .= "</Document>";
+
+        return $xml;
+    }
+
     private function convertMT910(MessageSwift $message): string
     {
         return $this->stub('camt.054.001.08', $message->REFERENCE ?? 'REF', 'MT910');

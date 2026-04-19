@@ -94,7 +94,7 @@ class DashboardController extends Controller
     private function getVolumeByDevise($baseQuery): array
     {
         $rows = (clone $baseQuery)
-            ->where('STATUS', 'processed')
+            ->whereIn('STATUS', ['processed', 'authorized'])
             ->whereNotNull('CURRENCY')
             ->selectRaw('CURRENCY, SUM(AMOUNT) as TOTAL')
             ->groupBy('CURRENCY')
@@ -193,8 +193,15 @@ class DashboardController extends Controller
         $volumeFormatted = $this->getDominantVolumeFormatted($volumeByDevise);
 
         $bankCount = (clone $base)
-            ->whereNotNull('SENDER_BIC')->where('SENDER_BIC', '!=', '')
-            ->distinct('SENDER_BIC')->count('SENDER_BIC');
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('SENDER_BIC')->where('SENDER_BIC', '!=', '');
+                })->orWhere(function ($q2) {
+                    $q2->whereNotNull('RECEIVER_BIC')->where('RECEIVER_BIC', '!=', '');
+                });
+            })
+            ->selectRaw('COUNT(DISTINCT COALESCE(SENDER_BIC, RECEIVER_BIC)) as cnt')
+            ->value('cnt') ?? 0;
 
         $pendingAuth     = (clone $base)->where('STATUS', 'processed')->count();
         $authorizedToday = (clone $base)->where('STATUS', 'authorized')->whereDate('AUTHORIZED_AT', today())->count();
@@ -223,8 +230,15 @@ class DashboardController extends Controller
         $volumeFormatted = $this->getDominantVolumeFormatted($volumeByDevise);
 
         $bankCount = (clone $base)
-            ->whereNotNull('SENDER_BIC')->where('SENDER_BIC', '!=', '')
-            ->distinct('SENDER_BIC')->count('SENDER_BIC');
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('SENDER_BIC')->where('SENDER_BIC', '!=', '');
+                })->orWhere(function ($q2) {
+                    $q2->whereNotNull('RECEIVER_BIC')->where('RECEIVER_BIC', '!=', '');
+                });
+            })
+            ->selectRaw('COUNT(DISTINCT COALESCE(SENDER_BIC, RECEIVER_BIC)) as cnt')
+            ->value('cnt') ?? 0;
 
         $pendingAuth  = (clone $base)->where('STATUS', 'processed')->count();
         $transactions = $messages;

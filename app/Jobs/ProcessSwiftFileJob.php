@@ -94,6 +94,13 @@ class ProcessSwiftFileJob implements ShouldQueue
             // 6. Convertir MX → MT
             $mtContent = $this->convertToMt($parsedData, $typeShort);
 
+            // 6b. Garantir l'unicité de la référence
+            $baseRef = $parsedData['reference'] ?? ('IMPORT-' . Str::random(10));
+            $uniqueRef = $baseRef;
+            if (MessageSwift::where('REFERENCE', $uniqueRef)->exists()) {
+                $uniqueRef = $baseRef . '-' . now()->format('ymdHis');
+            }
+
             // 7. ─── CLEF DU FIX ───
             // MessageSwift::create() AVEC TOUS LES CHAMPS FINANCIERS
             // Ainsi l'Observer created() les trouve immédiatement
@@ -102,7 +109,7 @@ class ProcessSwiftFileJob implements ShouldQueue
                 'TYPE_MESSAGE'  => $typeShort,
                 'CATEGORIE'     => $categorie,
                 'DIRECTION'     => 'IN',
-                'REFERENCE'     => $parsedData['reference']    ?? ('IMPORT-' . Str::random(10)),
+                'REFERENCE'     => $uniqueRef,
                 'SENDER_BIC'    => $parsedData['sender_bic']   ?? null,
                 'RECEIVER_BIC'  => $parsedData['receiver_bic'] ?? null,
                 'SENDER_NAME'   => $parsedData['sender_name']  ?? null,
@@ -169,10 +176,14 @@ class ProcessSwiftFileJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // Créer un message d'erreur
+            // Créer un message d'erreur (référence unique)
+            $errRef = 'IMPORT-FAILED-' . basename($this->filePath);
+            if (MessageSwift::where('REFERENCE', $errRef)->exists()) {
+                $errRef = 'IMPORT-FAILED-' . now()->format('ymdHis') . '-' . Str::random(4);
+            }
             $errorMessage = MessageSwift::create([
                 'TYPE_MESSAGE'       => 'ERROR',
-                'REFERENCE'          => 'IMPORT-FAILED-' . basename($this->filePath),
+                'REFERENCE'          => $errRef,
                 'XML_BRUT'           => $this->xmlContent ?? 'Contenu non lu',
                 'STATUS'             => 'rejected',
                 'CREATED_BY'         => $this->importedBy,

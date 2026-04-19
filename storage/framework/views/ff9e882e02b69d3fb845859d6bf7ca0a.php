@@ -457,28 +457,16 @@
                         </button>
                     <?php endif; ?>
 
-                    <?php if($message->mt_content): ?>
-                        <button type="button"
-                                class="btn btn-outline-secondary open-raw-file"
-                                data-url="<?php echo e(route('swift.view-mt', $message->id)); ?>"
-                                data-title="MT Content">
-                            <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </button>
-                    <?php else: ?>
-                        <button class="btn btn-outline-secondary disabled">
-                            <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </button>
-                    <?php endif; ?>
+                    <button type="button"
+                            class="btn btn-outline-secondary open-raw-file"
+                            data-url="<?php echo e(route('swift.view-mt', $message->id)); ?>"
+                            data-title="MT Content">
+                        <i class="fas fa-file-alt me-2"></i>Voir MT
+                    </button>
 
-                    <?php if($message->xml_brut): ?>
-                        <a href="<?php echo e(route('swift.view-mx', $message->id)); ?>" target="_blank" class="btn btn-outline-info" title="MX (XML)">
-                            <i class="fas fa-code me-2"></i>Voir MX
-                        </a>
-                    <?php else: ?>
-                        <button class="btn btn-outline-secondary disabled">
-                            <i class="fas fa-code me-2"></i>Voir MX
-                        </button>
-                    <?php endif; ?>
+                    <a href="<?php echo e(route('swift.view-mx', $message->id)); ?>" target="_blank" class="btn btn-outline-info" title="MX (XML)">
+                        <i class="fas fa-code me-2"></i>Voir MX
+                    </a>
 
                     <a href="<?php echo e(route('swift.pdf', $message->id)); ?>" target="_blank"
                        class="btn btn-outline-danger">

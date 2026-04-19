@@ -444,28 +444,16 @@
                         </button>
                     @endif
 
-                    @if($message->mt_content)
-                        <button type="button"
-                                class="btn btn-outline-secondary open-raw-file"
-                                data-url="{{ route('swift.view-mt', $message->id) }}"
-                                data-title="MT Content">
-                            <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </button>
-                    @else
-                        <button class="btn btn-outline-secondary disabled">
-                            <i class="fas fa-file-alt me-2"></i>Voir MT
-                        </button>
-                    @endif
+                    <button type="button"
+                            class="btn btn-outline-secondary open-raw-file"
+                            data-url="{{ route('swift.view-mt', $message->id) }}"
+                            data-title="MT Content">
+                        <i class="fas fa-file-alt me-2"></i>Voir MT
+                    </button>
 
-                    @if($message->xml_brut)
-                        <a href="{{ route('swift.view-mx', $message->id) }}" target="_blank" class="btn btn-outline-info" title="MX (XML)">
-                            <i class="fas fa-code me-2"></i>Voir MX
-                        </a>
-                    @else
-                        <button class="btn btn-outline-secondary disabled">
-                            <i class="fas fa-code me-2"></i>Voir MX
-                        </button>
-                    @endif
+                    <a href="{{ route('swift.view-mx', $message->id) }}" target="_blank" class="btn btn-outline-info" title="MX (XML)">
+                        <i class="fas fa-code me-2"></i>Voir MX
+                    </a>
 
                     <a href="{{ route('swift.pdf', $message->id) }}" target="_blank"
                        class="btn btn-outline-danger">
