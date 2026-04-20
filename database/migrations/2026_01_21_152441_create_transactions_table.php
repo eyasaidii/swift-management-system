@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
-    $table->id();
-    $table->decimal('montant', 15, 2);
-    $table->string('devise');
-    $table->string('emetteur');
-    $table->string('recepteur');
-    $table->date('date_transaction');
-    $table->foreignId('message_swift_id');
-});
+            $table->id();
+            $table->decimal('montant', 15, 2);
+            $table->string('devise');
+            $table->string('emetteur');
+            $table->string('recepteur');
+            $table->date('date_transaction');
+            $table->foreignId('message_swift_id');
+        });
 
     }
 

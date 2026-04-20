@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('import_jobs', function (Blueprint $table) {
-    $table->id();
-    $table->string('nom_fichier');
-    $table->dateTime('date_debut');
-    $table->dateTime('date_fin')->nullable();
-    $table->string('statut');
-});
-
+        Schema::create('import_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom_fichier');
+            $table->dateTime('date_debut');
+            $table->dateTime('date_fin')->nullable();
+            $table->string('statut');
+        });
 
     }
 

@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('regles_aml', function (Blueprint $table) {
-    $table->id();
-    $table->string('nom_regle');
-    $table->decimal('seuil', 15, 2);
-    $table->string('pays');
-    $table->boolean('active');
-});
-
+        Schema::create('regles_aml', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom_regle');
+            $table->decimal('seuil', 15, 2);
+            $table->string('pays');
+            $table->boolean('active');
+        });
 
     }
 

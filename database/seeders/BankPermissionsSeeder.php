@@ -75,7 +75,7 @@ class BankPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        $this->command->info('✅ ' . count($allPermissions) . ' permissions créées');
+        $this->command->info('✅ '.count($allPermissions).' permissions créées');
 
         // Récupérer les rôles
         $admin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);

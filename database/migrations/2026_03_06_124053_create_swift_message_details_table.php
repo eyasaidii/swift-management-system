@@ -16,9 +16,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('message_id')
-                  ->references('id')
-                  ->on('messages_swift')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('messages_swift')
+                ->onDelete('cascade');
 
             $table->index(['message_id', 'tag_name']);
         });

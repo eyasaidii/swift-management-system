@@ -15,19 +15,19 @@ class SwiftMtBuilder
      */
     public function build(MessageSwift $message, array $details): string
     {
-        $type      = $message->TYPE_MESSAGE;
-        $typeNum   = str_replace('MT', '', $type);  // ex: "900", "103"
+        $type = $message->TYPE_MESSAGE;
+        $typeNum = str_replace('MT', '', $type);  // ex: "900", "103"
         $senderBic = $message->SENDER_BIC ?: config('swift.sender_bic', 'ATLDTNTTAXXX');
-        $date      = now()->format('ymdHi');         // YYMMDDHHmm
+        $date = now()->format('ymdHi');         // YYMMDDHHmm
 
         // Block 1 — Basic Header
-        $block1 = "{1:F01{$senderBic}" . str_pad('', max(0, 12 - strlen($senderBic)), 'X') . "0000000000}";
+        $block1 = "{1:F01{$senderBic}".str_pad('', max(0, 12 - strlen($senderBic)), 'X').'0000000000}';
 
         // Block 2 — Application Header (Output)
-        $block2 = "{2:O{$typeNum}{$date}" . str_pad($senderBic, 12, 'X') . "0000000000{$date}N}";
+        $block2 = "{2:O{$typeNum}{$date}".str_pad($senderBic, 12, 'X')."0000000000{$date}N}";
 
         // Block 3 — User Header
-        $block3 = "{3:{113:0020}}";
+        $block3 = '{3:{113:0020}}';
 
         // Block 4 — Body (tags métier)
         $block4 = $this->buildBlock4($details);
@@ -53,10 +53,10 @@ class SwiftMtBuilder
             $lines = explode("\n", trim($value));
             $body .= ":{$tag}:{$lines[0]}\n";
             for ($i = 1; $i < count($lines); $i++) {
-                $body .= "//" . trim($lines[$i]) . "\n";
+                $body .= '//'.trim($lines[$i])."\n";
             }
         }
-        $body .= "-}";
+        $body .= '-}';
 
         return $body;
     }

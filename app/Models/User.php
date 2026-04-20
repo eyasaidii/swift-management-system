@@ -9,7 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'name',
@@ -99,7 +99,7 @@ class User extends Authenticatable
     {
         $roles = self::getBankRoles();
         $userRole = $this->getRoleNames()->first();
-        
+
         return $roles[$userRole] ?? [
             'name' => $userRole ?? 'Non défini',
             'description' => 'Rôle utilisateur',
@@ -132,6 +132,7 @@ class User extends Authenticatable
     public function getRoleLevel(): int
     {
         $roleInfo = $this->getPrimaryRoleFormatted();
+
         return $roleInfo['level'] ?? 0;
     }
 
@@ -153,7 +154,7 @@ class User extends Authenticatable
             'email' => $this->email,
             'role' => $this->getPrimaryRoleFormatted(),
             'created_at' => $this->created_at->format('d/m/Y'),
-            'has_verified_email' => !is_null($this->email_verified_at),
+            'has_verified_email' => ! is_null($this->email_verified_at),
             'role_names' => $this->getRoleNames()->toArray(),
             'permissions' => $this->getAllPermissions()->pluck('name')->toArray(),
         ];
@@ -197,12 +198,13 @@ class User extends Authenticatable
     public function assignValidRole(string $role): bool
     {
         $validRoles = array_keys(self::getBankRoles());
-        
-        if (!in_array($role, $validRoles)) {
+
+        if (! in_array($role, $validRoles)) {
             return false;
         }
 
         $this->syncRoles([$role]);
+
         return true;
     }
 
@@ -223,13 +225,12 @@ class User extends Authenticatable
         ];
 
         $userRole = $this->getRoleNames()->first();
-        
-        if (!isset($accessRules[$userRole])) {
+
+        if (! isset($accessRules[$userRole])) {
             return false;
         }
 
-        return in_array('all', $accessRules[$userRole]) || 
+        return in_array('all', $accessRules[$userRole]) ||
                in_array($section, $accessRules[$userRole]);
     }
-
 }

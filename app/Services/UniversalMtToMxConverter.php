@@ -18,7 +18,7 @@ class UniversalMtToMxConverter
 {
     public function convert(MessageSwift $message): ?string
     {
-        return match($message->TYPE_MESSAGE) {
+        return match ($message->TYPE_MESSAGE) {
             'MT103' => $this->convertMT103($message),
             'MT202' => $this->convertMT202($message),
             'MT940' => $this->convertMT940($message),
@@ -43,21 +43,27 @@ class UniversalMtToMxConverter
         $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
 
         // ── Référence (tag 20) ──
-        $ref = $d['20'] ?? $message->REFERENCE ?? ('REF' . Str::random(10));
+        $ref = $d['20'] ?? $message->REFERENCE ?? ('REF'.Str::random(10));
 
         // ── Montant / Devise / Date (tag 32A) ──
         [$valueDate, $currency, $amount] = $this->parse32A($d['32A'] ?? '');
         // Fallback sur les champs dénormalisés
-        if (!$valueDate) $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
-        if (!$currency)  $currency  = $message->CURRENCY ?? 'EUR';
-        if (!$amount)    $amount    = (float) ($message->AMOUNT ?? 0);
+        if (! $valueDate) {
+            $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
+        }
+        if (! $currency) {
+            $currency = $message->CURRENCY ?? 'EUR';
+        }
+        if (! $amount) {
+            $amount = (float) ($message->AMOUNT ?? 0);
+        }
 
         // ── Devise instruction (tag 33B) ──
         $instdAmt = null;
         $instdCcy = null;
-        if (!empty($d['33B'])) {
+        if (! empty($d['33B'])) {
             preg_match('/^([A-Z]{3})([\d,]+)$/', $d['33B'], $m33);
-            if (!empty($m33)) {
+            if (! empty($m33)) {
                 $instdCcy = $m33[1];
                 $instdAmt = (float) str_replace(',', '.', $m33[2]);
             }
@@ -72,7 +78,7 @@ class UniversalMtToMxConverter
 
         // ── Compte de règlement (tag 53B) ──
         $sttlmAccount = null;
-        if (!empty($d['53B'])) {
+        if (! empty($d['53B'])) {
             $sttlmAccount = preg_replace('/^\/[CD]\//', '', $d['53B']);
         }
 
@@ -215,7 +221,9 @@ class UniversalMtToMxConverter
         // Dbtr (50K)
         $dbtr = $dom->createElement('Dbtr');
         $txInf->appendChild($dbtr);
-        if ($debtorName) $dbtr->appendChild($dom->createElement('Nm', $debtorName));
+        if ($debtorName) {
+            $dbtr->appendChild($dom->createElement('Nm', $debtorName));
+        }
         if ($debtorAddr) {
             $pstlAdr = $dom->createElement('PstlAdr');
             $dbtr->appendChild($pstlAdr);
@@ -262,7 +270,9 @@ class UniversalMtToMxConverter
         // Cdtr (59)
         $cdtr = $dom->createElement('Cdtr');
         $txInf->appendChild($cdtr);
-        if ($creditorName) $cdtr->appendChild($dom->createElement('Nm', $creditorName));
+        if ($creditorName) {
+            $cdtr->appendChild($dom->createElement('Nm', $creditorName));
+        }
         if ($creditorAddr) {
             $pstlAdr = $dom->createElement('PstlAdr');
             $cdtr->appendChild($pstlAdr);
@@ -292,7 +302,7 @@ class UniversalMtToMxConverter
         if ($purposeCode) {
             $purp = $dom->createElement('Purp');
             $txInf->appendChild($purp);
-            $purp->appendChild($dom->createElement('Prtry', ':26T:' . $purposeCode));
+            $purp->appendChild($dom->createElement('Prtry', ':26T:'.$purposeCode));
         }
 
         // RmtInf (70)
@@ -312,23 +322,29 @@ class UniversalMtToMxConverter
     {
         $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
 
-        $ref          = $d['20'] ?? $message->REFERENCE ?? ('REF' . Str::random(10));
-        $relatedRef   = $d['21'] ?? 'NONREF';
+        $ref = $d['20'] ?? $message->REFERENCE ?? ('REF'.Str::random(10));
+        $relatedRef = $d['21'] ?? 'NONREF';
         [$valueDate, $currency, $amount] = $this->parse32A($d['32A'] ?? '');
-        if (!$valueDate) $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
-        if (!$currency)  $currency  = $message->CURRENCY ?? 'USD';
-        if (!$amount)    $amount    = (float) ($message->AMOUNT ?? 0);
+        if (! $valueDate) {
+            $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
+        }
+        if (! $currency) {
+            $currency = $message->CURRENCY ?? 'USD';
+        }
+        if (! $amount) {
+            $amount = (float) ($message->AMOUNT ?? 0);
+        }
 
-        $instgBic     = $this->cleanBic($d['52A'] ?? $message->SENDER_BIC   ?? '');
+        $instgBic = $this->cleanBic($d['52A'] ?? $message->SENDER_BIC ?? '');
         $intermediary = $this->cleanBic($d['56A'] ?? '');
-        $instdBic     = $this->cleanBic($d['57A'] ?? $message->RECEIVER_BIC ?? '');
+        $instdBic = $this->cleanBic($d['57A'] ?? $message->RECEIVER_BIC ?? '');
 
         // Tag 58A : bénéficiaire final
-        $tag58       = $d['58A'] ?? '';
+        $tag58 = $d['58A'] ?? '';
         $creditorAcc = '';
         $creditorBic = '';
         if (str_contains($tag58, '/')) {
-            [$creditorAcc, $creditorBic] = explode("\n", str_replace('/', '', $tag58) . "\n", 2);
+            [$creditorAcc, $creditorBic] = explode("\n", str_replace('/', '', $tag58)."\n", 2);
             $creditorBic = trim($creditorBic);
             $creditorAcc = trim($creditorAcc);
         } else {
@@ -431,7 +447,9 @@ class UniversalMtToMxConverter
         $txInf->appendChild($cdtr);
         $fi = $dom->createElement('FinInstnId');
         $cdtr->appendChild($fi);
-        if ($creditorBic) $fi->appendChild($dom->createElement('BICFI', $creditorBic));
+        if ($creditorBic) {
+            $fi->appendChild($dom->createElement('BICFI', $creditorBic));
+        }
 
         // CdtrAcct (58A account)
         if ($creditorAcc) {
@@ -454,11 +472,11 @@ class UniversalMtToMxConverter
     {
         $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
 
-        $ref     = $d['20'] ?? $message->REFERENCE ?? 'REF';
+        $ref = $d['20'] ?? $message->REFERENCE ?? 'REF';
         $account = $d['25'] ?? '';
-        $seq     = $d['28C'] ?? '00001/001';
-        $balOpen = $d['60F'] ?? ('C' . now()->format('ymd') . ($message->CURRENCY ?? 'EUR') . '0,');
-        $balClose= $d['62F'] ?? $balOpen;
+        $seq = $d['28C'] ?? '00001/001';
+        $balOpen = $d['60F'] ?? ('C'.now()->format('ymd').($message->CURRENCY ?? 'EUR').'0,');
+        $balClose = $d['62F'] ?? $balOpen;
 
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->formatOutput = true;
@@ -505,7 +523,7 @@ class UniversalMtToMxConverter
     // =========================================================
     private function convertMT101(MessageSwift $message): string
     {
-        $d   = $message->details->pluck('tag_value', 'tag_name')->toArray();
+        $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
         $ref = $d['20'] ?? $message->REFERENCE ?? 'REF';
 
         $dom = new \DOMDocument('1.0', 'UTF-8');
@@ -534,38 +552,49 @@ class UniversalMtToMxConverter
     {
         return $this->stub('camt.057.001.06', $message->REFERENCE ?? 'REF', 'MT210');
     }
+
     private function convertMT300(MessageSwift $message): string
     {
         return $this->stub('fxtr.014.001.05', $message->REFERENCE ?? 'REF', 'MT300');
     }
+
     private function convertMT320(MessageSwift $message): string
     {
         return $this->stub('fxtr.014.001.05', $message->REFERENCE ?? 'REF', 'MT320');
     }
+
     private function convertMT700(MessageSwift $message): string
     {
         return $this->stub('tsin.009.001.01', $message->REFERENCE ?? 'REF', 'MT700');
     }
+
     private function convertMT760(MessageSwift $message): string
     {
         return $this->stub('tsin.009.001.01', $message->REFERENCE ?? 'REF', 'MT760');
     }
+
     private function convertMT900(MessageSwift $message): string
     {
         $d = $message->details->pluck('tag_value', 'tag_name')->toArray();
-        $ref     = $d['20'] ?? $message->REFERENCE ?? 'REF';
-        $relRef  = $d['21'] ?? $ref;
+        $ref = $d['20'] ?? $message->REFERENCE ?? 'REF';
+        $relRef = $d['21'] ?? $ref;
         $account = $d['25'] ?? '';
 
         [$valueDate, $currency, $amount] = $this->parse32A($d['32A'] ?? '');
-        if (!$valueDate) $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
-        if (!$currency)  $currency  = $message->CURRENCY ?? 'TND';
-        if (!$amount)    $amount    = (float) ($message->AMOUNT ?? 0);
+        if (! $valueDate) {
+            $valueDate = optional($message->VALUE_DATE)->format('Y-m-d') ?? now()->format('Y-m-d');
+        }
+        if (! $currency) {
+            $currency = $message->CURRENCY ?? 'TND';
+        }
+        if (! $amount) {
+            $amount = (float) ($message->AMOUNT ?? 0);
+        }
 
         $instgBic = $this->cleanBic($d['52A'] ?? $message->SENDER_BIC ?? '');
         $narrative = $d['72'] ?? '';
 
-        $xml  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         $xml .= "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.054.001.08\">\n";
         $xml .= "  <BkToCstmrDbtCdtNtfctn>\n";
         $xml .= "    <GrpHdr>\n";
@@ -594,7 +623,7 @@ class UniversalMtToMxConverter
         $xml .= "      </Ntry>\n";
         $xml .= "    </Ntfctn>\n";
         $xml .= "  </BkToCstmrDbtCdtNtfctn>\n";
-        $xml .= "</Document>";
+        $xml .= '</Document>';
 
         return $xml;
     }
@@ -607,9 +636,9 @@ class UniversalMtToMxConverter
     private function stub(string $xsd, string $ref, string $mtType): string
     {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-             . "<!-- {$mtType} conversion not yet implemented -->\n"
-             . "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:{$xsd}\">"
-             . "<Ref>{$ref}</Ref></Document>";
+             ."<!-- {$mtType} conversion not yet implemented -->\n"
+             ."<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:{$xsd}\">"
+             ."<Ref>{$ref}</Ref></Document>";
     }
 
     // =========================================================
@@ -624,13 +653,15 @@ class UniversalMtToMxConverter
     {
         $value = preg_replace('/\s+/', '', $value);
         if (preg_match('/^(\d{2})(\d{2})(\d{2})([A-Z]{3})([\d,]+)$/', $value, $m)) {
-            $year  = '20' . $m[1];
+            $year = '20'.$m[1];
             $month = $m[2];
-            $day   = $m[3];
-            $date  = "{$year}-{$month}-{$day}";
-            $amt   = (float) str_replace(',', '.', $m[5]);
+            $day = $m[3];
+            $date = "{$year}-{$month}-{$day}";
+            $amt = (float) str_replace(',', '.', $m[5]);
+
             return [$date, $m[4], $amt];
         }
+
         return [null, null, null];
     }
 
@@ -642,7 +673,7 @@ class UniversalMtToMxConverter
     {
         $lines = explode("\n", str_replace("\r", '', trim($raw)));
         $account = '';
-        $name    = '';
+        $name = '';
         $addrLines = [];
 
         foreach ($lines as $i => $line) {
@@ -651,10 +682,12 @@ class UniversalMtToMxConverter
                 $account = ltrim($line, '/');
             } elseif ($i === 0 || ($i === 1 && empty($account))) {
                 $name = $line;
-            } elseif ($i === 1 && !empty($account)) {
+            } elseif ($i === 1 && ! empty($account)) {
                 $name = $line;
             } else {
-                if ($line) $addrLines[] = $line;
+                if ($line) {
+                    $addrLines[] = $line;
+                }
             }
         }
 
@@ -669,7 +702,7 @@ class UniversalMtToMxConverter
     {
         $lines = explode("\n", str_replace("\r", '', trim($raw)));
         $account = '';
-        $name    = '';
+        $name = '';
         $addrLines = [];
 
         foreach ($lines as $i => $line) {
@@ -678,10 +711,12 @@ class UniversalMtToMxConverter
                 $account = ltrim($line, '/');
             } elseif ($i === 0 || ($i === 1 && empty($account))) {
                 $name = $line;
-            } elseif ($i === 1 && !empty($account)) {
+            } elseif ($i === 1 && ! empty($account)) {
                 $name = $line;
             } else {
-                if ($line) $addrLines[] = $line;
+                if ($line) {
+                    $addrLines[] = $line;
+                }
             }
         }
 
@@ -694,10 +729,10 @@ class UniversalMtToMxConverter
      */
     private function normalizeChrg71A(string $tag71A): string
     {
-        return match(strtoupper(trim($tag71A))) {
-            'SHA'  => 'SHAR',
-            'OUR'  => 'DEBT',
-            'BEN'  => 'CRED',
+        return match (strtoupper(trim($tag71A))) {
+            'SHA' => 'SHAR',
+            'OUR' => 'DEBT',
+            'BEN' => 'CRED',
             default => 'SHAR',
         };
     }
@@ -707,7 +742,7 @@ class UniversalMtToMxConverter
      */
     private function mapSvcLvl(string $tag23B): ?string
     {
-        return match(strtoupper(trim($tag23B))) {
+        return match (strtoupper(trim($tag23B))) {
             'CRED' => 'G001',
             'SPAY' => 'SEPA',
             default => null,

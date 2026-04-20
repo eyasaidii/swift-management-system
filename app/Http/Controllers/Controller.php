@@ -9,15 +9,18 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
-    
+
     /**
      * Constantes pour les réponses JSON
      */
     protected const SUCCESS = 'success';
+
     protected const ERROR = 'error';
+
     protected const WARNING = 'warning';
+
     protected const INFO = 'info';
-    
+
     /**
      * Retourne une réponse JSON standardisée
      */
@@ -30,7 +33,7 @@ class Controller extends BaseController
             'timestamp' => now()->toDateTimeString(),
         ], $code);
     }
-    
+
     /**
      * Réponse de succès
      */
@@ -38,7 +41,7 @@ class Controller extends BaseController
     {
         return $this->jsonResponse(self::SUCCESS, $message, $data, $code);
     }
-    
+
     /**
      * Réponse d'erreur
      */
@@ -46,7 +49,7 @@ class Controller extends BaseController
     {
         return $this->jsonResponse(self::ERROR, $message, $data, $code);
     }
-    
+
     /**
      * Réponse de succès avec redirection
      */
@@ -56,7 +59,7 @@ class Controller extends BaseController
             ->with('success', $message)
             ->with('data', $data);
     }
-    
+
     /**
      * Réponse d'erreur avec redirection
      */
@@ -67,7 +70,7 @@ class Controller extends BaseController
             ->withErrors($errors)
             ->withInput();
     }
-    
+
     /**
      * Vérifie si l'utilisateur a un rôle spécifique
      */
@@ -75,7 +78,7 @@ class Controller extends BaseController
     {
         return auth()->check() && auth()->user()->hasRole($role);
     }
-    
+
     /**
      * Vérifie si l'utilisateur a un des rôles spécifiés
      */
@@ -83,7 +86,7 @@ class Controller extends BaseController
     {
         return auth()->check() && auth()->user()->hasAnyRole($roles);
     }
-    
+
     /**
      * Vérifie si l'utilisateur a toutes les permissions
      */
@@ -91,31 +94,31 @@ class Controller extends BaseController
     {
         return auth()->check() && auth()->user()->hasAllPermissions($permissions);
     }
-    
+
     /**
      * Récupère le rôle principal de l'utilisateur connecté
      */
     protected function getUserPrimaryRole()
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return null;
         }
-        
+
         return auth()->user()->getRoleNames()->first();
     }
-    
+
     /**
      * Récupère les informations formatées du rôle de l'utilisateur
      */
     protected function getUserRoleInfo()
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return null;
         }
-        
+
         return auth()->user()->getRoleInfo();
     }
-    
+
     /**
      * Récupère l'agence de l'utilisateur connecté
      */
@@ -123,7 +126,7 @@ class Controller extends BaseController
     {
         return auth()->check() ? auth()->user()->agence : null;
     }
-    
+
     /**
      * Récupère le matricule de l'utilisateur connecté
      */
@@ -131,7 +134,7 @@ class Controller extends BaseController
     {
         return auth()->check() ? auth()->user()->matricule : null;
     }
-    
+
     /**
      * Vérifie si l'utilisateur est administrateur
      */
@@ -139,7 +142,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('super-admin');
     }
-    
+
     /**
      * Vérifie si l'utilisateur est dans le domaine international
      */
@@ -147,7 +150,7 @@ class Controller extends BaseController
     {
         return $this->userHasAnyRole(['swift-manager', 'swift-operator']);
     }
-    
+
     /**
      * Vérifie si l'utilisateur est en backoffice
      */
@@ -155,7 +158,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('backoffice');
     }
-    
+
     /**
      * Vérifie si l'utilisateur est en monétique
      */
@@ -163,7 +166,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('monetique');
     }
-    
+
     /**
      * Vérifie si l'utilisateur est chef d'agence
      */
@@ -171,7 +174,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('chef-agence');
     }
-    
+
     /**
      * Vérifie si l'utilisateur est chargé clientèle
      */
@@ -179,7 +182,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('chargee');
     }
-    
+
     /**
      * Vérifie si l'utilisateur est compliance
      */
@@ -187,7 +190,7 @@ class Controller extends BaseController
     {
         return $this->userHasRole('compliance-officer');
     }
-    
+
     /**
      * Journalise une activité
      */
@@ -200,43 +203,43 @@ class Controller extends BaseController
                 ->log($description);
         }
     }
-    
+
     /**
      * Formate une date pour l'affichage
      */
     protected function formatDate($date, $format = 'd/m/Y H:i')
     {
-        if (!$date) {
+        if (! $date) {
             return 'N/A';
         }
-        
+
         if (is_string($date)) {
             $date = new \DateTime($date);
         }
-        
+
         return $date->format($format);
     }
-    
+
     /**
      * Formate un montant
      */
     protected function formatAmount($amount, $currency = 'DH')
     {
-        if (!is_numeric($amount)) {
+        if (! is_numeric($amount)) {
             return 'N/A';
         }
-        
-        return number_format($amount, 2, ',', ' ') . ' ' . $currency;
+
+        return number_format($amount, 2, ',', ' ').' '.$currency;
     }
-    
+
     /**
      * Génère une référence de transaction
      */
     protected function generateTransactionReference($prefix = 'TXN')
     {
-        return $prefix . '-' . date('Ymd') . '-' . strtoupper(uniqid());
+        return $prefix.'-'.date('Ymd').'-'.strtoupper(uniqid());
     }
-    
+
     /**
      * Valide les données avec des règles spécifiques aux rôles
      */
@@ -244,17 +247,17 @@ class Controller extends BaseController
     {
         // Règles supplémentaires basées sur le rôle
         $userRole = $this->getUserPrimaryRole();
-        
+
         switch ($userRole) {
             case 'super-admin':
                 // Super-admin peut tout faire
                 break;
-                
+
             case 'chef-agence':
                 // Chef agence limité à son agence
-                $rules['agence'] = 'required|in:' . $this->getUserAgency();
+                $rules['agence'] = 'required|in:'.$this->getUserAgency();
                 break;
-                
+
             case 'chargee':
                 // Chargé(e) limité à certaines opérations
                 if (isset($rules['type_operation'])) {
@@ -262,17 +265,17 @@ class Controller extends BaseController
                 }
                 break;
         }
-        
+
         return $request->validate($rules, $messages);
     }
-    
+
     /**
      * Récupère les statistiques de base pour le dashboard
      */
     protected function getDashboardStats($role)
     {
         $stats = [];
-        
+
         switch ($role) {
             case 'super-admin':
                 $stats = [
@@ -300,7 +303,7 @@ class Controller extends BaseController
                     'total_amount' => 425000,
                 ];
                 break;
-                
+
             case 'backoffice':
                 $stats = [
                     'pending_operations' => 87,
@@ -309,7 +312,7 @@ class Controller extends BaseController
                     'discrepancies' => 8,
                 ];
                 break;
-                
+
             case 'monetique':
                 $stats = [
                     'card_transactions' => 8542,
@@ -318,7 +321,7 @@ class Controller extends BaseController
                     'amount_processed' => 4200000,
                 ];
                 break;
-                
+
             case 'chef-agence':
                 $user = auth()->user();
                 $stats = [
@@ -328,7 +331,7 @@ class Controller extends BaseController
                     'agency_volume' => 4500000,
                 ];
                 break;
-                
+
             case 'chargee':
                 $user = auth()->user();
                 $stats = [
@@ -338,7 +341,7 @@ class Controller extends BaseController
                     'total_volume' => 1250000,
                 ];
                 break;
-                
+
             case 'compliance-officer':
                 $stats = [
                     'aml_alerts' => 23,
@@ -348,10 +351,10 @@ class Controller extends BaseController
                 ];
                 break;
         }
-        
+
         return $stats;
     }
-    
+
     /**
      * Récupère les activités récentes
      */
@@ -362,61 +365,61 @@ class Controller extends BaseController
                 ->take($limit)
                 ->get();
         }
-        
+
         return collect();
     }
-    
+
     /**
      * Vérifie les permissions avant une action
      */
     protected function checkPermission($permission, $resource = null)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             abort(403, 'Accès non autorisé.');
         }
-        
+
         $user = auth()->user();
-        
-        if (!$user->hasPermissionTo($permission)) {
+
+        if (! $user->hasPermissionTo($permission)) {
             abort(403, 'Vous n\'avez pas la permission nécessaire.');
         }
-        
+
         // Vérifications supplémentaires selon le rôle
         if ($resource && method_exists($resource, 'getAgence')) {
             if ($user->hasRole('chef-agence') && $resource->getAgence() !== $user->agence) {
                 abort(403, 'Accès limité à votre agence.');
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Exporte des données au format CSV
      */
     protected function exportToCSV($data, $filename, $headers = null)
     {
-        if (!$headers && count($data) > 0) {
+        if (! $headers && count($data) > 0) {
             $headers = array_keys((array) $data[0]);
         }
-        
-        $callback = function() use ($data, $headers) {
+
+        $callback = function () use ($data, $headers) {
             $file = fopen('php://output', 'w');
-            
+
             // En-têtes
             fputcsv($file, $headers);
-            
+
             // Données
             foreach ($data as $row) {
                 fputcsv($file, (array) $row);
             }
-            
+
             fclose($file);
         };
-        
+
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
         ]);
     }
 }

@@ -8,7 +8,7 @@ return new class extends Migration
     public function up()
     {
         $driver = config('database.default');
-        if (!($driver === 'oracle' || str_contains($driver, 'oci') || str_contains($driver, 'oracle'))) {
+        if (! ($driver === 'oracle' || str_contains($driver, 'oci') || str_contains($driver, 'oracle'))) {
             // Ignorer les requêtes spécifiques à Oracle lors d'une exécution sur SQLite/local
             return;
         }
@@ -16,7 +16,7 @@ return new class extends Migration
         $columns = [
             'REFERENCE', 'AMOUNT', 'CURRENCY', 'VALUE_DATE', 'DESCRIPTION',
             'SENDER_BIC', 'RECEIVER_BIC', 'SENDER_ACCOUNT', 'RECEIVER_ACCOUNT',
-            'SENDER_NAME', 'RECEIVER_NAME'
+            'SENDER_NAME', 'RECEIVER_NAME',
         ];
 
         foreach ($columns as $column) {

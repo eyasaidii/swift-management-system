@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('alertes', function (Blueprint $table) {
-    $table->id();
-    $table->integer('score_risque');
-    $table->string('statut');
-    $table->dateTime('date_creation');
-    $table->foreignId('transaction_id');
-    $table->foreignId('regle_aml_id');
-});
+            $table->id();
+            $table->integer('score_risque');
+            $table->string('statut');
+            $table->dateTime('date_creation');
+            $table->foreignId('transaction_id');
+            $table->foreignId('regle_aml_id');
+        });
 
     }
 

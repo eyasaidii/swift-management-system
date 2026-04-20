@@ -4,7 +4,7 @@ use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $roles = ['SUPER_ADMIN','ADMIN','MANAGER','ANALYST','AUDITOR','OPERATOR','USER'];
+    $roles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ANALYST', 'AUDITOR', 'OPERATOR', 'USER'];
     foreach ($roles as $r) {
         Role::firstOrCreate(['name' => $r]);
     }

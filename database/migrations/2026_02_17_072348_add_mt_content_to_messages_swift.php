@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('CATEGORIE', 10)->nullable()->after('TYPE_MESSAGE');
             $table->longText('MT_CONTENT')->nullable()->after('XML_BRUT');
             $table->json('TRANSLATION_ERRORS')->nullable()->after('METADATA');
-            
+
             // Index pour améliorer les performances
             $table->index('CATEGORIE');
         });

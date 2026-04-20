@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -32,7 +33,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        
+
         // Rediriger selon le rôle
         return $this->redirectToRoleDashboard($user);
     }
@@ -44,7 +45,7 @@ class AuthenticatedSessionController extends Controller
     {
         $primaryRole = $user->getRoleNames()->first();
 
-        return match($primaryRole) {
+        return match ($primaryRole) {
             'super-admin' => redirect()->route('admin.dashboard'),
             'swift-manager' => redirect()->route('international-admin.dashboard'),
             'swift-operator' => redirect()->route('international-user.dashboard'),

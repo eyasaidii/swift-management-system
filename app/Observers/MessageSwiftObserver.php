@@ -1,4 +1,5 @@
 <?php
+
 // app/Observers/MessageSwiftObserver.php
 
 namespace App\Observers;
@@ -53,7 +54,7 @@ class MessageSwiftObserver
         $dirty = array_keys($message->getDirty());
         $financialFields = ['AMOUNT', 'CURRENCY', 'VALUE_DATE', 'amount', 'currency', 'value_date'];
 
-        if (!empty(array_intersect($financialFields, $dirty))) {
+        if (! empty(array_intersect($financialFields, $dirty))) {
             $this->syncTransaction($message, 'updated');
         }
     }
@@ -64,12 +65,12 @@ class MessageSwiftObserver
     private function syncTransaction(MessageSwift $message, string $trigger): void
     {
         // Guard 1 : type financier
-        if (!in_array($message->TYPE_MESSAGE, self::FINANCIAL_TYPES)) {
+        if (! in_array($message->TYPE_MESSAGE, self::FINANCIAL_TYPES)) {
             return;
         }
 
         // Guard 2 : données financières disponibles et valides
-        $amount   = $message->AMOUNT   ?? $message->amount   ?? null;
+        $amount = $message->AMOUNT ?? $message->amount ?? null;
         $currency = $message->CURRENCY ?? $message->currency ?? null;
 
         if ($amount === null || $currency === null || (float) $amount <= 0) {
@@ -83,7 +84,7 @@ class MessageSwiftObserver
                 abs((float) $existing->montant - (float) $amount) > 0.001 ||
                 $existing->devise !== $currency;
 
-            if (!$needsUpdate) {
+            if (! $needsUpdate) {
                 return;
             }
         }
@@ -93,46 +94,46 @@ class MessageSwiftObserver
 
         // Émetteur / Récepteur
         if ($direction === 'IN') {
-            $emetteur  = $message->SENDER_NAME   ?? $message->sender_name
-                      ?? $message->SENDER_BIC    ?? $message->sender_bic
+            $emetteur = $message->SENDER_NAME ?? $message->sender_name
+                      ?? $message->SENDER_BIC ?? $message->sender_bic
                       ?? 'Banque externe';
             $recepteur = 'BTL Bank';
         } else {
-            $emetteur  = 'BTL Bank';
+            $emetteur = 'BTL Bank';
             $recepteur = $message->RECEIVER_NAME ?? $message->receiver_name
-                      ?? $message->RECEIVER_BIC  ?? $message->receiver_bic
+                      ?? $message->RECEIVER_BIC ?? $message->receiver_bic
                       ?? 'Bénéficiaire externe';
         }
 
         // Date transaction
-        $dateTransaction = $message->VALUE_DATE  ?? $message->value_date
-                        ?? $message->CREATED_AT  ?? $message->created_at
+        $dateTransaction = $message->VALUE_DATE ?? $message->value_date
+                        ?? $message->CREATED_AT ?? $message->created_at
                         ?? now();
 
         try {
             Transaction::updateOrCreate(
                 ['message_swift_id' => $message->id],
                 [
-                    'montant'          => (float) $amount,
-                    'devise'           => $currency,
-                    'emetteur'         => $emetteur,
-                    'recepteur'        => $recepteur,
+                    'montant' => (float) $amount,
+                    'devise' => $currency,
+                    'emetteur' => $emetteur,
+                    'recepteur' => $recepteur,
                     'date_transaction' => $dateTransaction,
                 ]
             );
 
             Log::info("Transaction synced [{$trigger}]", [
                 'message_id' => $message->id,
-                'type'       => $message->TYPE_MESSAGE,
-                'direction'  => $direction,
-                'amount'     => $amount,
-                'currency'   => $currency,
+                'type' => $message->TYPE_MESSAGE,
+                'direction' => $direction,
+                'amount' => $amount,
+                'currency' => $currency,
             ]);
 
         } catch (\Throwable $e) {
-            Log::error("Transaction sync failed", [
+            Log::error('Transaction sync failed', [
                 'message_id' => $message->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

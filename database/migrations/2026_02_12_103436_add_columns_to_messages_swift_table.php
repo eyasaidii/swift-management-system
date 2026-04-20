@@ -12,66 +12,66 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('messages_swift', function (Blueprint $table) {
-            
+
             // ✅ VÉRIFIER ET AJOUTER LES COLONNES MANQUANTES
-            if (!Schema::hasColumn('messages_swift', 'direction')) {
+            if (! Schema::hasColumn('messages_swift', 'direction')) {
                 $table->enum('direction', ['IN', 'OUT'])->default('IN')->after('xml_brut');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'sender_bic')) {
+
+            if (! Schema::hasColumn('messages_swift', 'sender_bic')) {
                 $table->string('sender_bic', 11)->nullable()->after('direction');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'receiver_bic')) {
+
+            if (! Schema::hasColumn('messages_swift', 'receiver_bic')) {
                 $table->string('receiver_bic', 11)->nullable()->after('sender_bic');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'sender_account')) {
+
+            if (! Schema::hasColumn('messages_swift', 'sender_account')) {
                 $table->string('sender_account', 34)->nullable()->after('receiver_bic');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'receiver_account')) {
+
+            if (! Schema::hasColumn('messages_swift', 'receiver_account')) {
                 $table->string('receiver_account', 34)->nullable()->after('sender_account');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'sender_name')) {
+
+            if (! Schema::hasColumn('messages_swift', 'sender_name')) {
                 $table->string('sender_name')->nullable()->after('receiver_account');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'receiver_name')) {
+
+            if (! Schema::hasColumn('messages_swift', 'receiver_name')) {
                 $table->string('receiver_name')->nullable()->after('sender_name');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'amount')) {
+
+            if (! Schema::hasColumn('messages_swift', 'amount')) {
                 $table->decimal('amount', 18, 2)->default(0)->after('receiver_name');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'currency')) {
+
+            if (! Schema::hasColumn('messages_swift', 'currency')) {
                 $table->string('currency', 3)->default('EUR')->after('amount');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'value_date')) {
+
+            if (! Schema::hasColumn('messages_swift', 'value_date')) {
                 $table->date('value_date')->nullable()->after('currency');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'description')) {
+
+            if (! Schema::hasColumn('messages_swift', 'description')) {
                 $table->text('description')->nullable()->after('value_date');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'status')) {
+
+            if (! Schema::hasColumn('messages_swift', 'status')) {
                 $table->string('status', 20)->default('pending')->after('description');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'created_by')) {
+
+            if (! Schema::hasColumn('messages_swift', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->nullable()->after('status');
                 $table->foreign('created_by')->references('id')->on('users');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'processed_at')) {
+
+            if (! Schema::hasColumn('messages_swift', 'processed_at')) {
                 $table->timestamp('processed_at')->nullable()->after('created_by');
             }
-            
-            if (!Schema::hasColumn('messages_swift', 'metadata')) {
+
+            if (! Schema::hasColumn('messages_swift', 'metadata')) {
                 $table->text('metadata')->nullable()->after('processed_at');
             }
         });
@@ -111,7 +111,7 @@ return new class extends Migration
             // ✅ NE PAS CRÉER D'INDEX SUR created_at si la colonne n'existe pas
             // Vérifier d'abord si la colonne existe
             $hasCreatedAt = DB::select("SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = 'MESSAGES_SWIFT' AND COLUMN_NAME = 'CREATED_AT'");
-            if (!empty($hasCreatedAt)) {
+            if (! empty($hasCreatedAt)) {
                 DB::statement('CREATE INDEX idx_ms_created_at ON messages_swift (created_at)');
             }
         } catch (\Exception $e) {
@@ -144,20 +144,23 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('messages_swift', function (Blueprint $table) {
-            
+
             // SUPPRIMER LES CONTRAINTES
             try {
                 DB::statement('ALTER TABLE messages_swift DROP CONSTRAINT chk_ms_direction');
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
 
             try {
                 DB::statement('ALTER TABLE messages_swift DROP CONSTRAINT chk_ms_status');
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
 
             try {
                 DB::statement('ALTER TABLE messages_swift DROP CONSTRAINT fk_messages_swift_created_by');
-            } catch (\Exception $e) {}
-            
+            } catch (\Exception $e) {
+            }
+
             // SUPPRIMER LES INDEX
             $indexes = [
                 'idx_ms_type_dir',
@@ -166,15 +169,16 @@ return new class extends Migration
                 'idx_ms_status',
                 'idx_ms_created_by',
                 'idx_ms_created_at',
-                'idx_ms_value_date'
+                'idx_ms_value_date',
             ];
 
             foreach ($indexes as $index) {
                 try {
                     DB::statement("DROP INDEX $index");
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
-            
+
             // SUPPRIMER LES COLONNES AJOUTÉES
             $columns = [
                 'direction',
@@ -191,9 +195,9 @@ return new class extends Migration
                 'status',
                 'created_by',
                 'processed_at',
-                'metadata'
+                'metadata',
             ];
-            
+
             foreach ($columns as $column) {
                 if (Schema::hasColumn('messages_swift', $column)) {
                     $table->dropColumn($column);

@@ -5,7 +5,7 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     // ensure roles exist in test DB
-    $roles = ['SUPER_ADMIN','ADMIN','MANAGER','ANALYST','AUDITOR','OPERATOR','USER'];
+    $roles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ANALYST', 'AUDITOR', 'OPERATOR', 'USER'];
     foreach ($roles as $r) {
         Role::firstOrCreate(['name' => $r]);
     }
@@ -23,12 +23,12 @@ it('each seeded role can login and access its dashboard', function () {
     ];
 
     foreach ($map as $role => $path) {
-        $email = strtolower($role) . '@example.test';
+        $email = strtolower($role).'@example.test';
 
         // ensure user exists (created by seeder, but keep idempotent)
         $user = User::firstOrCreate(
             ['email' => $email],
-            ['name' => $role . ' Test', 'password' => bcrypt('password'), 'email_verified_at' => now()]
+            ['name' => $role.' Test', 'password' => bcrypt('password'), 'email_verified_at' => now()]
         );
         if (! $user->hasRole($role)) {
             $user->assignRole($role);

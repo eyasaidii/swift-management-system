@@ -1,4 +1,5 @@
 <?php
+
 // Simple login test script: GET /login to obtain CSRF, then POST credentials.
 $base = 'http://127.0.0.1:8000';
 $cookie = sys_get_temp_dir().'/laravel_test_cookie.txt';
@@ -11,7 +12,7 @@ curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie);
 curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie);
 $res = curl_exec($ch);
 if ($res === false) {
-    echo "GET /login failed: ".curl_error($ch)."\n";
+    echo 'GET /login failed: '.curl_error($ch)."\n";
     exit(1);
 }
 
@@ -35,7 +36,7 @@ if (! $token) {
     exit(1);
 }
 
-echo "CSRF token found: ".substr($token,0,10)."...\n";
+echo 'CSRF token found: '.substr($token, 0, 10)."...\n";
 
 $post = [
     '_token' => $token,
@@ -59,8 +60,8 @@ if ($res2 === false) {
     exit(1);
 }
 
-echo "Final HTTP code: " . ($info['http_code'] ?? 'unknown') . "\n";
-echo "Effective URL: " . ($info['url'] ?? 'unknown') . "\n";
+echo 'Final HTTP code: '.($info['http_code'] ?? 'unknown')."\n";
+echo 'Effective URL: '.($info['url'] ?? 'unknown')."\n";
 
 // check if redirected to admin dashboard
 if (strpos($info['url'] ?? '', '/admin/dashboard') !== false) {
@@ -70,6 +71,6 @@ if (strpos($info['url'] ?? '', '/admin/dashboard') !== false) {
 
 // show a snippet of response to assist debugging
 echo "Response snippet:\n";
-echo substr($res2, 0, 1000) . "\n";
+echo substr($res2, 0, 1000)."\n";
 
 exit(1);

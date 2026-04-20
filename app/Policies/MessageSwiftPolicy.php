@@ -1,10 +1,11 @@
 <?php
+
 // app/Policies/MessageSwiftPolicy.php
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\MessageSwift;
+use App\Models\User;
 
 class MessageSwiftPolicy
 {
@@ -17,7 +18,7 @@ class MessageSwiftPolicy
             'backoffice',
             'monetique',
             'chef-agence',
-            'chargee'
+            'chargee',
         ]);
     }
 
@@ -28,7 +29,7 @@ class MessageSwiftPolicy
 
     public function create(User $user): bool
     {
-        return !empty(MessageSwift::getAvailableTypes($user, 'OUT'));
+        return ! empty(MessageSwift::getAvailableTypes($user, 'OUT'));
     }
 
     public function update(User $user, MessageSwift $messageSwift): bool
@@ -48,7 +49,7 @@ class MessageSwiftPolicy
             'swift-manager',
             'swift-operator',
             'chargee',
-            'chef-agence'
+            'chef-agence',
         ]);
     }
 
@@ -61,7 +62,7 @@ class MessageSwiftPolicy
             'backoffice',
             'monetique',
             'chef-agence',
-            'chargee'
+            'chargee',
         ]);
     }
 
@@ -74,7 +75,7 @@ class MessageSwiftPolicy
     {
         return $user->hasAnyRole([
             'super-admin',
-            'swift-manager'
+            'swift-manager',
         ]);
     }
 
@@ -82,7 +83,7 @@ class MessageSwiftPolicy
     {
         return $user->hasAnyRole([
             'super-admin',
-            'swift-manager'
+            'swift-manager',
         ]);
     }
 }

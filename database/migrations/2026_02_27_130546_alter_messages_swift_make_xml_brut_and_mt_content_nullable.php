@@ -14,13 +14,13 @@ return new class extends Migration
         $driver = config('database.default');
         if ($driver === 'oracle' || str_contains($driver, 'oci') || str_contains($driver, 'oracle')) {
             // Rendre XML_BRUT nullable si nécessaire
-            if (!$this->isNullable('XML_BRUT')) {
-                DB::statement("ALTER TABLE messages_swift MODIFY (XML_BRUT NULL)");
+            if (! $this->isNullable('XML_BRUT')) {
+                DB::statement('ALTER TABLE messages_swift MODIFY (XML_BRUT NULL)');
             }
 
             // Rendre MT_CONTENT nullable si nécessaire
-            if (!$this->isNullable('MT_CONTENT')) {
-                DB::statement("ALTER TABLE messages_swift MODIFY (MT_CONTENT NULL)");
+            if (! $this->isNullable('MT_CONTENT')) {
+                DB::statement('ALTER TABLE messages_swift MODIFY (MT_CONTENT NULL)');
             }
         } else {
             // Pour d'autres drivers (SQLite pendant le dev local), ignorer car opération non nécessaire

@@ -29,34 +29,34 @@ return [
     |
     */
 
-   'connections' => [
+    'connections' => [
 
-    'sqlite' => [
-        'driver' => 'sqlite',
-        'url' => env('DB_URL'),
-        'database' => env('DB_DATABASE', database_path('database.sqlite')),
-        'prefix' => '',
-        'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-        'busy_timeout' => null,
-        'journal_mode' => null,
-        'synchronous' => null,
-        'transaction_mode' => 'DEFERRED',
-    ],
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'url' => env('DB_URL'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
 
-    'oracle' => [
-        'driver'         => 'oracle',
-        'tns'            => env('DB_TNS', ''),
-        'host'           => env('DB_HOST', '127.0.0.1'),
-        'port'           => env('DB_PORT', '1521'),
-        'database'       => env('DB_DATABASE', 'XEPDB1'),  // ✅ DB_DATABASE
-        'service_name'   => env('DB_SERVICE_NAME', 'XEPDB1'), // ✅ DB_SERVICE_NAME
-        'username'       => env('DB_USERNAME', ''),
-        'password'       => env('DB_PASSWORD', ''),
-        'charset'        => env('DB_CHARSET', 'AL32UTF8'),
-        'prefix'         => '',
-        'prefix_schema'  => '',
-        'edition'        => env('DB_EDITION', 'ora$base'),
-    ],
+        'oracle' => [
+            'driver' => 'oracle',
+            'tns' => env('DB_TNS', ''),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '1521'),
+            'database' => env('DB_DATABASE', 'XEPDB1'),  // ✅ DB_DATABASE
+            'service_name' => env('DB_SERVICE_NAME', 'XEPDB1'), // ✅ DB_SERVICE_NAME
+            'username' => env('DB_USERNAME', ''),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'AL32UTF8'),
+            'prefix' => '',
+            'prefix_schema' => '',
+            'edition' => env('DB_EDITION', 'ora$base'),
+        ],
 
         'mysql' => [
             'driver' => 'mysql',

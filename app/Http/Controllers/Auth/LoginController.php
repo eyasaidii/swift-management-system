@@ -18,13 +18,13 @@ class LoginController extends Controller
         // Validation
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
         // Tentative d'authentification
         if (Auth::attempt([
             'email' => strtolower($request->email),
-            'password' => $request->password
+            'password' => $request->password,
         ])) {
 
             $request->session()->regenerate();
@@ -67,7 +67,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'These credentials do not match our records.'
+            'email' => 'These credentials do not match our records.',
         ]);
     }
 

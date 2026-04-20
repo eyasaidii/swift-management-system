@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\SwiftType;
 use App\Models\Category;
+use App\Models\SwiftType;
+use Illuminate\Database\Seeder;
 
 class SwiftTypeSeeder extends Seeder
 {

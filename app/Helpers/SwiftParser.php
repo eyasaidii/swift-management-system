@@ -21,9 +21,11 @@ class SwiftParser
             $year = $matches[3];
             $currency = $matches[4];
             $amount = str_replace(',', '.', $matches[5]); // remplacer virgule par point
-            $date = '20' . $year . '-' . $month . '-' . $day; // format YYYY-MM-DD
-            return [$date, $currency, (float)$amount];
+            $date = '20'.$year.'-'.$month.'-'.$day; // format YYYY-MM-DD
+
+            return [$date, $currency, (float) $amount];
         }
+
         return [null, null, null];
     }
 
@@ -38,8 +40,10 @@ class SwiftParser
         if (preg_match($pattern, $value, $matches)) {
             $currency = $matches[1];
             $amount = str_replace(',', '.', $matches[2]);
-            return [$currency, (float)$amount];
+
+            return [$currency, (float) $amount];
         }
+
         return [null, null];
     }
 
@@ -58,9 +62,11 @@ class SwiftParser
             $year = $matches[3];
             $currency = $matches[4];
             $amount = str_replace(',', '.', $matches[5]);
-            $date = '20' . $year . '-' . $month . '-' . $day;
-            return [$date, $currency, (float)$amount];
+            $date = '20'.$year.'-'.$month.'-'.$day;
+
+            return [$date, $currency, (float) $amount];
         }
+
         return [null, null, null];
     }
 }

@@ -62,10 +62,10 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        
+
         // ⭐⭐⭐ CORRECTION ICI : UNIQUEMENT VOTRE RoleMiddleware ⭐⭐⭐
         'role' => \App\Http\Middleware\RoleMiddleware::class,
-         'checkrole' => \App\Http\Middleware\CheckRole::class,
+        'checkrole' => \App\Http\Middleware\CheckRole::class,
         // ⭐⭐⭐ (OPTIONNEL) Si vous voulez aussi les autres middlewares Spatie : ⭐⭐⭐
         // 'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         // 'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,

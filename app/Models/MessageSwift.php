@@ -1,13 +1,14 @@
 <?php
+
 // app/Models/MessageSwift.php
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-use SimpleXMLElement;
 use Illuminate\Support\Str;
+use SimpleXMLElement;
 
 class MessageSwift extends Model
 {
@@ -16,46 +17,47 @@ class MessageSwift extends Model
     protected $table = 'messages_swift';
 
     const CREATED_AT = 'CREATED_AT';
+
     const UPDATED_AT = 'UPDATED_AT';
 
     protected $primaryKey = 'id';
 
     const TYPES = [
-        'MT103'   => 'MT103 - Paiement client',
-        'MT101'   => 'MT101 - Demande de transfert',
-        'MT202'   => 'MT202 - Transfert interbancaire',
-        'MT210'   => 'MT210 - Avis d\'encaissement',
-        'MT300'   => 'MT300 - Confirmation de change',
-        'MT320'   => 'MT320 - Prêt/Emprunt',
-        'MT700'   => 'MT700 - Crédit documentaire',
-        'MT760'   => 'MT760 - Garantie / SBLC',
-        'MT940'   => 'MT940 - Relevé de compte détaillé',
-        'MT900'   => 'MT900 - Avis de débit',
-        'MT910'   => 'MT910 - Avis de crédit',
-        'PACS.008'=> 'PACS.008 - Paiement (ISO 20022)',
+        'MT103' => 'MT103 - Paiement client',
+        'MT101' => 'MT101 - Demande de transfert',
+        'MT202' => 'MT202 - Transfert interbancaire',
+        'MT210' => 'MT210 - Avis d\'encaissement',
+        'MT300' => 'MT300 - Confirmation de change',
+        'MT320' => 'MT320 - Prêt/Emprunt',
+        'MT700' => 'MT700 - Crédit documentaire',
+        'MT760' => 'MT760 - Garantie / SBLC',
+        'MT940' => 'MT940 - Relevé de compte détaillé',
+        'MT900' => 'MT900 - Avis de débit',
+        'MT910' => 'MT910 - Avis de crédit',
+        'PACS.008' => 'PACS.008 - Paiement (ISO 20022)',
     ];
 
     const CATEGORIES = [
         'PACS' => 'PACS Messages',
         'CAMT' => 'CAMT Messages',
-        '1'    => 'Category 1 - Paiements client',
-        '2'    => 'Category 2 - Transferts financiers',
-        '3'    => 'Category 3 - Trésorerie',
-        '4'    => 'Category 4 - Encaissements',
-        '5'    => 'Category 5 - Titres',
-        '7'    => 'Category 7 - Crédits documentaires',
-        '9'    => 'Category 9 - Comptes et relevés',
+        '1' => 'Category 1 - Paiements client',
+        '2' => 'Category 2 - Transferts financiers',
+        '3' => 'Category 3 - Trésorerie',
+        '4' => 'Category 4 - Encaissements',
+        '5' => 'Category 5 - Titres',
+        '7' => 'Category 7 - Crédits documentaires',
+        '9' => 'Category 9 - Comptes et relevés',
     ];
 
     const DIRECTION = [
-        'IN'  => 'Reçu',
+        'IN' => 'Reçu',
         'OUT' => 'Émis',
     ];
 
     const STATUS = [
-        'pending'   => 'En attente',
+        'pending' => 'En attente',
         'processed' => 'Traité',
-        'rejected'  => 'Rejeté',
+        'rejected' => 'Rejeté',
         'cancelled' => 'Annulé',
     ];
 
@@ -94,14 +96,14 @@ class MessageSwift extends Model
     // CASTS
     // =========================================================
     protected $casts = [
-        'amount'             => 'decimal:2',
-        'value_date'         => 'date',
-        'processed_at'       => 'datetime',
-        'authorized_at'      => 'datetime',   // ← FIX
-        'metadata'           => 'array',
+        'amount' => 'decimal:2',
+        'value_date' => 'date',
+        'processed_at' => 'datetime',
+        'authorized_at' => 'datetime',   // ← FIX
+        'metadata' => 'array',
         'translation_errors' => 'array',
-        'created_at'         => 'datetime',
-        'updated_at'         => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     // =========================================================
@@ -228,14 +230,22 @@ class MessageSwift extends Model
 
         try {
             $xml = new SimpleXMLElement($this->XML_BRUT);
-            $ns  = $xml->getDocNamespaces(true);
+            $ns = $xml->getDocNamespaces(true);
 
             $defaultNs = reset($ns) ?: '';
 
-            if (str_contains($defaultNs, 'pacs.008')) return 'PACS.008';
-            if (str_contains($defaultNs, 'pacs.009')) return 'PACS.009';
-            if (str_contains($defaultNs, 'camt.053')) return 'CAMT.053';
-            if (str_contains($defaultNs, 'camt.054')) return 'CAMT.054';
+            if (str_contains($defaultNs, 'pacs.008')) {
+                return 'PACS.008';
+            }
+            if (str_contains($defaultNs, 'pacs.009')) {
+                return 'PACS.009';
+            }
+            if (str_contains($defaultNs, 'camt.053')) {
+                return 'CAMT.053';
+            }
+            if (str_contains($defaultNs, 'camt.054')) {
+                return 'CAMT.054';
+            }
 
             $rootTag = $xml->getName();
             if ($rootTag === 'SWIFTMessage') {
@@ -252,15 +262,33 @@ class MessageSwift extends Model
     {
         $type = strtoupper($this->TYPE_MESSAGE ?? '');
 
-        if (str_starts_with($type, 'PACS')) return 'PACS';
-        if (str_starts_with($type, 'CAMT')) return 'CAMT';
-        if (str_starts_with($type, 'MT1'))  return '1';
-        if (str_starts_with($type, 'MT2'))  return '2';
-        if (str_starts_with($type, 'MT3'))  return '3';
-        if (str_starts_with($type, 'MT4'))  return '4';
-        if (str_starts_with($type, 'MT5'))  return '5';
-        if (str_starts_with($type, 'MT7'))  return '7';
-        if (str_starts_with($type, 'MT9'))  return '9';
+        if (str_starts_with($type, 'PACS')) {
+            return 'PACS';
+        }
+        if (str_starts_with($type, 'CAMT')) {
+            return 'CAMT';
+        }
+        if (str_starts_with($type, 'MT1')) {
+            return '1';
+        }
+        if (str_starts_with($type, 'MT2')) {
+            return '2';
+        }
+        if (str_starts_with($type, 'MT3')) {
+            return '3';
+        }
+        if (str_starts_with($type, 'MT4')) {
+            return '4';
+        }
+        if (str_starts_with($type, 'MT5')) {
+            return '5';
+        }
+        if (str_starts_with($type, 'MT7')) {
+            return '7';
+        }
+        if (str_starts_with($type, 'MT9')) {
+            return '9';
+        }
 
         return 'AUTRE';
     }
@@ -277,10 +305,10 @@ class MessageSwift extends Model
 
         $permissions = $user->getAllPermissions()->pluck('name');
 
-        $canViewAllIn  = $permissions->contains('view-received-messages');
+        $canViewAllIn = $permissions->contains('view-received-messages');
         $canViewAllOut = $permissions->contains('view-emitted-messages');
 
-        $inTypes  = [];
+        $inTypes = [];
         $outTypes = [];
 
         foreach ($permissions as $perm) {
@@ -298,7 +326,7 @@ class MessageSwift extends Model
         $query->where(function ($q) use ($canViewAllIn, $canViewAllOut, $inTypes, $outTypes) {
             if ($canViewAllIn) {
                 $q->orWhere('DIRECTION', 'IN');
-            } elseif (!empty($inTypes)) {
+            } elseif (! empty($inTypes)) {
                 $q->orWhere(function ($sub) use ($inTypes) {
                     $sub->where('DIRECTION', 'IN')
                         ->whereIn('TYPE_MESSAGE', $inTypes);
@@ -307,7 +335,7 @@ class MessageSwift extends Model
 
             if ($canViewAllOut) {
                 $q->orWhere('DIRECTION', 'OUT');
-            } elseif (!empty($outTypes)) {
+            } elseif (! empty($outTypes)) {
                 $q->orWhere(function ($sub) use ($outTypes) {
                     $sub->where('DIRECTION', 'OUT')
                         ->whereIn('TYPE_MESSAGE', $outTypes);
@@ -326,12 +354,16 @@ class MessageSwift extends Model
 
         $direction = $this->direction;
 
-        if ($direction === 'IN'  && $user->can('view-received-messages')) return true;
-        if ($direction === 'OUT' && $user->can('view-emitted-messages'))  return true;
+        if ($direction === 'IN' && $user->can('view-received-messages')) {
+            return true;
+        }
+        if ($direction === 'OUT' && $user->can('view-emitted-messages')) {
+            return true;
+        }
 
         $permName = $direction === 'IN'
-            ? 'IN.'  . $this->TYPE_MESSAGE
-            : 'OUT.' . $this->TYPE_MESSAGE;
+            ? 'IN.'.$this->TYPE_MESSAGE
+            : 'OUT.'.$this->TYPE_MESSAGE;
 
         return $user->can($permName);
     }
@@ -339,6 +371,7 @@ class MessageSwift extends Model
     public static function canCreate(User $user, string $type): bool
     {
         $available = self::getAvailableTypes($user, 'OUT');
+
         return isset($available[$type]);
     }
 
@@ -350,7 +383,7 @@ class MessageSwift extends Model
             return $types;
         }
 
-        $prefix         = $direction === 'IN' ? 'IN.' : 'OUT.';
+        $prefix = $direction === 'IN' ? 'IN.' : 'OUT.';
         $permittedTypes = [];
 
         foreach ($user->getAllPermissions() as $perm) {
@@ -379,7 +412,7 @@ class MessageSwift extends Model
 
     public function getFormattedAmountAttribute(): string
     {
-        return number_format($this->AMOUNT, 2) . ' ' . $this->CURRENCY;
+        return number_format($this->AMOUNT, 2).' '.$this->CURRENCY;
     }
 
     public function getStatusLabelAttribute(): string
@@ -395,6 +428,7 @@ class MessageSwift extends Model
     public function getCategorieLabelAttribute(): string
     {
         $categorie = $this->CATEGORIE ?? $this->determineCategorie();
+
         return self::CATEGORIES[$categorie] ?? $categorie;
     }
 

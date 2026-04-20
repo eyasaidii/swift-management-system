@@ -19,7 +19,7 @@ class ImportSwiftPermissionSeeder extends Seeder
             'backoffice',
             'monetique',
             'swift-manager',
-            'swift-operator'
+            'swift-operator',
         ];
 
         foreach ($roles as $r) {

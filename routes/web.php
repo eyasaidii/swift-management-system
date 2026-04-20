@@ -1,15 +1,15 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AnomalySwiftController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\MessageSwiftController;
-use App\Http\Controllers\AnomalySwiftController;              // ← AJOUT IA
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProfileController;              // ← AJOUT IA
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Middleware\RoleMiddleware;
 Route::aliasMiddleware('role', RoleMiddleware::class);
 
 Route::get('/', function () {
@@ -25,19 +25,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
         $primaryRole = $user->getRoleNames()->first();
-        return match($primaryRole) {
-            'super-admin'         => redirect()->route('admin.dashboard'),
-            'swift-manager'       => redirect()->route('international-admin.dashboard'),
-            'swift-operator'      => redirect()->route('international-user.dashboard'),
-            'admin'               => redirect()->route('admin.dashboard'),
+
+        return match ($primaryRole) {
+            'super-admin' => redirect()->route('admin.dashboard'),
+            'swift-manager' => redirect()->route('international-admin.dashboard'),
+            'swift-operator' => redirect()->route('international-user.dashboard'),
+            'admin' => redirect()->route('admin.dashboard'),
             'international-admin' => redirect()->route('international-admin.dashboard'),
-            'international-user'  => redirect()->route('international-user.dashboard'),
-            'backoffice'          => redirect()->route('backoffice.dashboard'),
-            'monetique'           => redirect()->route('monetique.dashboard'),
-            'chef-agence'         => redirect()->route('chef-agence.dashboard'),
-            'chargee'             => redirect()->route('chargee.dashboard'),
-            'compliance-officer'  => redirect()->route('compliance.dashboard'),
-            default               => redirect()->route('profile.edit')->with('error', 'Rôle non configuré'),
+            'international-user' => redirect()->route('international-user.dashboard'),
+            'backoffice' => redirect()->route('backoffice.dashboard'),
+            'monetique' => redirect()->route('monetique.dashboard'),
+            'chef-agence' => redirect()->route('chef-agence.dashboard'),
+            'chargee' => redirect()->route('chargee.dashboard'),
+            'compliance-officer' => redirect()->route('compliance.dashboard'),
+            default => redirect()->route('profile.edit')->with('error', 'Rôle non configuré'),
         };
     })->name('dashboard');
 
@@ -158,20 +159,20 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('swift')->name('swift.')->group(function () {
 
         // Routes sans paramètre
-        Route::get('/',      [MessageSwiftController::class, 'index'])->name('index');
+        Route::get('/', [MessageSwiftController::class, 'index'])->name('index');
         Route::get('/creer', [MessageSwiftController::class, 'create'])->name('create');
-        Route::post('/',     [MessageSwiftController::class, 'store'])->name('store');
+        Route::post('/', [MessageSwiftController::class, 'store'])->name('store');
 
         // Import
         Route::middleware('can:import,App\\Models\\MessageSwift')->group(function () {
-            Route::get('/importer',  [MessageSwiftController::class, 'importForm'])->name('import.form');
+            Route::get('/importer', [MessageSwiftController::class, 'importForm'])->name('import.form');
             Route::post('/importer', [MessageSwiftController::class, 'import'])->name('import');
         });
 
         // Export + Export Center
         Route::middleware('role:super-admin,backoffice,monetique,chef-agence,swift-manager,swift-operator')
             ->group(function () {
-                Route::get('/exporter',      [MessageSwiftController::class, 'export'])->name('export');
+                Route::get('/exporter', [MessageSwiftController::class, 'export'])->name('export');
                 Route::get('/export-center', [DashboardController::class, 'exportCenter'])->name('export-center');
             });
 
@@ -181,51 +182,51 @@ Route::middleware(['auth'])->group(function () {
         // =========================================================
         // ROUTES IA — ANOMALIES (avant /{id} — ORDRE CRITIQUE)     ← AJOUT IA
         // =========================================================
-       Route::middleware('role:super-admin,swift-manager')->group(function () {
- 
-    // Liste + filtres
-    Route::get('/anomalies',
-        [AnomalySwiftController::class, 'index'])
-        ->name('anomalies.index');
- 
-    // Analyser tous les messages
-    Route::post('/anomalies/analyze-all',
-        [AnomalySwiftController::class, 'analyzeAll'])
-        ->name('anomalies.analyze-all');
- 
-    // ← NOUVEAU : analyser un seul message (appelé depuis swift.show)
-    Route::post('/anomalies/analyze/{id}',
-        [AnomalySwiftController::class, 'analyzeSingle'])
-        ->name('anomalies.analyze-single');
- 
-    // Détail d'une anomalie
-    Route::get('/anomalies/{id}',
-        [AnomalySwiftController::class, 'show'])
-        ->name('anomalies.show');
- 
-    // Marquer vérifiée
-    Route::patch('/anomalies/{id}/verify',
-        [AnomalySwiftController::class, 'verify'])
-        ->name('anomalies.verify');
- 
-    // Re-analyser une anomalie existante
-    Route::post('/anomalies/{id}/reanalyze',
-        [AnomalySwiftController::class, 'reanalyze'])
-        ->name('anomalies.reanalyze');
-});
+        Route::middleware('role:super-admin,swift-manager')->group(function () {
+
+            // Liste + filtres
+            Route::get('/anomalies',
+                [AnomalySwiftController::class, 'index'])
+                ->name('anomalies.index');
+
+            // Analyser tous les messages
+            Route::post('/anomalies/analyze-all',
+                [AnomalySwiftController::class, 'analyzeAll'])
+                ->name('anomalies.analyze-all');
+
+            // ← NOUVEAU : analyser un seul message (appelé depuis swift.show)
+            Route::post('/anomalies/analyze/{id}',
+                [AnomalySwiftController::class, 'analyzeSingle'])
+                ->name('anomalies.analyze-single');
+
+            // Détail d'une anomalie
+            Route::get('/anomalies/{id}',
+                [AnomalySwiftController::class, 'show'])
+                ->name('anomalies.show');
+
+            // Marquer vérifiée
+            Route::patch('/anomalies/{id}/verify',
+                [AnomalySwiftController::class, 'verify'])
+                ->name('anomalies.verify');
+
+            // Re-analyser une anomalie existante
+            Route::post('/anomalies/{id}/reanalyze',
+                [AnomalySwiftController::class, 'reanalyze'])
+                ->name('anomalies.reanalyze');
+        });
         // =========================================================
 
         // Actions sur message — AVANT /{id}
-        Route::get('/{id}/view-mt',     [MessageSwiftController::class, 'viewMt'])->name('view-mt');
-        Route::get('/{id}/view-mx',     [MessageSwiftController::class, 'viewMx'])->name('view-mx');
-        Route::patch('/{id}/process',   [MessageSwiftController::class, 'process'])->name('process');
-        Route::patch('/{id}/reject',    [MessageSwiftController::class, 'reject'])->name('reject');
+        Route::get('/{id}/view-mt', [MessageSwiftController::class, 'viewMt'])->name('view-mt');
+        Route::get('/{id}/view-mx', [MessageSwiftController::class, 'viewMx'])->name('view-mx');
+        Route::patch('/{id}/process', [MessageSwiftController::class, 'process'])->name('process');
+        Route::patch('/{id}/reject', [MessageSwiftController::class, 'reject'])->name('reject');
         Route::patch('/{id}/authorize', [MessageSwiftController::class, 'approveMessage'])->name('authorize')->middleware('role:super-admin,swift-manager');
-        Route::patch('/{id}/suspend',   [MessageSwiftController::class, 'suspend'])->name('suspend')->middleware('role:super-admin,swift-manager');
-        Route::delete('/{id}',          [MessageSwiftController::class, 'destroy'])->name('destroy')->middleware('role:super-admin,swift-manager');
+        Route::patch('/{id}/suspend', [MessageSwiftController::class, 'suspend'])->name('suspend')->middleware('role:super-admin,swift-manager');
+        Route::delete('/{id}', [MessageSwiftController::class, 'destroy'])->name('destroy')->middleware('role:super-admin,swift-manager');
 
         // Détail et PDF — EN DERNIER
-        Route::get('/{id}',     [MessageSwiftController::class, 'show'])->name('show');
+        Route::get('/{id}', [MessageSwiftController::class, 'show'])->name('show');
         Route::get('/{id}/pdf', [MessageSwiftController::class, 'downloadPdf'])->name('pdf');
     });
 
@@ -276,36 +277,45 @@ Route::middleware('auth')->group(function () {
 // DEBUG (supprimer en production)
 // ───────────────────────────────────────────────
 Route::get('/debug-user', function () {
-    if (!auth()->check()) return "Non connecté";
+    if (! auth()->check()) {
+        return 'Non connecté';
+    }
     $user = auth()->user();
+
     return response()->json([
-        'user'            => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
-        'roles'           => $user->getRoleNames(),
-        'permissions'     => $user->getAllPermissions()->pluck('name'),
+        'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+        'roles' => $user->getRoleNames(),
+        'permissions' => $user->getAllPermissions()->pluck('name'),
         'dashboard_route' => route('dashboard'),
-        'is_verified'     => !is_null($user->email_verified_at),
+        'is_verified' => ! is_null($user->email_verified_at),
     ]);
 })->middleware('auth');
 
 Route::get('/debug-swift-permissions', function () {
-    if (!auth()->check()) return "Non connecté";
+    if (! auth()->check()) {
+        return 'Non connecté';
+    }
     $user = auth()->user();
+
     return response()->json([
-        'user'                => $user->email,
-        'role'                => $user->getRoleNames()->first(),
-        'can_create'          => \App\Models\MessageSwift::canCreate($user, request('type', 'MT103')),
-        'available_types_in'  => array_keys(\App\Models\MessageSwift::getAvailableTypes($user, 'IN')),
+        'user' => $user->email,
+        'role' => $user->getRoleNames()->first(),
+        'can_create' => \App\Models\MessageSwift::canCreate($user, request('type', 'MT103')),
+        'available_types_in' => array_keys(\App\Models\MessageSwift::getAvailableTypes($user, 'IN')),
         'available_types_out' => array_keys(\App\Models\MessageSwift::getAvailableTypes($user, 'OUT')),
-        'permissions'         => [
+        'permissions' => [
             'view_any' => $user->can('viewAny', \App\Models\MessageSwift::class),
-            'create'   => $user->can('create',  \App\Models\MessageSwift::class),
-            'import'   => $user->can('import',  \App\Models\MessageSwift::class),
-            'export'   => $user->can('export',  \App\Models\MessageSwift::class),
+            'create' => $user->can('create', \App\Models\MessageSwift::class),
+            'import' => $user->can('import', \App\Models\MessageSwift::class),
+            'export' => $user->can('export', \App\Models\MessageSwift::class),
         ],
     ]);
 })->middleware('auth');
 
 Route::fallback(function () {
-    if (auth()->check()) return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+
     return redirect()->route('login');
 });

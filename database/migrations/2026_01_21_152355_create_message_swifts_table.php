@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages_swift', function (Blueprint $table) {
-            
+
             $table->id();
             $table->string('type_message'); // MT103, MT940, MT950, MT200, PACS.008, CAMT.053
             $table->string('reference')->unique(); // Référence unique
             $table->longText('xml_brut'); // Contenu XML brut
             $table->foreignId('import_job_id')->nullable(); // ID du job d'import
-            
+
             // ✅ AJOUTER CES COLONNES MANQUANTES
             $table->enum('direction', ['IN', 'OUT'])->default('IN'); // Reçu ou Émis
             $table->string('sender_bic', 11)->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->timestamp('processed_at')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();
-            
+
             // ✅ INDEX POUR PERFORMANCES
             $table->index(['type_message', 'direction']);
             $table->index(['sender_bic', 'receiver_bic']);

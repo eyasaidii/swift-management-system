@@ -23,7 +23,7 @@ class RenameRoleSlugs extends Migration
             $oldRole = DB::table('roles')->where('name', $old)->first();
             $newRole = DB::table('roles')->where('name', $new)->first();
 
-            if (!$oldRole) {
+            if (! $oldRole) {
                 continue;
             }
 
@@ -53,7 +53,7 @@ class RenameRoleSlugs extends Migration
             $oldRole = DB::table('roles')->where('name', $old)->first();
             $newRole = DB::table('roles')->where('name', $new)->first();
 
-            if (!$oldRole) {
+            if (! $oldRole) {
                 continue;
             }
 

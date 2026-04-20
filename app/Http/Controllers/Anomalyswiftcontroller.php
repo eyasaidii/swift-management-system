@@ -44,10 +44,10 @@ class AnomalySwiftController extends Controller
         $anomalies = $query->paginate(20)->withQueryString();
 
         $stats = [
-            'total'         => AnomalySwift::count(),
-            'high'          => AnomalySwift::where('niveau_risque', 'HIGH')->count(),
-            'medium'        => AnomalySwift::where('niveau_risque', 'MEDIUM')->count(),
-            'low'           => AnomalySwift::where('niveau_risque', 'LOW')->count(),
+            'total' => AnomalySwift::count(),
+            'high' => AnomalySwift::where('niveau_risque', 'HIGH')->count(),
+            'medium' => AnomalySwift::where('niveau_risque', 'MEDIUM')->count(),
+            'low' => AnomalySwift::where('niveau_risque', 'LOW')->count(),
             'non_verifiees' => AnomalySwift::whereNull('verifie_par')->where('niveau_risque', 'HIGH')->count(),
         ];
 
@@ -61,6 +61,7 @@ class AnomalySwiftController extends Controller
     public function show($id)
     {
         $anomaly = AnomalySwift::with(['message.details', 'verificateur'])->findOrFail($id);
+
         return view('swift.anomalies.show', compact('anomaly'));
     }
 
@@ -71,7 +72,7 @@ class AnomalySwiftController extends Controller
     public function verify($id)
     {
         $anomaly = AnomalySwift::findOrFail($id);
-        $user    = Auth::user();
+        $user = Auth::user();
 
         if (! $user->hasRole(['super-admin', 'swift-manager'])) {
             abort(403, 'Action non autorisée.');
@@ -79,7 +80,7 @@ class AnomalySwiftController extends Controller
 
         $anomaly->update([
             'verifie_par' => $user->id,
-            'verifie_at'  => now(),
+            'verifie_at' => now(),
         ]);
 
         return back()->with('success', "Anomalie #$id marquée comme vérifiée.");
@@ -92,7 +93,7 @@ class AnomalySwiftController extends Controller
     public function reanalyze($id)
     {
         $anomaly = AnomalySwift::findOrFail($id);
-        $user    = Auth::user();
+        $user = Auth::user();
 
         if (! $user->hasRole(['super-admin', 'swift-manager'])) {
             abort(403, 'Action non autorisée.');
@@ -112,7 +113,7 @@ class AnomalySwiftController extends Controller
     public function analyzeSingle($id)
     {
         $message = MessageSwift::findOrFail($id);
-        $user    = Auth::user();
+        $user = Auth::user();
 
         if (! $user->hasRole(['super-admin', 'swift-manager'])) {
             abort(403, 'Action non autorisée.');
@@ -138,7 +139,7 @@ class AnomalySwiftController extends Controller
         }
 
         $service = app(AnomalyService::class);
-        $count   = 0;
+        $count = 0;
 
         MessageSwift::chunk(100, function ($messages) use ($service, &$count) {
             foreach ($messages as $message) {

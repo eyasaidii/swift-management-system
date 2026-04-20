@@ -11,15 +11,15 @@ return new class extends Migration
         Schema::create('anomalies_swift', function (Blueprint $table) {
             $table->id();
             $table->foreignId('message_id')
-                  ->constrained('messages_swift')
-                  ->onDelete('cascade');
+                ->constrained('messages_swift')
+                ->onDelete('cascade');
             $table->decimal('score', 5, 2)->nullable();
             $table->string('niveau_risque', 10)->nullable();
             $table->json('raisons')->nullable();
             $table->foreignId('verifie_par')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
             $table->timestamp('verifie_at')->nullable();
             $table->timestamps();
         });

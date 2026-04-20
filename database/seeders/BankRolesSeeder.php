@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class BankRolesSeeder extends Seeder
 {
@@ -19,7 +18,7 @@ class BankRolesSeeder extends Seeder
                 'display_name' => 'Super-Admin Système',
                 'color' => 'danger',
                 'icon' => 'fas fa-crown',
-                'permissions' => [] // Sera rempli automatiquement
+                'permissions' => [], // Sera rempli automatiquement
             ],
 
             'swift-manager' => [
@@ -37,7 +36,7 @@ class BankRolesSeeder extends Seeder
                     'view-international-reports', 'export-international-data',
                     'view-aml-alerts', 'process-aml-alerts',
                     'sanctions-screening', 'view-sanctions-list',
-                ]
+                ],
             ],
             'swift-operator' => [
                 'display_name' => 'Swift Operator',
@@ -49,7 +48,7 @@ class BankRolesSeeder extends Seeder
                     'view-swift-messages', 'view-international-reports',
                     'view-correspondent-banks', 'view-fx-rates',
                     'export-international-data',
-                ]
+                ],
             ],
 
             'backoffice' => [
@@ -65,7 +64,7 @@ class BankRolesSeeder extends Seeder
                     'view-swift-messages', 'import-swift-messages', 'export-swift-messages',
                     'view-client-transactions', 'view-card-transactions',
                     'view-client-info',
-                ]
+                ],
             ],
 
             'monetique' => [
@@ -80,7 +79,7 @@ class BankRolesSeeder extends Seeder
                     'view-swift-messages', 'import-swift-messages',
                     'view-monetique-reports',
                     'view-client-info', 'view-client-portfolio',
-                ]
+                ],
             ],
 
             'chef-agence' => [
@@ -96,7 +95,7 @@ class BankRolesSeeder extends Seeder
                     'view-swift-messages', 'create-swift-messages', 'export-swift-messages',
                     'view-client-transactions', 'create-client-transactions',
                     'view-client-info', 'process-client-requests',
-                ]
+                ],
             ],
 
             'chargee' => [
@@ -109,7 +108,7 @@ class BankRolesSeeder extends Seeder
                     'view-client-transactions', 'create-client-transactions',
                     'view-client-info', 'process-client-requests',
                     'send-client-messages', 'view-client-portfolio',
-                ]
+                ],
             ],
 
             'compliance-officer' => [
@@ -124,8 +123,8 @@ class BankRolesSeeder extends Seeder
                     'view-audit-trail', 'generate-compliance-reports',
                     'view-client-info', 'view-transactions',
                     'view-international-transactions',
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Récupérer toutes les permissions pour l'admin
@@ -134,33 +133,34 @@ class BankRolesSeeder extends Seeder
 
         // CRÉER LES RÔLES ET ASSIGNER LES PERMISSIONS
         $this->command->info('Création/Mise à jour des rôles...');
-        
+
         $totalRoles = 0;
         $totalPermissionsAssigned = 0;
-        
+
         foreach ($bankRoles as $roleKey => $roleData) {
             try {
                 // Créer ou récupérer le rôle
                 $role = Role::firstOrCreate([
                     'name' => $roleKey,
-                    'guard_name' => 'web'
+                    'guard_name' => 'web',
                 ]);
 
                 $permissionNames = $roleData['permissions'];
-                
+
                 // Vérifier l'existence des permissions
                 $existingPermissions = Permission::whereIn('name', $permissionNames)->pluck('name')->toArray();
-                
+
                 // Synchroniser les permissions
                 $role->syncPermissions($existingPermissions);
-                
+
                 $totalRoles++;
                 $totalPermissionsAssigned += count($existingPermissions);
-                
-                $this->command->info("   ✅ {$roleData['display_name']} ({$roleKey}) - " . count($existingPermissions) . " permissions assignées");
-                
+
+                $this->command->info("   ✅ {$roleData['display_name']} ({$roleKey}) - ".count($existingPermissions).' permissions assignées');
+
             } catch (\Exception $e) {
-                $this->command->error("   ❌ Erreur pour {$roleKey}: " . $e->getMessage());
+                $this->command->error("   ❌ Erreur pour {$roleKey}: ".$e->getMessage());
+
                 continue;
             }
         }
@@ -169,9 +169,9 @@ class BankRolesSeeder extends Seeder
         $this->command->info('');
         $this->command->info('🎉 Création des rôles bancaires terminée !');
         $this->command->info('==========================================');
-        $this->command->info("📊 RÉSUMÉ:");
+        $this->command->info('📊 RÉSUMÉ:');
         $this->command->info("   • Rôles créés/mis à jour: {$totalRoles}");
-        
+
         // Afficher les permissions par rôle
         foreach ($bankRoles as $roleKey => $roleData) {
             $role = Role::where('name', $roleKey)->first();

@@ -18,9 +18,9 @@ class AnomalySwift extends Model
     ];
 
     protected $casts = [
-        'raisons'    => 'array',
+        'raisons' => 'array',
         'verifie_at' => 'datetime',
-        'score'      => 'float',
+        'score' => 'float',
     ];
 
     // Relation vers MessageSwift

@@ -1,12 +1,13 @@
 <?php
+
 // app/Providers/AppServiceProvider.php
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
 use App\Models\MessageSwift;
 use App\Observers\MessageSwiftObserver;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

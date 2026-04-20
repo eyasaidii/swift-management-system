@@ -2,25 +2,26 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\MessageSwift;
+use Illuminate\Console\Command;
 
 class FixSwiftCategories extends Command
 {
     protected $signature = 'swift:fix-categories';
+
     protected $description = 'Corrige les catégories des messages SWIFT';
 
     public function handle()
     {
         $this->info('🔍 Correction des catégories des messages SWIFT...');
-        
+
         $messages = MessageSwift::all();
         $count = 0;
-        
+
         foreach ($messages as $msg) {
             $type = $msg->TYPE_MESSAGE;
             $ancienne = $msg->CATEGORIE;
-            
+
             if (str_starts_with($type, 'pacs')) {
                 $categorie = 'PACS';
             } elseif (str_starts_with($type, 'camt')) {
@@ -42,7 +43,7 @@ class FixSwiftCategories extends Command
             } else {
                 $categorie = 'AUTRE';
             }
-            
+
             if ($ancienne !== $categorie) {
                 $msg->CATEGORIE = $categorie;
                 $msg->save();
@@ -50,8 +51,9 @@ class FixSwiftCategories extends Command
                 $this->line("   {$msg->REFERENCE} : {$type} → {$categorie}");
             }
         }
-        
+
         $this->info("✅ {$count} messages mis à jour !");
+
         return 0;
     }
 }

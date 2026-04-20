@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Validator;
-use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
@@ -34,7 +33,7 @@ class UserController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -51,10 +50,10 @@ class UserController extends Controller
 
         // Changement : admin.users.index -> super-admin.users.index
         return view('super-admin.users.index', compact(
-            'users', 
-            'stats', 
-            'availableRoles', 
-            'search', 
+            'users',
+            'stats',
+            'availableRoles',
+            'search',
             'role'
         ));
     }
@@ -65,9 +64,9 @@ class UserController extends Controller
     public function create()
     {
         $this->authorize('create', User::class);
-        
+
         $availableRoles = $this->getAvailableRoles();
-        
+
         // Changement : admin.users.create -> super-admin.users.create
         return view('super-admin.users.create', compact('availableRoles'));
     }
@@ -83,7 +82,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'telephone' => 'nullable|string|max:20',
-            'role' => 'required|string|in:' . implode(',', array_keys($this->getAvailableRoles())),
+            'role' => 'required|string|in:'.implode(',', array_keys($this->getAvailableRoles())),
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -113,9 +112,9 @@ class UserController extends Controller
     public function show(User $user)
     {
         $this->authorize('view', $user);
-        
+
         $user->load('roles');
-        
+
         // Changement : admin.users.show -> super-admin.users.show
         return view('super-admin.users.show', compact('user'));
     }
@@ -126,10 +125,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $this->authorize('update', $user);
-        
+
         $availableRoles = $this->getAvailableRoles();
         $currentRole = $user->getRoleNames()->first();
-        
+
         // Changement : admin.users.modifier -> super-admin.users.modifier
         return view('super-admin.users.modifier', compact('user', 'availableRoles', 'currentRole'));
     }
@@ -143,9 +142,9 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'telephone' => 'nullable|string|max:20',
-            'role' => 'required|string|in:' . implode(',', array_keys($this->getAvailableRoles())),
+            'role' => 'required|string|in:'.implode(',', array_keys($this->getAvailableRoles())),
         ]);
 
         if ($validator->fails()) {
@@ -219,7 +218,7 @@ class UserController extends Controller
         $this->authorize('export', User::class);
 
         $users = User::with('roles')->get();
-        
+
         $data = $users->map(function ($user) {
             return [
                 'Nom' => $user->name,
@@ -230,23 +229,23 @@ class UserController extends Controller
             ];
         });
 
-        $filename = "utilisateurs_btl_" . date('Y-m-d') . ".csv";
-        
+        $filename = 'utilisateurs_btl_'.date('Y-m-d').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($data) {
+        $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
-            
+
             if ($data->isNotEmpty()) {
                 fputcsv($file, array_keys($data->first()));
                 foreach ($data as $row) {
                     fputcsv($file, $row);
                 }
             }
-            
+
             fclose($file);
         };
 
@@ -259,23 +258,23 @@ class UserController extends Controller
     private function getAvailableRoles(): array
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return [];
         }
-        
+
         $allRoles = User::getBankRoles();
-        
+
         if ($user->hasRole('super-admin')) {
             return $allRoles;
         }
-        
+
         if ($user->hasRole('chef-agence')) {
             return array_filter($allRoles, function ($key) {
                 return in_array($key, ['chargee', 'backoffice']);
             }, ARRAY_FILTER_USE_KEY);
         }
-        
+
         return [];
     }
 
@@ -285,17 +284,17 @@ class UserController extends Controller
     private function getUserStatistics(): array
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return [
                 'total' => 0,
                 'by_role' => [],
                 'last_update' => now()->format('d/m/Y H:i'),
             ];
         }
-        
+
         $total = User::count();
-        
+
         $byRole = [];
         foreach (array_keys(User::getBankRoles()) as $role) {
             $count = User::byRole($role)->count();

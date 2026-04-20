@@ -9,7 +9,7 @@ class AnomalyService
 {
     public function analyze(MessageSwift $message): array
     {
-        $score   = 0;
+        $score = 0;
         $raisons = [];
 
         // ── Règle 1 — Montant zéro ──────────────────────────────
@@ -36,7 +36,7 @@ class AnomalyService
         $translationErrors = $message->TRANSLATION_ERRORS
                           ?? $message->translation_errors
                           ?? null;
-        if (!empty($translationErrors)) {
+        if (! empty($translationErrors)) {
             $score += 25;
             $raisons[] = 'TRANSLATION_ERROR';
         }
@@ -52,8 +52,8 @@ class AnomalyService
         $reference = $message->REFERENCE ?? $message->reference ?? null;
         if ($reference) {
             $doublon = MessageSwift::where('REFERENCE', $reference)
-                                   ->where('id', '!=', $message->id)
-                                   ->exists();
+                ->where('id', '!=', $message->id)
+                ->exists();
             if ($doublon) {
                 $score += 20;
                 $raisons[] = 'DOUBLON_REFERENCE';
@@ -61,7 +61,7 @@ class AnomalyService
         }
 
         // ── Règle 7 — BIC manquant ───────────────────────────────
-        $senderBic   = $message->SENDER_BIC   ?? $message->sender_bic   ?? null;
+        $senderBic = $message->SENDER_BIC ?? $message->sender_bic ?? null;
         $receiverBic = $message->RECEIVER_BIC ?? $message->receiver_bic ?? null;
         if (empty($senderBic) || empty($receiverBic)) {
             $score += 15;
@@ -71,7 +71,7 @@ class AnomalyService
         // ── Règle 8 — Devise inhabituelle ────────────────────────
         $currency = strtoupper(trim($message->CURRENCY ?? $message->currency ?? ''));
         $devicesHabituelles = ['EUR', 'USD', 'TND', 'GBP', 'CHF'];
-        if (!empty($currency) && !in_array($currency, $devicesHabituelles)) {
+        if (! empty($currency) && ! in_array($currency, $devicesHabituelles)) {
             $score += 20;
             $raisons[] = 'DEVISE_INHABITUELLE';
         }
@@ -90,27 +90,27 @@ class AnomalyService
         }
 
         // ── Score final ───────────────────────────────────────────
-        $score  = min($score, 100);
-        $niveau = match(true) {
+        $score = min($score, 100);
+        $niveau = match (true) {
             $score >= 60 => 'HIGH',
             $score >= 20 => 'MEDIUM',
-            default      => 'LOW',
+            default => 'LOW',
         };
 
         // Sauvegarder dans ANOMALIES_SWIFT
         AnomalySwift::updateOrCreate(
             ['message_id' => $message->id],
             [
-                'score'         => $score,
+                'score' => $score,
                 'niveau_risque' => $niveau,
-                'raisons'       => $raisons,
+                'raisons' => $raisons,
             ]
         );
 
         return [
-            'score'         => $score,
+            'score' => $score,
             'niveau_risque' => $niveau,
-            'raisons'       => $raisons,
+            'raisons' => $raisons,
         ];
     }
 
