@@ -94,7 +94,7 @@
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="bg-light">
-                        <tr><th>DATE</th><th>TYPE</th><th>RÉFÉRENCE</th><th>EXPÉDITEUR</th><th>MONTANT</th><th>STATUT</th><th>ACTIONS</th></tr>
+                        <tr><th style="width:12%">DATE</th><th style="width:8%">TYPE</th><th style="width:20%">RÉFÉRENCE</th><th style="width:20%">EXPÉDITEUR</th><th style="width:14%">MONTANT</th><th style="width:10%">STATUT</th><th style="width:16%">ACTIONS</th></tr>
                     </thead>
                     <tbody>
                         @forelse($messages as $msg)

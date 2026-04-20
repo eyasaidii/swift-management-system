@@ -57,13 +57,13 @@
             <table class="table table-hover table-bordered mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th>DATE</th>
-                        <th>TYPE</th>
-                        <th>SENDER</th>
-                        <th>TRANSACTION REFERENCE</th>
-                        <th>AMOUNT</th>
-                        <th>CUR</th>
-                        <th>ACTIONS</th>
+                        <th style="width:14%">DATE</th>
+                        <th style="width:8%">TYPE</th>
+                        <th style="width:20%">SENDER</th>
+                        <th style="width:22%">TRANSACTION REFERENCE</th>
+                        <th style="width:12%">AMOUNT</th>
+                        <th style="width:6%">CUR</th>
+                        <th style="width:18%">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>

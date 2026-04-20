@@ -194,16 +194,16 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>DATE</th>
-                            <th>DIR</th>
-                            <th>TYPE</th>
-                            <th>RÉFÉRENCE</th>
-                            <th class="text-end">MONTANT</th>
-                            <th>DEVISE</th>
-                            <th>ÉMETTEUR</th>
-                            <th>BÉNÉFICIAIRE</th>
-                            <th>STATUT</th>
-                            <th>ACTIONS</th>
+                            <th style="width:9%">DATE</th>
+                            <th style="width:4%">DIR</th>
+                            <th style="width:7%">TYPE</th>
+                            <th style="width:14%">RÉFÉRENCE</th>
+                            <th style="width:10%" class="text-end">MONTANT</th>
+                            <th style="width:5%">DEVISE</th>
+                            <th style="width:16%">ÉMETTEUR</th>
+                            <th style="width:16%">BÉNÉFICIAIRE</th>
+                            <th style="width:8%">STATUT</th>
+                            <th style="width:11%">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>

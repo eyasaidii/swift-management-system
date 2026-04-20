@@ -215,6 +215,17 @@
         }
         .main-content { flex: 1; padding: 1.75rem 2rem; }
         .card { border: none; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); }
+
+        /* ── Tableaux SWIFT : colonnes compactes ── */
+        .table-responsive .table { table-layout: fixed; width: 100%; }
+        .table-responsive .table th,
+        .table-responsive .table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; padding: .5rem .6rem; font-size: .85rem; }
+        .table-responsive .table td.wrap-cell { white-space: normal; }
+
+        /* ── Fix: Tailwind .collapse { visibility: collapse } écrase Bootstrap ── */
+        .collapse.show { visibility: visible !important; }
+        .collapsing { visibility: visible !important; }
+
         @media (max-width: 992px) {
             .sidebar { width: 0; overflow: hidden; }
             .sidebar.show { width: var(--sidebar-w); }

@@ -123,15 +123,15 @@
                 <table class="table table-hover mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th>DATE</th>
-                            <th>DIR</th>
-                            <th>TYPE</th>
-                            <th>RÉFÉRENCE</th>
-                            <th>ÉMETTEUR</th>
-                            <th>BÉNÉFICIAIRE</th>
-                            <th>MONTANT</th>
-                            <th>STATUT</th>
-                            <th>ACTIONS</th>
+                            <th style="width:10%">DATE</th>
+                            <th style="width:5%">DIR</th>
+                            <th style="width:7%">TYPE</th>
+                            <th style="width:15%">RÉFÉRENCE</th>
+                            <th style="width:18%">ÉMETTEUR</th>
+                            <th style="width:18%">BÉNÉFICIAIRE</th>
+                            <th style="width:10%">MONTANT</th>
+                            <th style="width:8%">STATUT</th>
+                            <th style="width:9%">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>

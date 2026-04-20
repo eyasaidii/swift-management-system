@@ -123,18 +123,14 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>DATE</th>
-                            <th>TYPE</th>
-                            <th>RÉFÉRENCE</th>
-                            <th>BÉNÉFICIAIRE</th>
-                            <th>MONTANT</th>
-                            <th>STATUT</th>
-                            <th>ACTIONS</th>
+                            <th style="width:12%">DATE</th>
+                            <th style="width:8%">TYPE</th>
+                            <th style="width:22%">RÉFÉRENCE</th>
+                            <th style="width:20%">BÉNÉFICIAIRE</th>
+                            <th style="width:14%">MONTANT</th>
+                            <th style="width:10%">STATUT</th>
+                            <th style="width:14%">ACTIONS</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($messages as $msg)
-                            <tr class="{{ $msg->status == 'pending' ? 'table-warning' : '' }}">
                                 <td class="text-nowrap small text-muted">
                                     {{ $msg->created_at ? $msg->created_at->format('d/m/Y H:i') : '-' }}
                                 </td>

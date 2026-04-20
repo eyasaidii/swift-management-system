@@ -166,14 +166,14 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="bg-light">
                         <tr>
-                            <th>DATE</th>
-                            <th>TYPE</th>
-                            <th>SENDER</th>
-                            <th>RÉFÉRENCE</th>
-                            <th>MONTANT</th>
-                            <th>CUR</th>
-                            <th>STATUT</th>
-                            <th>ACTIONS</th>
+                            <th style="width:11%">DATE</th>
+                            <th style="width:8%">TYPE</th>
+                            <th style="width:20%">SENDER</th>
+                            <th style="width:18%">RÉFÉRENCE</th>
+                            <th style="width:12%">MONTANT</th>
+                            <th style="width:5%">CUR</th>
+                            <th style="width:10%">STATUT</th>
+                            <th style="width:16%">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>

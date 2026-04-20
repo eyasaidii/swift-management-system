@@ -97,8 +97,10 @@ class ProcessSwiftFileJob implements ShouldQueue
             // 6b. Garantir l'unicité de la référence
             $baseRef = $parsedData['reference'] ?? ('IMPORT-' . Str::random(10));
             $uniqueRef = $baseRef;
-            if (MessageSwift::where('REFERENCE', $uniqueRef)->exists()) {
-                $uniqueRef = $baseRef . '-' . now()->format('ymdHis');
+            $suffix = 0;
+            while (MessageSwift::where('REFERENCE', $uniqueRef)->exists()) {
+                $suffix++;
+                $uniqueRef = $baseRef . '-' . now()->format('ymdHis') . '-' . Str::random(4);
             }
 
             // 7. ─── CLEF DU FIX ───
@@ -178,7 +180,7 @@ class ProcessSwiftFileJob implements ShouldQueue
 
             // Créer un message d'erreur (référence unique)
             $errRef = 'IMPORT-FAILED-' . basename($this->filePath);
-            if (MessageSwift::where('REFERENCE', $errRef)->exists()) {
+            while (MessageSwift::where('REFERENCE', $errRef)->exists()) {
                 $errRef = 'IMPORT-FAILED-' . now()->format('ymdHis') . '-' . Str::random(4);
             }
             $errorMessage = MessageSwift::create([
@@ -604,6 +606,12 @@ class ProcessSwiftFileJob implements ShouldQueue
 
         $updateData = [];
         foreach ($commonMapping as $field => $tag) {
+            // Ne JAMAIS écraser REFERENCE — elle est déjà définie
+            // correctement lors du create() avec gestion d'unicité
+            if ($field === 'REFERENCE') {
+                continue;
+            }
+
             $value = $parsedData['details'][$tag] ?? null;
             if (!$value) continue;
 
