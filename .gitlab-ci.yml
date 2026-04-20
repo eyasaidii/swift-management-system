@@ -4,6 +4,9 @@
 # Pipeline : Install → Lint → Security → Test → Build → Deploy
 # ============================================================
 
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
 stages:
   - install
   - quality
@@ -150,13 +153,7 @@ security:npm-audit:
     - npm audit --audit-level=high || true
   allow_failure: true
 
-# GitLab SAST intégré
-sast:
-  stage: security
-  allow_failure: true
 
-include:
-  - template: Security/SAST.gitlab-ci.yml
 
 # ============================================================
 # STAGE: test
