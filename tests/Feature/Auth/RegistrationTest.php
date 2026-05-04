@@ -15,5 +15,5 @@ test('new users can register', function () {
     ]);
 
     $this->assertGuest();
-    $response->assertRedirect('/login');
+    $response->assertStatus(405);
 });
