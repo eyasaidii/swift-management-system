@@ -121,9 +121,10 @@ test:pest:
     - <<: *cache-composer
       policy: pull
   script:
+    - php artisan key:generate --force --no-interaction
     - php artisan config:clear
     - php artisan migrate --force --no-interaction
-    - ./vendor/bin/pest --ci
+    - ./vendor/bin/pest --ci --log-junit=report.xml
   artifacts:
     when: always
     reports:
