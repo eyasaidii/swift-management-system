@@ -92,6 +92,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/transactions/{id}/authorize', [DashboardController::class, 'authorizeTransaction'])->name('transactions.authorize');
     });
 
+    Route::get('/international-admin/ia-analytics', [DashboardController::class, 'iaAnalytics'])
+        ->middleware('role:swift-manager|super-admin')
+        ->name('international-admin.ia-analytics');
+
     // ============ INTERNATIONAL USER ============
     Route::prefix('international-user')->middleware('role:swift-operator')->name('international-user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'internationalUser'])->name('dashboard');

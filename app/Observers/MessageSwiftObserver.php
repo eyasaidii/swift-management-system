@@ -4,6 +4,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\AnalyzeAnomalyJob;
 use App\Models\MessageSwift;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
@@ -56,6 +57,24 @@ class MessageSwiftObserver
 
         if (! empty(array_intersect($financialFields, $dirty))) {
             $this->syncTransaction($message, 'updated');
+
+            // ─────────────────────────────────────────────────────
+            // DÉTECTION IA AUTOMATIQUE — messages ÉMIS (OUT)
+            // Pour les messages REÇUS (IN), ProcessSwiftFileJob
+            // appelle déjà AnomalyService::analyze() directement.
+            // ─────────────────────────────────────────────────────
+            $direction = strtoupper($message->DIRECTION ?? $message->direction ?? 'OUT');
+            if ($direction === 'OUT') {
+                AnalyzeAnomalyJob::dispatch($message->id)
+                    ->onQueue('default')
+                    ->delay(now()->addSeconds(2));
+
+                Log::info('AnalyzeAnomalyJob dispatched (OUT)', [
+                    'message_id' => $message->id,
+                    'reference'  => $message->REFERENCE,
+                ]);
+            }
+            // ─────────────────────────────────────────────────────
         }
     }
 

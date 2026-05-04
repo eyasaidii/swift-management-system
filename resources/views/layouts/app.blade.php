@@ -413,6 +413,21 @@
             </a>
         @endcan
 
+        @hasanyrole('swift-manager|super-admin')
+            <div class="sb-divider"></div>
+            <span class="sb-section-label">Intelligence Artificielle</span>
+            <a class="util-link {{ request()->is('international-admin/ia-analytics') ? 'active' : '' }}"
+               href="{{ route('international-admin.ia-analytics') }}">
+                <span class="util-icon"><i class="fas fa-chart-bar"></i></span>
+                Graphiques IA
+            </a>
+            <a class="util-link {{ request()->is('swift/anomalies*') ? 'active' : '' }}"
+               href="{{ route('swift.anomalies.index') }}">
+                <span class="util-icon"><i class="fas fa-brain"></i></span>
+                Anomalies IA
+            </a>
+        @endhasanyrole
+
         @if($canViewAdmin)
             <div class="sb-divider"></div>
             <span class="sb-section-label">Administration</span>

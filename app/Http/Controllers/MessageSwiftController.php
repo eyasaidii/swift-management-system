@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\SwiftParser;
+use App\Jobs\AnalyzeAnomalyJob;
 use App\Jobs\ProcessSwiftFileJob;
 use App\Models\MessageSwift;
-use App\Services\AnomalyService;                          // ← AJOUT IA
 use App\Services\SwiftMtBuilder;
 use App\Services\UniversalMtToMxConverter;
 use Illuminate\Http\Request;
@@ -387,17 +387,8 @@ class MessageSwiftController extends Controller
         }
 
         // =========================================================
-        // ANALYSE IA — Détection d'anomalies après création         ← AJOUT IA
-        // =========================================================
-        try {
-            $message->refresh();
-            $result = app(AnomalyService::class)->analyze($message);
-            if ($result['niveau_risque'] === 'HIGH') {
-                \Log::warning("SWIFT IA — Message #{$message->id} score critique : {$result['score']}/100 — ".implode(', ', $result['raisons']));
-            }
-        } catch (\Throwable $e) {
-            \Log::warning("SWIFT IA — Analyse anomalie échouée #{$message->id} : {$e->getMessage()}");
-        }
+        // ANALYSE IA — Géré automatiquement par MessageSwiftObserver
+        // (dispatche AnalyzeAnomalyJob quand les champs financiers changent)
         // =========================================================
 
         return redirect()->route('swift.index')
@@ -433,13 +424,9 @@ class MessageSwiftController extends Controller
         $message->update(['STATUS' => 'processed', 'PROCESSED_AT' => now()]);
 
         // =========================================================
-        // ANALYSE IA — Re-analyse après traitement                  ← AJOUT IA
+        // ANALYSE IA — Dispatché en arrière-plan (non bloquant)
         // =========================================================
-        try {
-            app(AnomalyService::class)->analyze($message->fresh());
-        } catch (\Throwable $e) {
-            \Log::warning("SWIFT IA — Re-analyse échouée #{$message->id} : {$e->getMessage()}");
-        }
+        AnalyzeAnomalyJob::dispatch($message->id)->onQueue('default');
         // =========================================================
 
         $reference = $message->REFERENCE ?? $message->reference ?? "#{$id}";
@@ -475,13 +462,9 @@ class MessageSwiftController extends Controller
         $message->update(['STATUS' => 'rejected', 'PROCESSED_AT' => now()]);
 
         // =========================================================
-        // ANALYSE IA — Re-analyse après rejet                       ← AJOUT IA
+        // ANALYSE IA — Dispatché en arrière-plan (non bloquant)
         // =========================================================
-        try {
-            app(AnomalyService::class)->analyze($message->fresh());
-        } catch (\Throwable $e) {
-            \Log::warning("SWIFT IA — Re-analyse rejet échouée #{$message->id} : {$e->getMessage()}");
-        }
+        AnalyzeAnomalyJob::dispatch($message->id)->onQueue('default');
         // =========================================================
 
         $reference = $message->REFERENCE ?? $message->reference ?? "#{$id}";

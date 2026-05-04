@@ -4,115 +4,115 @@ namespace App\Services;
 
 use App\Models\AnomalySwift;
 use App\Models\MessageSwift;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AnomalyService
 {
+    private string $aiUrl;
+    private int    $aiTimeout;
+
+    public function __construct()
+    {
+        $this->aiUrl     = rtrim(config('services.anomaly_ai.url', 'http://127.0.0.1:8001'), '/');
+        $this->aiTimeout = (int) config('services.anomaly_ai.timeout', 10);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Analyse principale : uniquement via le microservice IA
+    // ─────────────────────────────────────────────────────────────
+
     public function analyze(MessageSwift $message): array
     {
-        $score = 0;
-        $raisons = [];
+        $iaResult = $this->callAiService($message);
 
-        // ── Règle 1 — Montant zéro ──────────────────────────────
-        $amount = (float) ($message->AMOUNT ?? $message->amount ?? 0);
-        if ($amount == 0) {
-            $score += 40;
-            $raisons[] = 'MONTANT_ZERO';
+        if ($iaResult === null) {
+            Log::warning("AnomalyService : service IA indisponible, message #{$message->id} ignoré");
+            return [
+                'score'         => 0,
+                'niveau_risque' => 'LOW',
+                'raisons'       => [],
+                'source'        => 'IA_UNAVAILABLE',
+            ];
         }
 
-        // ── Règle 2 — Montant très élevé (> 100 000) ────────────
-        if ($amount > 100000) {
-            $score += 25;
-            $raisons[] = 'MONTANT_ELEVE';
-        }
-
-        // ── Règle 3 — Statut rejeté / rejected ──────────────────
-        $status = strtolower(trim($message->STATUS ?? $message->status ?? ''));
-        if (in_array($status, ['rejected', 'rejeté', 'rejete', 'rejet'])) {
-            $score += 30;
-            $raisons[] = 'STATUT_REJETE';
-        }
-
-        // ── Règle 4 — Erreur de traduction XML ──────────────────
-        $translationErrors = $message->TRANSLATION_ERRORS
-                          ?? $message->translation_errors
-                          ?? null;
-        if (! empty($translationErrors)) {
-            $score += 25;
-            $raisons[] = 'TRANSLATION_ERROR';
-        }
-
-        // ── Règle 5 — Type ERROR ─────────────────────────────────
-        $typeMessage = strtoupper(trim($message->TYPE_MESSAGE ?? $message->type_message ?? ''));
-        if ($typeMessage === 'ERROR' || str_contains($typeMessage, 'ERROR')) {
-            $score += 35;
-            $raisons[] = 'TYPE_ERROR';
-        }
-
-        // ── Règle 6 — Doublon de référence ───────────────────────
-        $reference = $message->REFERENCE ?? $message->reference ?? null;
-        if ($reference) {
-            $doublon = MessageSwift::where('REFERENCE', $reference)
-                ->where('id', '!=', $message->id)
-                ->exists();
-            if ($doublon) {
-                $score += 20;
-                $raisons[] = 'DOUBLON_REFERENCE';
-            }
-        }
-
-        // ── Règle 7 — BIC manquant ───────────────────────────────
-        $senderBic = $message->SENDER_BIC ?? $message->sender_bic ?? null;
-        $receiverBic = $message->RECEIVER_BIC ?? $message->receiver_bic ?? null;
-        if (empty($senderBic) || empty($receiverBic)) {
-            $score += 15;
-            $raisons[] = 'BIC_MANQUANT';
-        }
-
-        // ── Règle 8 — Devise inhabituelle ────────────────────────
-        $currency = strtoupper(trim($message->CURRENCY ?? $message->currency ?? ''));
-        $devicesHabituelles = ['EUR', 'USD', 'TND', 'GBP', 'CHF'];
-        if (! empty($currency) && ! in_array($currency, $devicesHabituelles)) {
-            $score += 20;
-            $raisons[] = 'DEVISE_INHABITUELLE';
-        }
-
-        // ── Règle 9 — Référence IMPORT-FAILED ───────────────────
-        if ($reference && str_contains(strtoupper($reference), 'IMPORT-FAILED')) {
-            $score += 40;
-            $raisons[] = 'IMPORT_FAILED';
-        }
-
-        // ── Règle 10 — Bénéficiaire contient numéro passeport ───
-        $receiverName = strtoupper($message->RECEIVER_NAME ?? $message->receiver_name ?? '');
-        if (preg_match('/PASS(PORT)?\s*(NO|NUM|N°)?\s*[A-Z]{0,2}\d{5,}/i', $receiverName)) {
-            $score += 30;
-            $raisons[] = 'PASSPORT_DETECTE';
-        }
-
-        // ── Score final ───────────────────────────────────────────
-        $score = min($score, 100);
+        // score retourné en 0.0-1.0 → on convertit en 0-100
+        $score  = (int) round($iaResult['score'] * 100);
+        $score  = min($score, 100);
         $niveau = match (true) {
             $score >= 60 => 'HIGH',
             $score >= 20 => 'MEDIUM',
-            default => 'LOW',
+            default      => 'LOW',
         };
+        // reasons[].rule → tableau de raisons
+        $raisons = array_column($iaResult['reasons'] ?? [], 'rule');
 
-        // Sauvegarder dans ANOMALIES_SWIFT
         AnomalySwift::updateOrCreate(
             ['message_id' => $message->id],
             [
-                'score' => $score,
+                'score'         => $score,
                 'niveau_risque' => $niveau,
-                'raisons' => $raisons,
+                'raisons'       => $raisons,
             ]
         );
 
         return [
-            'score' => $score,
+            'score'         => $score,
             'niveau_risque' => $niveau,
-            'raisons' => $raisons,
+            'raisons'       => $raisons,
+            'via_ia'        => true,
+            'source'        => 'IA',
         ];
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Appel POST /api/predict vers swift-IA
+    // ─────────────────────────────────────────────────────────────
+
+    private function callAiService(MessageSwift $m): ?array
+    {
+        try {
+            $createdAt   = $m->CREATED_AT   ?? $m->created_at   ?? null;
+            $senderBic   = $m->SENDER_BIC   ?? $m->sender_bic   ?? '';
+            $receiverBic = $m->RECEIVER_BIC ?? $m->receiver_bic ?? '';
+
+            $payload = [
+                'id'                 => $m->id,
+                'type_message'       => $m->TYPE_MESSAGE       ?? $m->type_message       ?? null,
+                'direction'          => $m->DIRECTION          ?? $m->direction          ?? 'OUT',
+                'sender_bic'         => $senderBic             ?: null,
+                'receiver_bic'       => $receiverBic           ?: null,
+                'sender_name'        => $m->SENDER_NAME        ?? $m->sender_name        ?? null,
+                'receiver_name'      => $m->RECEIVER_NAME      ?? $m->receiver_name      ?? null,
+                'amount'             => (float) ($m->AMOUNT    ?? $m->amount             ?? 0),
+                'currency'           => $m->CURRENCY           ?? $m->currency           ?? 'EUR',
+                'status'             => $m->STATUS             ?? $m->status             ?? null,
+                'reference'          => $m->REFERENCE          ?? $m->reference          ?? null,
+                'category'           => $m->CATEGORIE          ?? $m->category           ?? null,
+                'translation_errors' => $m->TRANSLATION_ERRORS ?? $m->translation_errors ?? null,
+                'created_at'         => $createdAt ? (string) $createdAt : null,
+                'sender_country'     => $senderBic   ? substr($senderBic,   4, 2) : null,
+                'receiver_country'   => $receiverBic ? substr($receiverBic, 4, 2) : null,
+            ];
+
+            $response = Http::timeout($this->aiTimeout)
+                ->post("{$this->aiUrl}/api/predict", $payload);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning("AnomalyService IA non-2xx #{$m->id}: " . $response->status());
+            return null;
+        } catch (\Throwable $e) {
+            Log::debug("AnomalyService IA indisponible #{$m->id}: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Analyse en masse de tous les messages
+    // ─────────────────────────────────────────────────────────────
 
     public function analyzeAll(): void
     {
@@ -121,7 +121,7 @@ class AnomalyService
                 try {
                     $this->analyze($message);
                 } catch (\Throwable $e) {
-                    \Log::warning("Analyse échouée #{$message->id} : {$e->getMessage()}");
+                    Log::warning("Analyse échouée #{$message->id} : {$e->getMessage()}");
                 }
             }
         });

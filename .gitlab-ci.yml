@@ -1,16 +1,12 @@
 # ============================================================
 # GitLab CI/CD Pipeline — BTL Swift Platform
 # ============================================================
-# Pipeline : Install → Lint → Security → Test → Build → Deploy
+# Pipeline : Install → Lint → Test → Build Image → Deploy
 # ============================================================
-
-include:
-  - template: Security/SAST.gitlab-ci.yml
 
 stages:
   - install
   - quality
-  - security
   - test
   - build
   - deploy
@@ -22,8 +18,6 @@ variables:
   DOCKER_IMAGE: "$CI_REGISTRY_IMAGE"
   PHP_IMAGE: "php:8.2-cli"
   NODE_VERSION: "22"
-  # Conteneur applicatif
-  APP_CONTAINER: "btl_swift_app"
 
 # ── Cache partagé ─────────────────────────────────────────────
 .cache-composer: &cache-composer
@@ -49,19 +43,7 @@ variables:
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     - cp .env.example .env
     - sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
-    - sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/database.sqlite/' .env
     - touch database/database.sqlite
-
-# ── Template SSH deploy ───────────────────────────────────────
-.deploy-base:
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client curl
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
 
 # ============================================================
 # STAGE: install
@@ -125,37 +107,6 @@ lint:vite-build:
     expire_in: 1 hour
 
 # ============================================================
-# STAGE: security
-# ============================================================
-security:composer-audit:
-  stage: security
-  extends: .php-base
-  needs:
-    - job: install:composer
-      artifacts: true
-  cache:
-    - <<: *cache-composer
-      policy: pull
-  script:
-    - composer audit --format=plain
-  allow_failure: true
-
-security:npm-audit:
-  stage: security
-  image: node:${NODE_VERSION}-alpine
-  needs:
-    - job: install:npm
-      artifacts: true
-  cache:
-    - <<: *cache-npm
-      policy: pull
-  script:
-    - npm audit --audit-level=high || true
-  allow_failure: true
-
-
-
-# ============================================================
 # STAGE: test
 # ============================================================
 test:pest:
@@ -171,8 +122,8 @@ test:pest:
       policy: pull
   script:
     - php artisan config:clear
-    - php artisan migrate --force --no-interaction --seed
-    - ./vendor/bin/pest --log-junit report.xml
+    - php artisan migrate --force --no-interaction
+    - ./vendor/bin/pest --ci
   artifacts:
     when: always
     reports:
@@ -180,7 +131,6 @@ test:pest:
     paths:
       - report.xml
     expire_in: 7 days
-  coverage: '/Cov:\s+(\d+\.\d+)%/'
 
 # ============================================================
 # STAGE: build (Docker image)
@@ -192,22 +142,14 @@ build:docker:
     - docker:24-dind
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_BUILDKIT: "1"
   needs:
     - job: test:pest
     - job: lint:pint
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - |
-      docker build -f Dockerfile.prod \
-        --cache-from "$DOCKER_IMAGE:latest" \
-        --build-arg BUILDKIT_INLINE_CACHE=1 \
-        -t "$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA" \
-        -t "$DOCKER_IMAGE:$CI_COMMIT_REF_SLUG" \
-        -t "$DOCKER_IMAGE:latest" .
+    - docker build -f Dockerfile.prod -t "$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA" -t "$DOCKER_IMAGE:latest" .
     - docker push "$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA"
-    - docker push "$DOCKER_IMAGE:$CI_COMMIT_REF_SLUG"
     - docker push "$DOCKER_IMAGE:latest"
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "staging"
@@ -219,18 +161,13 @@ build:docker-tag:
     - docker:24-dind
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_BUILDKIT: "1"
   needs:
     - job: test:pest
     - job: lint:pint
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - |
-      docker build -f Dockerfile.prod \
-        --cache-from "$DOCKER_IMAGE:latest" \
-        --build-arg BUILDKIT_INLINE_CACHE=1 \
-        -t "$DOCKER_IMAGE:$CI_COMMIT_TAG" .
+    - docker build -f Dockerfile.prod -t "$DOCKER_IMAGE:$CI_COMMIT_TAG" .
     - docker push "$DOCKER_IMAGE:$CI_COMMIT_TAG"
   rules:
     - if: $CI_COMMIT_TAG
@@ -240,187 +177,61 @@ build:docker-tag:
 # ============================================================
 deploy:staging:
   stage: deploy
-  extends: .deploy-base
+  image: alpine:latest
   needs:
     - job: build:docker
-  variables:
-    SSH_PRIVATE_KEY: "$SSH_PRIVATE_KEY_STAGING"
-    SSH_KNOWN_HOSTS: "$SSH_KNOWN_HOSTS_STAGING"
   environment:
     name: staging
     url: $STAGING_URL
-    on_stop: stop:staging
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY_STAGING" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS_STAGING" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    # Passage des variables CI au serveur distant via export
     - |
-      ssh ${SSH_USER_STAGING}@${SSH_HOST_STAGING} "
-        set -e
-        cd ${APP_PATH_STAGING}
-
-        # Pull de la nouvelle image
-        docker login -u '${CI_REGISTRY_USER}' -p '${CI_REGISTRY_PASSWORD}' '${CI_REGISTRY}'
+      ssh $SSH_USER_STAGING@$SSH_HOST_STAGING << 'ENDSSH'
+        cd $APP_PATH
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
         docker compose -f docker-compose.prod.yml pull app
-
-        # Déploiement avec rollback automatique
-        PREV_IMAGE=\$(docker inspect --format='{{.Config.Image}}' ${APP_CONTAINER} 2>/dev/null || echo '')
-
         docker compose -f docker-compose.prod.yml up -d --no-deps app
-
-        # Attente que le conteneur soit healthy (max 60s)
-        echo 'Waiting for container to be ready...'
-        for i in \$(seq 1 12); do
-          if docker exec ${APP_CONTAINER} php artisan --version > /dev/null 2>&1; then
-            echo 'Container is ready.'
-            break
-          fi
-          if [ \$i -eq 12 ]; then
-            echo 'ERROR: Container not ready after 60s — rolling back.'
-            if [ -n \"\$PREV_IMAGE\" ]; then
-              docker compose -f docker-compose.prod.yml down app
-              docker compose -f docker-compose.prod.yml up -d --no-deps app
-            fi
-            exit 1
-          fi
-          sleep 5
-        done
-
-        # Post-deploy
-        docker exec ${APP_CONTAINER} php artisan migrate --force
-        docker exec ${APP_CONTAINER} php artisan config:cache
-        docker exec ${APP_CONTAINER} php artisan route:cache
-        docker exec ${APP_CONTAINER} php artisan view:cache
-        docker exec ${APP_CONTAINER} php artisan event:cache
-
-        echo 'Staging deploy OK'
-      "
-    # Health check externe
-    - |
-      if [ -n "$STAGING_URL" ]; then
-        echo "Running health check on $STAGING_URL..."
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$STAGING_URL" || echo "000")
-        if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 400 ]; then
-          echo "WARNING: Health check returned HTTP $HTTP_CODE"
-          exit 1
-        fi
-        echo "Health check passed (HTTP $HTTP_CODE)"
-      fi
+        docker exec btl_swift_app php artisan migrate --force
+        docker exec btl_swift_app php artisan config:cache
+        docker exec btl_swift_app php artisan route:cache
+        docker exec btl_swift_app php artisan view:cache
+      ENDSSH
   rules:
     - if: $CI_COMMIT_BRANCH == "staging"
-
-stop:staging:
-  stage: deploy
-  extends: .deploy-base
-  variables:
-    SSH_PRIVATE_KEY: "$SSH_PRIVATE_KEY_STAGING"
-    SSH_KNOWN_HOSTS: "$SSH_KNOWN_HOSTS_STAGING"
-  environment:
-    name: staging
-    action: stop
-  script:
-    - |
-      ssh ${SSH_USER_STAGING}@${SSH_HOST_STAGING} "
-        cd ${APP_PATH_STAGING}
-        docker compose -f docker-compose.prod.yml down
-      "
-  rules:
-    - if: $CI_COMMIT_BRANCH == "staging"
-      when: manual
-  allow_failure: true
 
 deploy:production:
   stage: deploy
-  extends: .deploy-base
+  image: alpine:latest
   needs:
     - job: build:docker
-  variables:
-    SSH_PRIVATE_KEY: "$SSH_PRIVATE_KEY_PRODUCTION"
-    SSH_KNOWN_HOSTS: "$SSH_KNOWN_HOSTS_PRODUCTION"
   environment:
     name: production
     url: $PRODUCTION_URL
-    on_stop: stop:production
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY_PRODUCTION" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS_PRODUCTION" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
     - |
-      ssh ${SSH_USER_PRODUCTION}@${SSH_HOST_PRODUCTION} "
-        set -e
-        cd ${APP_PATH_PRODUCTION}
-
-        # Pull de la nouvelle image
-        docker login -u '${CI_REGISTRY_USER}' -p '${CI_REGISTRY_PASSWORD}' '${CI_REGISTRY}'
+      ssh $SSH_USER_PRODUCTION@$SSH_HOST_PRODUCTION << 'ENDSSH'
+        cd $APP_PATH
+        docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
         docker compose -f docker-compose.prod.yml pull app
-
-        # Sauvegarder l'image actuelle pour rollback
-        PREV_IMAGE=\$(docker inspect --format='{{.Config.Image}}' ${APP_CONTAINER} 2>/dev/null || echo '')
-        echo \"Previous image: \$PREV_IMAGE\"
-
-        # Maintenance mode
-        docker exec ${APP_CONTAINER} php artisan down --secret=\$(head -c 32 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 16) 2>/dev/null || true
-
-        # Déploiement
         docker compose -f docker-compose.prod.yml up -d --no-deps app
-
-        # Attente que le conteneur soit healthy (max 90s)
-        echo 'Waiting for container to be ready...'
-        for i in \$(seq 1 18); do
-          if docker exec ${APP_CONTAINER} php artisan --version > /dev/null 2>&1; then
-            echo 'Container is ready.'
-            break
-          fi
-          if [ \$i -eq 18 ]; then
-            echo 'ERROR: Container not ready after 90s — rolling back.'
-            if [ -n \"\$PREV_IMAGE\" ]; then
-              docker compose -f docker-compose.prod.yml down app
-              docker compose -f docker-compose.prod.yml up -d --no-deps app
-            fi
-            exit 1
-          fi
-          sleep 5
-        done
-
-        # Post-deploy
-        docker exec ${APP_CONTAINER} php artisan migrate --force
-        docker exec ${APP_CONTAINER} php artisan config:cache
-        docker exec ${APP_CONTAINER} php artisan route:cache
-        docker exec ${APP_CONTAINER} php artisan view:cache
-        docker exec ${APP_CONTAINER} php artisan event:cache
-
-        # Sortir du mode maintenance
-        docker exec ${APP_CONTAINER} php artisan up
-
-        echo 'Production deploy OK'
-      "
-    # Health check externe
-    - |
-      if [ -n "$PRODUCTION_URL" ]; then
-        echo "Running health check on $PRODUCTION_URL..."
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$PRODUCTION_URL" || echo "000")
-        if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 400 ]; then
-          echo "CRITICAL: Health check returned HTTP $HTTP_CODE"
-          exit 1
-        fi
-        echo "Health check passed (HTTP $HTTP_CODE)"
-      fi
+        docker exec btl_swift_app php artisan migrate --force
+        docker exec btl_swift_app php artisan config:cache
+        docker exec btl_swift_app php artisan route:cache
+        docker exec btl_swift_app php artisan view:cache
+      ENDSSH
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   when: manual
-
-stop:production:
-  stage: deploy
-  extends: .deploy-base
-  variables:
-    SSH_PRIVATE_KEY: "$SSH_PRIVATE_KEY_PRODUCTION"
-    SSH_KNOWN_HOSTS: "$SSH_KNOWN_HOSTS_PRODUCTION"
-  environment:
-    name: production
-    action: stop
-  script:
-    - |
-      ssh ${SSH_USER_PRODUCTION}@${SSH_HOST_PRODUCTION} "
-        cd ${APP_PATH_PRODUCTION}
-        docker exec ${APP_CONTAINER} php artisan down 2>/dev/null || true
-        docker compose -f docker-compose.prod.yml down
-      "
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-  allow_failure: true

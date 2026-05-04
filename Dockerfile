@@ -53,6 +53,7 @@ COPY composer.json composer.lock ./
 RUN composer install \
     --optimize-autoloader \
     --no-interaction \
+    --no-dev \
     --no-scripts \
     --ignore-platform-req=ext-oci8 \
     --ignore-platform-req=ext-pdo_oci
@@ -71,4 +72,12 @@ RUN npm run build
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 8000
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh \
+    && echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=16" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.fast_shutdown=1" >> /usr/local/etc/php/conf.d/opcache.ini
+CMD ["/start.sh"]
