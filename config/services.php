@@ -37,7 +37,7 @@ return [
 
     // Service IA — swift-IA FastAPI (XGBoost + Isolation Forest)
     'anomaly_ai' => [
-        'url'     => env('ANOMALY_AI_URL', 'http://127.0.0.1:8001'),
+        'url' => env('ANOMALY_AI_URL', 'http://127.0.0.1:8001'),
         'timeout' => env('ANOMALY_AI_TIMEOUT', 10),
     ],
 

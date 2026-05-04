@@ -71,7 +71,7 @@ class MessageSwiftObserver
 
                 Log::info('AnalyzeAnomalyJob dispatched (OUT)', [
                     'message_id' => $message->id,
-                    'reference'  => $message->REFERENCE,
+                    'reference' => $message->REFERENCE,
                 ]);
             }
             // ─────────────────────────────────────────────────────

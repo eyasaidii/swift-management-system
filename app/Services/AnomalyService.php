@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\Log;
 class AnomalyService
 {
     private string $aiUrl;
-    private int    $aiTimeout;
+
+    private int $aiTimeout;
 
     public function __construct()
     {
-        $this->aiUrl     = rtrim(config('services.anomaly_ai.url', 'http://127.0.0.1:8001'), '/');
+        $this->aiUrl = rtrim(config('services.anomaly_ai.url', 'http://127.0.0.1:8001'), '/');
         $this->aiTimeout = (int) config('services.anomaly_ai.timeout', 10);
     }
 
@@ -28,21 +29,22 @@ class AnomalyService
 
         if ($iaResult === null) {
             Log::warning("AnomalyService : service IA indisponible, message #{$message->id} ignoré");
+
             return [
-                'score'         => 0,
+                'score' => 0,
                 'niveau_risque' => 'LOW',
-                'raisons'       => [],
-                'source'        => 'IA_UNAVAILABLE',
+                'raisons' => [],
+                'source' => 'IA_UNAVAILABLE',
             ];
         }
 
         // score retourné en 0.0-1.0 → on convertit en 0-100
-        $score  = (int) round($iaResult['score'] * 100);
-        $score  = min($score, 100);
+        $score = (int) round($iaResult['score'] * 100);
+        $score = min($score, 100);
         $niveau = match (true) {
             $score >= 60 => 'HIGH',
             $score >= 20 => 'MEDIUM',
-            default      => 'LOW',
+            default => 'LOW',
         };
         // reasons[].rule → tableau de raisons
         $raisons = array_column($iaResult['reasons'] ?? [], 'rule');
@@ -50,18 +52,18 @@ class AnomalyService
         AnomalySwift::updateOrCreate(
             ['message_id' => $message->id],
             [
-                'score'         => $score,
+                'score' => $score,
                 'niveau_risque' => $niveau,
-                'raisons'       => $raisons,
+                'raisons' => $raisons,
             ]
         );
 
         return [
-            'score'         => $score,
+            'score' => $score,
             'niveau_risque' => $niveau,
-            'raisons'       => $raisons,
-            'via_ia'        => true,
-            'source'        => 'IA',
+            'raisons' => $raisons,
+            'via_ia' => true,
+            'source' => 'IA',
         ];
     }
 
@@ -72,27 +74,27 @@ class AnomalyService
     private function callAiService(MessageSwift $m): ?array
     {
         try {
-            $createdAt   = $m->CREATED_AT   ?? $m->created_at   ?? null;
-            $senderBic   = $m->SENDER_BIC   ?? $m->sender_bic   ?? '';
+            $createdAt = $m->CREATED_AT ?? $m->created_at ?? null;
+            $senderBic = $m->SENDER_BIC ?? $m->sender_bic ?? '';
             $receiverBic = $m->RECEIVER_BIC ?? $m->receiver_bic ?? '';
 
             $payload = [
-                'id'                 => $m->id,
-                'type_message'       => $m->TYPE_MESSAGE       ?? $m->type_message       ?? null,
-                'direction'          => $m->DIRECTION          ?? $m->direction          ?? 'OUT',
-                'sender_bic'         => $senderBic             ?: null,
-                'receiver_bic'       => $receiverBic           ?: null,
-                'sender_name'        => $m->SENDER_NAME        ?? $m->sender_name        ?? null,
-                'receiver_name'      => $m->RECEIVER_NAME      ?? $m->receiver_name      ?? null,
-                'amount'             => (float) ($m->AMOUNT    ?? $m->amount             ?? 0),
-                'currency'           => $m->CURRENCY           ?? $m->currency           ?? 'EUR',
-                'status'             => $m->STATUS             ?? $m->status             ?? null,
-                'reference'          => $m->REFERENCE          ?? $m->reference          ?? null,
-                'category'           => $m->CATEGORIE          ?? $m->category           ?? null,
+                'id' => $m->id,
+                'type_message' => $m->TYPE_MESSAGE ?? $m->type_message ?? null,
+                'direction' => $m->DIRECTION ?? $m->direction ?? 'OUT',
+                'sender_bic' => $senderBic ?: null,
+                'receiver_bic' => $receiverBic ?: null,
+                'sender_name' => $m->SENDER_NAME ?? $m->sender_name ?? null,
+                'receiver_name' => $m->RECEIVER_NAME ?? $m->receiver_name ?? null,
+                'amount' => (float) ($m->AMOUNT ?? $m->amount ?? 0),
+                'currency' => $m->CURRENCY ?? $m->currency ?? 'EUR',
+                'status' => $m->STATUS ?? $m->status ?? null,
+                'reference' => $m->REFERENCE ?? $m->reference ?? null,
+                'category' => $m->CATEGORIE ?? $m->category ?? null,
                 'translation_errors' => $m->TRANSLATION_ERRORS ?? $m->translation_errors ?? null,
-                'created_at'         => $createdAt ? (string) $createdAt : null,
-                'sender_country'     => $senderBic   ? substr($senderBic,   4, 2) : null,
-                'receiver_country'   => $receiverBic ? substr($receiverBic, 4, 2) : null,
+                'created_at' => $createdAt ? (string) $createdAt : null,
+                'sender_country' => $senderBic ? substr($senderBic, 4, 2) : null,
+                'receiver_country' => $receiverBic ? substr($receiverBic, 4, 2) : null,
             ];
 
             $response = Http::timeout($this->aiTimeout)
@@ -102,10 +104,12 @@ class AnomalyService
                 return $response->json();
             }
 
-            Log::warning("AnomalyService IA non-2xx #{$m->id}: " . $response->status());
+            Log::warning("AnomalyService IA non-2xx #{$m->id}: ".$response->status());
+
             return null;
         } catch (\Throwable $e) {
             Log::debug("AnomalyService IA indisponible #{$m->id}: {$e->getMessage()}");
+
             return null;
         }
     }

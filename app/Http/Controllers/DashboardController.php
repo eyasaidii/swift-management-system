@@ -253,7 +253,7 @@ class DashboardController extends Controller
     {
         $sidebarData = $this->getSidebarData();
 
-        $anomalyByLevel = \App\Models\AnomalySwift::selectRaw("NIVEAU_RISQUE as niveau, COUNT(*) as total")
+        $anomalyByLevel = \App\Models\AnomalySwift::selectRaw('NIVEAU_RISQUE as niveau, COUNT(*) as total')
             ->groupBy('NIVEAU_RISQUE')
             ->get()
             ->pluck('total', 'niveau')
@@ -261,29 +261,29 @@ class DashboardController extends Controller
 
         $anomalyByType = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
             ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', '!=', 'LOW')
-            ->selectRaw("MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total")
+            ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
             ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
             ->get()
             ->pluck('total', 'type_msg')
             ->toArray();
 
-        $scoreTimeline = \App\Models\AnomalySwift::selectRaw("TRUNC(CREATED_AT) as jour, ROUND(AVG(SCORE), 1) as avg_score")
+        $scoreTimeline = \App\Models\AnomalySwift::selectRaw('TRUNC(CREATED_AT) as jour, ROUND(AVG(SCORE), 1) as avg_score')
             ->where('CREATED_AT', '>=', now()->subDays(30))
-            ->groupByRaw("TRUNC(CREATED_AT)")
-            ->orderByRaw("TRUNC(CREATED_AT)")
+            ->groupByRaw('TRUNC(CREATED_AT)')
+            ->orderByRaw('TRUNC(CREATED_AT)')
             ->get()
-            ->map(fn($r) => ['jour' => \Carbon\Carbon::parse($r->jour)->format('d/m'), 'avg_score' => (float)$r->avg_score])
+            ->map(fn ($r) => ['jour' => \Carbon\Carbon::parse($r->jour)->format('d/m'), 'avg_score' => (float) $r->avg_score])
             ->toArray();
 
-        $totalAnomalies  = \App\Models\AnomalySwift::count();
-        $highCount       = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'HIGH')->count();
-        $mediumCount     = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'MEDIUM')->count();
-        $lowCount        = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'LOW')->count();
-        $avgScore        = round((float) \App\Models\AnomalySwift::avg('SCORE'), 1);
+        $totalAnomalies = \App\Models\AnomalySwift::count();
+        $highCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'HIGH')->count();
+        $mediumCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'MEDIUM')->count();
+        $lowCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'LOW')->count();
+        $avgScore = round((float) \App\Models\AnomalySwift::avg('SCORE'), 1);
 
         return view('swift-manager.ia-analytics', array_merge(
             compact('anomalyByLevel', 'anomalyByType', 'scoreTimeline',
-                    'totalAnomalies', 'highCount', 'mediumCount', 'lowCount', 'avgScore'),
+                'totalAnomalies', 'highCount', 'mediumCount', 'lowCount', 'avgScore'),
             $sidebarData
         ));
     }
