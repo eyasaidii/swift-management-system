@@ -4,56 +4,32 @@ use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $roles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ANALYST', 'AUDITOR', 'OPERATOR', 'USER'];
+    $roles = ['super-admin', 'swift-manager', 'swift-operator', 'backoffice', 'compliance-officer'];
     foreach ($roles as $r) {
-        Role::firstOrCreate(['name' => $r]);
+        Role::firstOrCreate(['name' => $r, 'guard_name' => 'web']);
     }
 });
 
-test('admin dashboard view renders for SUPER_ADMIN', function () {
+test('admin dashboard view renders for super-admin', function () {
     $user = User::factory()->create();
-    $user->assignRole('SUPER_ADMIN');
+    $user->assignRole('super-admin');
 
     $response = $this->actingAs($user)->get('/admin/dashboard');
     $response->assertStatus(200);
 });
 
-test('manager dashboard view renders for MANAGER', function () {
+test('international-admin dashboard view renders for swift-manager', function () {
     $user = User::factory()->create();
-    $user->assignRole('MANAGER');
+    $user->assignRole('swift-manager');
 
-    $response = $this->actingAs($user)->get('/manager/dashboard');
+    $response = $this->actingAs($user)->get('/international-admin/dashboard');
     $response->assertStatus(200);
 });
 
-test('analyst dashboard view renders for ANALYST', function () {
+test('international-user dashboard view renders for swift-operator', function () {
     $user = User::factory()->create();
-    $user->assignRole('ANALYST');
+    $user->assignRole('swift-operator');
 
-    $response = $this->actingAs($user)->get('/analyst/dashboard');
-    $response->assertStatus(200);
-});
-
-test('auditor dashboard view renders for AUDITOR', function () {
-    $user = User::factory()->create();
-    $user->assignRole('AUDITOR');
-
-    $response = $this->actingAs($user)->get('/auditor/dashboard');
-    $response->assertStatus(200);
-});
-
-test('operator dashboard view renders for OPERATOR', function () {
-    $user = User::factory()->create();
-    $user->assignRole('OPERATOR');
-
-    $response = $this->actingAs($user)->get('/operator/dashboard');
-    $response->assertStatus(200);
-});
-
-test('user dashboard view renders for USER', function () {
-    $user = User::factory()->create();
-    $user->assignRole('USER');
-
-    $response = $this->actingAs($user)->get('/user/dashboard');
+    $response = $this->actingAs($user)->get('/international-user/dashboard');
     $response->assertStatus(200);
 });

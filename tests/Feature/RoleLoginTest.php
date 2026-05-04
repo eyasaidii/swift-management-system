@@ -5,43 +5,32 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     // ensure roles exist in test DB
-    $roles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'ANALYST', 'AUDITOR', 'OPERATOR', 'USER'];
+    $roles = ['super-admin', 'swift-manager', 'swift-operator', 'backoffice', 'compliance-officer'];
     foreach ($roles as $r) {
-        Role::firstOrCreate(['name' => $r]);
+        Role::firstOrCreate(['name' => $r, 'guard_name' => 'web']);
     }
 });
 
-it('each seeded role can login and access its dashboard', function () {
-    $map = [
-        'SUPER_ADMIN' => '/admin/dashboard',
-        'ADMIN' => '/admin/dashboard',
-        'MANAGER' => '/manager/dashboard',
-        'ANALYST' => '/analyst/dashboard',
-        'AUDITOR' => '/auditor/dashboard',
-        'OPERATOR' => '/operator/dashboard',
-        'USER' => '/user/dashboard',
-    ];
+it('super-admin can login and access admin dashboard', function () {
+    $user = User::factory()->create(['password' => bcrypt('password')]);
+    $user->assignRole('super-admin');
 
-    foreach ($map as $role => $path) {
-        $email = strtolower($role).'@example.test';
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect('/admin/dashboard');
 
-        // ensure user exists (created by seeder, but keep idempotent)
-        $user = User::firstOrCreate(
-            ['email' => $email],
-            ['name' => $role.' Test', 'password' => bcrypt('password'), 'email_verified_at' => now()]
-        );
-        if (! $user->hasRole($role)) {
-            $user->assignRole($role);
-        }
+    $this->get('/admin/dashboard')->assertStatus(200);
 
-        // submit login form
-        $this->post('/login', ['email' => $email, 'password' => 'password'])
-            ->assertRedirect($path);
+    $this->post('/logout');
+});
 
-        // access dashboard
-        $this->get($path)->assertStatus(200);
+it('swift-manager can login and access international-admin dashboard', function () {
+    $user = User::factory()->create(['password' => bcrypt('password')]);
+    $user->assignRole('swift-manager');
 
-        // logout to reset session for next iteration
-        $this->post('/logout');
-    }
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect('/international-admin/dashboard');
+
+    $this->get('/international-admin/dashboard')->assertStatus(200);
+
+    $this->post('/logout');
 });
