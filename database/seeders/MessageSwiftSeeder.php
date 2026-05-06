@@ -41,7 +41,8 @@ class MessageSwiftSeeder extends Seeder
         'MHCBJPJT', // Mizuho Tokyo suspect
     ];
 
-    private array $normalCurrencies  = ['EUR', 'USD', 'TND', 'GBP', 'CHF'];
+    private array $normalCurrencies = ['EUR', 'USD', 'TND', 'GBP', 'CHF'];
+
     private array $suspectCurrencies = ['JPY', 'CNY', 'RUB', 'AED'];
 
     // -- Types supported by UniversalMtToMxConverter --
@@ -75,17 +76,17 @@ class MessageSwiftSeeder extends Seeder
     // -- Real Libyan corporate senders --
     private array $libyanSenders = [
         ['name' => 'NATIONAL OIL CORPORATION',                'iban' => 'LY82009001000000000044741', 'bic' => 'LAFBLYLTXXX',
-         'address' => "BASHER ALSAADAOI STR. P.O 5335/2655\nTRIPOLI - LIBYA",
-         'settlement' => 'LY57009001000000000007943'],
+            'address' => "BASHER ALSAADAOI STR. P.O 5335/2655\nTRIPOLI - LIBYA",
+            'settlement' => 'LY57009001000000000007943'],
         ['name' => 'LIBYAN IRON AND STEEL COMPANY',           'iban' => 'LY82009001000000000055832', 'bic' => 'LAFBLYLTXXX',
-         'address' => "AL FATAH INDUSTRIAL CITY P.O 3031\nMISURATH - LIBYA",
-         'settlement' => 'LY57009001000000000015826'],
+            'address' => "AL FATAH INDUSTRIAL CITY P.O 3031\nMISURATH - LIBYA",
+            'settlement' => 'LY57009001000000000015826'],
         ['name' => 'GENERAL ELECTRICITY COMPANY OF LIBYA',   'iban' => 'LY82009001000000000066923', 'bic' => 'LAFBLYLTXXX',
-         'address' => "OMAR MUKHTAR STREET P.O 668\nTRIPOLI - LIBYA",
-         'settlement' => 'LY57009001000000000023719'],
+            'address' => "OMAR MUKHTAR STREET P.O 668\nTRIPOLI - LIBYA",
+            'settlement' => 'LY57009001000000000023719'],
         ['name' => 'TRIPOLI PORT AUTHORITY',                  'iban' => 'LY82009001000000000077014', 'bic' => 'LAFBLYLTXXX',
-         'address' => "PORT OF TRIPOLI ADMINISTRATIVE BLDG\nTRIPOLI - LIBYA",
-         'settlement' => 'LY57009001000000000031612'],
+            'address' => "PORT OF TRIPOLI ADMINISTRATIVE BLDG\nTRIPOLI - LIBYA",
+            'settlement' => 'LY57009001000000000031612'],
     ];
 
     // -- Real foreign beneficiaries by bank BIC --
@@ -150,7 +151,8 @@ class MessageSwiftSeeder extends Seeder
     // -- Purpose codes (tag 26T) --
     private array $purposeCodes = ['921', '150', '001', '452', '112', '814', '701', '441', '202'];
 
-    private int    $counter = 1;
+    private int $counter = 1;
+
     private string $prefix;
 
     // ---------------------------------------------------------------
@@ -159,31 +161,31 @@ class MessageSwiftSeeder extends Seeder
 
     public function run(): void
     {
-        $this->prefix = 'SW' . date('ymdHi');
+        $this->prefix = 'SW'.date('ymdHi');
         $userId = DB::table('users')->value('id') ?? 1;
 
         // 1. Delete old seeded messages
         $this->deleteOldSeeded();
 
         // 2. Instantiate services
-        $converter  = app(UniversalMtToMxConverter::class);
-        $mtBuilder  = app(SwiftMtBuilder::class);
+        $converter = app(UniversalMtToMxConverter::class);
+        $mtBuilder = app(SwiftMtBuilder::class);
         $anomalySvc = app(AnomalyService::class);
 
         $created = $converted = $analyzed = 0;
 
         // 3. 70 normal messages
         for ($i = 0; $i < 70; $i++) {
-            $type      = $this->pick($this->mtTypes);
+            $type = $this->pick($this->mtTypes);
             $direction = $this->pick(['IN', 'OUT']);
-            $currency  = $this->pick($this->normalCurrencies);
-            $amount    = $this->rnd(500, 150_000);
-            $daysAgo   = rand(1, 180);
-            $hour      = rand(8, 17);
+            $currency = $this->pick($this->normalCurrencies);
+            $amount = $this->rnd(500, 150_000);
+            $daysAgo = rand(1, 180);
+            $hour = rand(8, 17);
 
             // Pick realistic sender/receiver based on type
             [$senderBic, $senderName, $senderIban] = $this->pickSender($type, $direction);
-            [$receiverBic, $receiverName]           = $this->pickReceiver($type, $direction, $senderBic);
+            [$receiverBic, $receiverName] = $this->pickReceiver($type, $direction, $senderBic);
 
             $r = $this->createMessage(
                 userId: $userId, type: $type, direction: $direction,
@@ -196,8 +198,12 @@ class MessageSwiftSeeder extends Seeder
                 converter: $converter, mtBuilder: $mtBuilder, anomalySvc: $anomalySvc,
             );
             $created++;
-            if ($r['converted']) $converted++;
-            if ($r['analyzed'])  $analyzed++;
+            if ($r['converted']) {
+                $converted++;
+            }
+            if ($r['analyzed']) {
+                $analyzed++;
+            }
         }
 
         // 4. 30 anomaly messages
@@ -214,8 +220,12 @@ class MessageSwiftSeeder extends Seeder
                 converter: $converter, mtBuilder: $mtBuilder, anomalySvc: $anomalySvc,
             );
             $created++;
-            if ($r['converted']) $converted++;
-            if ($r['analyzed'])  $analyzed++;
+            if ($r['converted']) {
+                $converted++;
+            }
+            if ($r['analyzed']) {
+                $analyzed++;
+            }
         }
 
         // 5. 10 targeted anomaly test messages (IN + OUT, tous types, anomalies HIGH/MEDIUM ciblées)
@@ -232,8 +242,12 @@ class MessageSwiftSeeder extends Seeder
                 converter: $converter, mtBuilder: $mtBuilder, anomalySvc: $anomalySvc,
             );
             $created++;
-            if ($r['converted']) $converted++;
-            if ($r['analyzed'])  $analyzed++;
+            if ($r['converted']) {
+                $converted++;
+            }
+            if ($r['analyzed']) {
+                $analyzed++;
+            }
         }
 
         // 6. 30 scénarios internationaux réels (HIGH/MEDIUM/LOW — FR/DE/GB/US/LY/AE/CN/JP/RU/CH)
@@ -250,13 +264,17 @@ class MessageSwiftSeeder extends Seeder
                 converter: $converter, mtBuilder: $mtBuilder, anomalySvc: $anomalySvc,
             );
             $created++;
-            if ($r['converted']) $converted++;
-            if ($r['analyzed'])  $analyzed++;
+            if ($r['converted']) {
+                $converted++;
+            }
+            if ($r['analyzed']) {
+                $analyzed++;
+            }
         }
 
         $this->command->info("OK {$created} messages created via full pipeline");
         $this->command->info("   -> {$converted} converted  MT->MX  (XML_BRUT via UniversalMtToMxConverter)");
-        $this->command->info("   -> MT_CONTENT generated       (SwiftMtBuilder)");
+        $this->command->info('   -> MT_CONTENT generated       (SwiftMtBuilder)');
         $this->command->info("   -> {$analyzed}  analyzed   (AnomalyService -> anomalies_swift)");
     }
 
@@ -288,21 +306,21 @@ class MessageSwiftSeeder extends Seeder
         SwiftMtBuilder $mtBuilder,
         AnomalyService $anomalySvc,
     ): array {
-        $ref   = $this->prefix . str_pad($this->counter++, 5, '0', STR_PAD_LEFT);
-        $dt    = Carbon::now()->subDays($daysAgo)->setHour($hour)->setMinute(rand(0, 59));
+        $ref = $this->prefix.str_pad($this->counter++, 5, '0', STR_PAD_LEFT);
+        $dt = Carbon::now()->subDays($daysAgo)->setHour($hour)->setMinute(rand(0, 59));
         $vdate = $dt->copy()->addDays(rand(0, 2))->toDateString();
 
         // STEP 1: create model (without observer to avoid jobs)
         /** @var MessageSwift $message */
         $message = MessageSwift::withoutEvents(fn () => MessageSwift::create([
             'TYPE_MESSAGE' => $type,
-            'DIRECTION'    => $direction,
-            'STATUS'       => $status,
-            'CREATED_BY'   => $userId,
-            'REFERENCE'    => $ref,
-            'METADATA'     => json_encode($meta),
-            'CREATED_AT'   => $dt->toDateTimeString(),
-            'UPDATED_AT'   => $dt->toDateTimeString(),
+            'DIRECTION' => $direction,
+            'STATUS' => $status,
+            'CREATED_BY' => $userId,
+            'REFERENCE' => $ref,
+            'METADATA' => json_encode($meta),
+            'CREATED_AT' => $dt->toDateTimeString(),
+            'UPDATED_AT' => $dt->toDateTimeString(),
         ]));
         // Save ID before any case transformation
         $msgId = $message->getKey();
@@ -319,17 +337,17 @@ class MessageSwiftSeeder extends Seeder
 
         // STEP 3: normalized financial fields (without observer)
         MessageSwift::withoutEvents(fn () => $message->update([
-            'AMOUNT'           => $amount,
-            'CURRENCY'         => $currency,
-            'VALUE_DATE'       => $vdate,
-            'SENDER_BIC'       => substr($senderBic, 0, 11),
-            'RECEIVER_BIC'     => substr($receiverBic, 0, 11),
-            'SENDER_NAME'      => substr($senderName, 0, 255),
-            'RECEIVER_NAME'    => substr($receiverName, 0, 255),
-            'SENDER_ACCOUNT'   => $senderIban,
+            'AMOUNT' => $amount,
+            'CURRENCY' => $currency,
+            'VALUE_DATE' => $vdate,
+            'SENDER_BIC' => substr($senderBic, 0, 11),
+            'RECEIVER_BIC' => substr($receiverBic, 0, 11),
+            'SENDER_NAME' => substr($senderName, 0, 255),
+            'RECEIVER_NAME' => substr($receiverName, 0, 255),
+            'SENDER_ACCOUNT' => $senderIban,
             'RECEIVER_ACCOUNT' => $this->genTnIban(),
-            'DESCRIPTION'      => isset($tags['70']) ? substr($tags['70'], 0, 500) : $this->narrative('MT103'),
-            'CATEGORIE'        => $this->categorie($type),
+            'DESCRIPTION' => isset($tags['70']) ? substr($tags['70'], 0, 500) : $this->narrative('MT103'),
+            'CATEGORIE' => $this->categorie($type),
         ]));
 
         // STEP 3b: Create Transaction (mimics Observer::syncTransaction())
@@ -338,10 +356,10 @@ class MessageSwiftSeeder extends Seeder
                 \App\Models\Transaction::updateOrCreate(
                     ['message_swift_id' => $msgId],
                     [
-                        'montant'          => $amount,
-                        'devise'           => $currency,
-                        'emetteur'         => $senderName,
-                        'recepteur'        => $receiverName,
+                        'montant' => $amount,
+                        'devise' => $currency,
+                        'emetteur' => $senderName,
+                        'recepteur' => $receiverName,
                         'date_transaction' => $dt->toDateString(),
                     ]
                 );
@@ -408,7 +426,7 @@ class MessageSwiftSeeder extends Seeder
         string $receiverBic, string $receiverName,
         Carbon $dt
     ): array {
-        $ymd    = $dt->format('ymd');
+        $ymd = $dt->format('ymd');
         $amtFmt = number_format($amount, 2, ',', '');  // SWIFT comma decimal
 
         return match ($type) {
@@ -422,24 +440,24 @@ class MessageSwiftSeeder extends Seeder
 
             // MT202 - Interbank transfer -> pacs.009
             'MT202' => [
-                '20'  => $ref,
-                '21'  => $ref,
-                '32A' => $ymd . $currency . $amtFmt,
+                '20' => $ref,
+                '21' => $ref,
+                '32A' => $ymd.$currency.$amtFmt,
                 '52A' => $senderBic,
                 '57A' => $receiverBic,
                 '58A' => "/{$senderIban}\n{$receiverName}",
-                '72'  => "/INS/{$senderBic}",
+                '72' => "/INS/{$senderBic}",
             ],
 
             // MT940 - Account statement -> camt.053.001.08
             'MT940' => [
-                '20'  => $ref,
-                '25'  => 'TN59' . substr($senderIban, 4),
-                '28C' => rand(100, 999) . '/1',
-                '60F' => 'C' . $ymd . $currency . number_format($amount * 1.1, 2, ',', ''),
-                '61'  => $ymd . $ymd . 'C' . $amtFmt . "NTRFNONREF\n//{$ref}",
-                '86'  => $this->narrative('MT940'),
-                '62F' => 'C' . $ymd . $currency . $amtFmt,
+                '20' => $ref,
+                '25' => 'TN59'.substr($senderIban, 4),
+                '28C' => rand(100, 999).'/1',
+                '60F' => 'C'.$ymd.$currency.number_format($amount * 1.1, 2, ',', ''),
+                '61' => $ymd.$ymd.'C'.$amtFmt."NTRFNONREF\n//{$ref}",
+                '86' => $this->narrative('MT940'),
+                '62F' => 'C'.$ymd.$currency.$amtFmt,
             ],
 
             default => ['20' => $ref],
@@ -459,21 +477,21 @@ class MessageSwiftSeeder extends Seeder
         $isLibyan = str_starts_with($senderIban, 'LY');
         if ($isLibyan) {
             $lyData = $this->findLibyanSender($senderIban);
-            $field50k = "/{$senderIban}\n{$senderName}\n" . ($lyData['address'] ?? 'TRIPOLI - LIBYA');
+            $field50k = "/{$senderIban}\n{$senderName}\n".($lyData['address'] ?? 'TRIPOLI - LIBYA');
         } else {
             $field50k = "/{$senderIban}\n{$senderName}";
         }
 
         $tags = [
-            '20'  => $ref,
+            '20' => $ref,
             '23B' => 'CRED',
-            '32A' => $ymd . $currency . $amtFmt,
-            '50'  => $senderName,
+            '32A' => $ymd.$currency.$amtFmt,
+            '50' => $senderName,
             '50K' => $field50k,
             '52A' => $senderBic,
             '57A' => $receiverBic,
-            '59'  => $receiverName,
-            '70'  => $this->narrative('MT103'),
+            '59' => $receiverName,
+            '70' => $this->narrative('MT103'),
             '71A' => (rand(0, 4) === 0) ? 'OUR' : 'SHA',
         ];
 
@@ -486,9 +504,9 @@ class MessageSwiftSeeder extends Seeder
         if ($isLibyan || rand(0, 4) >= 3) {
             if ($isLibyan) {
                 $lyData = $this->findLibyanSender($senderIban);
-                $tags['53B'] = '/C/' . ($lyData['settlement'] ?? 'LY57009001000000000007943');
+                $tags['53B'] = '/C/'.($lyData['settlement'] ?? 'LY57009001000000000007943');
             } else {
-                $tags['53B'] = '/C/' . $senderIban;
+                $tags['53B'] = '/C/'.$senderIban;
             }
         }
 
@@ -506,7 +524,7 @@ class MessageSwiftSeeder extends Seeder
         // 1. Amount > 1M (6)
         for ($i = 0; $i < 6; $i++) {
             [$sb, $sn, $si] = $this->pickSender('MT103', 'OUT');
-            [$rb, $rn]      = $this->pickReceiver('MT103', 'OUT', $sb);
+            [$rb, $rn] = $this->pickReceiver('MT103', 'OUT', $sb);
             $s[] = ['type' => 'MT103', 'direction' => 'OUT',
                 'senderBic' => $sb, 'senderName' => $sn, 'senderIban' => $si,
                 'receiverBic' => $rb, 'receiverName' => $rn,
@@ -516,7 +534,7 @@ class MessageSwiftSeeder extends Seeder
         // 2. Unusual currency (5)
         for ($i = 0; $i < 5; $i++) {
             [$sb, $sn, $si] = $this->pickSender('MT103', 'IN');
-            [$rb, $rn]      = $this->pickReceiver('MT103', 'IN', $sb);
+            [$rb, $rn] = $this->pickReceiver('MT103', 'IN', $sb);
             $s[] = ['type' => 'MT103', 'direction' => 'IN',
                 'senderBic' => $sb, 'senderName' => $sn, 'senderIban' => $si,
                 'receiverBic' => $rb, 'receiverName' => $rn,
@@ -537,7 +555,7 @@ class MessageSwiftSeeder extends Seeder
         // 4. Night transfer 00h-04h (5)
         for ($i = 0; $i < 5; $i++) {
             [$sb, $sn, $si] = $this->pickSender('MT103', 'OUT');
-            [$rb, $rn]      = $this->pickReceiver('MT103', 'OUT', $sb);
+            [$rb, $rn] = $this->pickReceiver('MT103', 'OUT', $sb);
             $s[] = ['type' => 'MT103', 'direction' => 'OUT',
                 'senderBic' => $sb, 'senderName' => $sn, 'senderIban' => $si,
                 'receiverBic' => $rb, 'receiverName' => $rn,
@@ -547,7 +565,7 @@ class MessageSwiftSeeder extends Seeder
         // 5. Zero amount (4)
         for ($i = 0; $i < 4; $i++) {
             [$sb, $sn, $si] = $this->pickSender('MT103', 'IN');
-            [$rb, $rn]      = $this->pickReceiver('MT103', 'IN', $sb);
+            [$rb, $rn] = $this->pickReceiver('MT103', 'IN', $sb);
             $s[] = ['type' => 'MT103', 'direction' => 'IN',
                 'senderBic' => $sb, 'senderName' => $sn, 'senderIban' => $si,
                 'receiverBic' => $rb, 'receiverName' => $rn,
@@ -582,131 +600,131 @@ class MessageSwiftSeeder extends Seeder
             // 1. OUT MT103 — Montant ULTRA élevé + devise suspecte + BIC manquant (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'BTLMTNTT',
-                'senderName'  => 'BTL TUNISIAN LIBYAN BANK',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BTLMTNTT',
+                'senderName' => 'BTL TUNISIAN LIBYAN BANK',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'OFFSHKYY',
-                'receiverName'=> 'CAYMAN OFFSHORE LTD',
-                'amount'      => 4_750_000.00, 'currency' => 'RUB',
-                'daysAgo'     => 2, 'hour' => 1,   // nuit
-                'raison'      => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
+                'receiverName' => 'CAYMAN OFFSHORE LTD',
+                'amount' => 4_750_000.00, 'currency' => 'RUB',
+                'daysAgo' => 2, 'hour' => 1,   // nuit
+                'raison' => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
             ],
 
             // 2. IN MT103 — Montant zéro + statut rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TUNISIAN LIBYAN BANK',
-                'amount'      => 0.00, 'currency' => 'EUR',
-                'daysAgo'     => 1, 'hour' => 14,
-                'raison'      => 'MONTANT_ZERO+STATUT_REJETE',
+                'receiverName' => 'BTL TUNISIAN LIBYAN BANK',
+                'amount' => 0.00, 'currency' => 'EUR',
+                'daysAgo' => 1, 'hour' => 14,
+                'raison' => 'MONTANT_ZERO+STATUT_REJETE',
             ],
 
             // 3. OUT MT202 — BIC offshore + devise AED + rejeté (HIGH attendu)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'BIATTNTT',
-                'senderName'  => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BIATTNTT',
+                'senderName' => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'SHELBHBB',
-                'receiverName'=> 'BELIZE SHELL BANK',
-                'amount'      => 890_000.00, 'currency' => 'AED',
-                'daysAgo'     => 3, 'hour' => 23,
-                'raison'      => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'BELIZE SHELL BANK',
+                'amount' => 890_000.00, 'currency' => 'AED',
+                'daysAgo' => 3, 'hour' => 23,
+                'raison' => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // 4. IN MT103 — Société libyenne + montant élevé USD (MEDIUM attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => $ly[1]['bic'],
-                'senderName'  => $ly[1]['name'],
-                'senderIban'  => $ly[1]['iban'],
+                'senderBic' => $ly[1]['bic'],
+                'senderName' => $ly[1]['name'],
+                'senderIban' => $ly[1]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDANT ACCOUNT',
-                'amount'      => 325_000.00, 'currency' => 'USD',
-                'daysAgo'     => 5, 'hour' => 10,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL CORRESPONDANT ACCOUNT',
+                'amount' => 325_000.00, 'currency' => 'USD',
+                'daysAgo' => 5, 'hour' => 10,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // 5. OUT MT103 — Auto-virement + CNY + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => $tn[2]['bic'],
-                'senderName'  => $tn[2]['name'],
-                'senderIban'  => $tn[2]['iban'],
+                'senderBic' => $tn[2]['bic'],
+                'senderName' => $tn[2]['name'],
+                'senderIban' => $tn[2]['iban'],
                 'receiverBic' => $tn[2]['bic'],
-                'receiverName'=> $tn[2]['name'],
-                'amount'      => 55_000.00, 'currency' => 'CNY',
-                'daysAgo'     => 4, 'hour' => 3,
-                'raison'      => 'AUTO_VIREMENT+DEVISE_INHABITUELLE+STATUT_REJETE',
+                'receiverName' => $tn[2]['name'],
+                'amount' => 55_000.00, 'currency' => 'CNY',
+                'daysAgo' => 4, 'hour' => 3,
+                'raison' => 'AUTO_VIREMENT+DEVISE_INHABITUELLE+STATUT_REJETE',
             ],
 
             // 6. IN MT940 — Devise JPY + montant massif + rejeté (HIGH attendu)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'MHCBJPJT',
-                'senderName'  => 'MIZUHO BANK TOKYO',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'MHCBJPJT',
+                'senderName' => 'MIZUHO BANK TOKYO',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TUNISIAN LIBYAN BANK',
-                'amount'      => 12_000_000.00, 'currency' => 'JPY',
-                'daysAgo'     => 7, 'hour' => 8,
-                'raison'      => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'BTL TUNISIAN LIBYAN BANK',
+                'amount' => 12_000_000.00, 'currency' => 'JPY',
+                'daysAgo' => 7, 'hour' => 8,
+                'raison' => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // 7. OUT MT103 — Montant > 2M + devise RUB + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'STBKTNTT',
-                'senderName'  => 'STB SOCIETE TUNISIENNE DE BANQUE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'STBKTNTT',
+                'senderName' => 'STB SOCIETE TUNISIENNE DE BANQUE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'PRVBKXXL',
-                'receiverName'=> 'PRIVATE BANK XL',
-                'amount'      => 2_100_000.00, 'currency' => 'RUB',
-                'daysAgo'     => 6, 'hour' => 2,
-                'raison'      => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
+                'receiverName' => 'PRIVATE BANK XL',
+                'amount' => 2_100_000.00, 'currency' => 'RUB',
+                'daysAgo' => 6, 'hour' => 2,
+                'raison' => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
             ],
 
             // 8. IN MT103 — Montant zéro entrée Tunisie (MEDIUM attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $tn[5]['bic'],
-                'senderName'  => $tn[5]['name'],
-                'senderIban'  => $tn[5]['iban'],
+                'senderBic' => $tn[5]['bic'],
+                'senderName' => $tn[5]['name'],
+                'senderIban' => $tn[5]['iban'],
                 'receiverBic' => 'BNPAFRPP',
-                'receiverName'=> 'BNP PARIBAS',
-                'amount'      => 0.00, 'currency' => 'EUR',
-                'daysAgo'     => 1, 'hour' => 11,
-                'raison'      => 'MONTANT_ZERO',
+                'receiverName' => 'BNP PARIBAS',
+                'amount' => 0.00, 'currency' => 'EUR',
+                'daysAgo' => 1, 'hour' => 11,
+                'raison' => 'MONTANT_ZERO',
             ],
 
             // 9. OUT MT202 — Rejeté + RUB + montant élevé (HIGH attendu)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'UBCITNTT',
-                'senderName'  => 'UIB UNION INTERNATIONALE DE BANQUES',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'UBCITNTT',
+                'senderName' => 'UIB UNION INTERNATIONALE DE BANQUES',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'OFFSHKYY',
-                'receiverName'=> 'CAYMAN OFFSHORE LTD',
-                'amount'      => 600_000.00, 'currency' => 'RUB',
-                'daysAgo'     => 10, 'hour' => 0,
-                'raison'      => 'STATUT_REJETE+DEVISE_INHABITUELLE+MONTANT_ELEVE',
+                'receiverName' => 'CAYMAN OFFSHORE LTD',
+                'amount' => 600_000.00, 'currency' => 'RUB',
+                'daysAgo' => 10, 'hour' => 0,
+                'raison' => 'STATUT_REJETE+DEVISE_INHABITUELLE+MONTANT_ELEVE',
             ],
 
             // 10. IN MT103 — Libyen + 5.8M USD + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[2]['bic'],
-                'senderName'  => $ly[2]['name'],
-                'senderIban'  => $ly[2]['iban'],
+                'senderBic' => $ly[2]['bic'],
+                'senderName' => $ly[2]['name'],
+                'senderIban' => $ly[2]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TREASURY DEPT',
-                'amount'      => 5_800_000.00, 'currency' => 'USD',
-                'daysAgo'     => 8, 'hour' => 15,
-                'raison'      => 'MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'BTL TREASURY DEPT',
+                'amount' => 5_800_000.00, 'currency' => 'USD',
+                'daysAgo' => 8, 'hour' => 15,
+                'raison' => 'MONTANT_ELEVE+STATUT_REJETE',
             ],
         ];
     }
@@ -725,17 +743,20 @@ class MessageSwiftSeeder extends Seeder
     {
         if ($type === 'MT103') {
             // Occasionally use a Libyan sender for variety
-            if (rand(0, 9) === 0 && !empty($this->libyanSenders)) {
+            if (rand(0, 9) === 0 && ! empty($this->libyanSenders)) {
                 $p = $this->libyanSenders[array_rand($this->libyanSenders)];
+
                 return [$p['bic'], $p['name'], $p['iban']];
             }
             $p = $this->tunisianSenders[array_rand($this->tunisianSenders)];
+
             return [$p['bic'], $p['name'], $p['iban']];
         }
         // MT202 / MT940: use bank BICs
-        $bic  = $this->pick($this->normalBics);
+        $bic = $this->pick($this->normalBics);
         $name = $this->bankName($bic);
         $iban = $this->genTnIban();
+
         return [$bic, $name, $iban];
     }
 
@@ -750,11 +771,13 @@ class MessageSwiftSeeder extends Seeder
             $bic = $this->pick($foreignBics);
             $beneficiaries = $this->foreignBeneficiaries[$bic] ?? ['FOREIGN BENEFICIARY'];
             $name = $beneficiaries[array_rand($beneficiaries)];
+
             return [$bic, $name];
         }
         // MT202 / MT940
-        $bic  = $this->pick($this->normalBics);
+        $bic = $this->pick($this->normalBics);
         $name = $this->bankName($bic);
+
         return [$bic, $name];
     }
 
@@ -765,12 +788,13 @@ class MessageSwiftSeeder extends Seeder
                 return $s;
             }
         }
+
         return ['address' => 'TRIPOLI - LIBYA', 'settlement' => 'LY57009001000000000007943'];
     }
 
     private function genTnIban(): string
     {
-        return 'TN5910006035' . str_pad((string) rand(100000000000, 999999999999), 12, '0', STR_PAD_LEFT);
+        return 'TN5910006035'.str_pad((string) rand(100000000000, 999999999999), 12, '0', STR_PAD_LEFT);
     }
 
     // ---------------------------------------------------------------
@@ -783,15 +807,16 @@ class MessageSwiftSeeder extends Seeder
             $opts = [
                 'CUSTOMER STATEMENT END OF DAY',
                 'ACCOUNT STATEMENT MONTHLY CLOSING',
-                'DAILY BALANCE STATEMENT REF ' . strtoupper(substr(md5((string) rand()), 0, 8)),
+                'DAILY BALANCE STATEMENT REF '.strtoupper(substr(md5((string) rand()), 0, 8)),
             ];
+
             return $opts[array_rand($opts)];
         }
         if ($type === 'MT202') {
-            return 'INTERBANK SETTLEMENT REF ' . strtoupper(substr(md5((string) rand()), 0, 10));
+            return 'INTERBANK SETTLEMENT REF '.strtoupper(substr(md5((string) rand()), 0, 10));
         }
 
-        $year  = date('Y');
+        $year = date('Y');
         $month = date('F', mktime(0, 0, 0, rand(1, 12), 1));
         $invNb = sprintf('INV-%d-%04d', $year, rand(100, 9999));
         $ctrNb = sprintf('CTR-%04d-%04d', rand(1000, 9999), rand(1000, 9999));
@@ -801,19 +826,20 @@ class MessageSwiftSeeder extends Seeder
         $opts = [
             "PAIEMENT FACTURE {$invNb} MATERIEL INDUSTRIEL {$month} {$year}",
             "PAIEMENT FACTURE {$invNb} EQUIPEMENT ELECTRONIQUE {$month} {$year}",
-            "TUITION FEES ACADEMIC YEAR {$year}-" . ($year + 1) . " STUDENT ID {$stuId}",
+            "TUITION FEES ACADEMIC YEAR {$year}-".($year + 1)." STUDENT ID {$stuId}",
             "PAYMENT OIL CONSULTING SERVICES CONTRACT {$ctrNb}",
             "SALARY PAYMENT MONTH {$month} {$year} EMPLOYEE REF {$empId}",
-            "PAYMENT AIRCRAFT MAINTENANCE SERVICES {$invNb} Q" . rand(1, 4) . " {$year}",
-            "REIMBURSEMENT EXPENSES REF-" . rand(1000, 9999),
-            "EXPORT PROCEEDS SHIPMENT SHP-" . sprintf('%06d', rand(100000, 999999)) . " GOODS TEXTILE",
+            "PAYMENT AIRCRAFT MAINTENANCE SERVICES {$invNb} Q".rand(1, 4)." {$year}",
+            'REIMBURSEMENT EXPENSES REF-'.rand(1000, 9999),
+            'EXPORT PROCEEDS SHIPMENT SHP-'.sprintf('%06d', rand(100000, 999999)).' GOODS TEXTILE',
             "ADVANCE PAYMENT CONTRACT {$ctrNb} CIVIL ENGINEERING WORKS",
-            "PAYMENT MACHINERY AND EQUIPMENT ORDER ORD-" . sprintf('%06d', rand(100000, 999999)),
-            "SETTLEMENT TRADE FINANCE LETTER OF CREDIT LC-" . sprintf('%06d', rand(100000, 999999)),
+            'PAYMENT MACHINERY AND EQUIPMENT ORDER ORD-'.sprintf('%06d', rand(100000, 999999)),
+            'SETTLEMENT TRADE FINANCE LETTER OF CREDIT LC-'.sprintf('%06d', rand(100000, 999999)),
             "DIVIDENDS PAYMENT FISCAL YEAR {$year} REF {$invNb}",
             "SUBSCRIPTION FEES PROFESSIONAL ASSOCIATION {$year}",
-            "PAYMENT PHARMACEUTICAL PRODUCTS {$invNb} BATCH " . rand(1000, 9999),
+            "PAYMENT PHARMACEUTICAL PRODUCTS {$invNb} BATCH ".rand(1000, 9999),
         ];
+
         return $opts[array_rand($opts)];
     }
 
@@ -836,6 +862,7 @@ class MessageSwiftSeeder extends Seeder
         if (str_starts_with($type, 'MT')) {
             return substr($type, 2, 1); // MT103->'1', MT202->'2', MT940->'9'
         }
+
         return match (true) {
             str_starts_with($type, 'PACS') => 'PACS',
             str_starts_with($type, 'CAMT') => 'CAMT',
@@ -847,29 +874,29 @@ class MessageSwiftSeeder extends Seeder
     private function bankName(string $bic): string
     {
         return [
-            'BTLMTNTT'    => 'BTL TUNISIAN LIBYAN BANK',
-            'BIATTNTT'    => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
-            'ATTIJARX'    => 'ATTIJARI BANK TUNISIE',
-            'BNATNTTX'    => 'BANQUE NATIONALE AGRICOLE',
-            'UBCITNTT'    => 'UIB UNION INTERNATIONALE DE BANQUES',
-            'STBKTNTT'    => 'STB SOCIETE TUNISIENNE DE BANQUE',
-            'BNPAFRPP'    => 'BNP PARIBAS',
-            'DEUTDEFF'    => 'DEUTSCHE BANK AG',
-            'CITIUS33'    => 'CITIBANK NA',
-            'BARCGB22'    => 'BARCLAYS BANK PLC',
-            'SOGEFRPP'    => 'SOCIETE GENERALE',
-            'HSBCGB2L'    => 'HSBC BANK PLC LONDON',
+            'BTLMTNTT' => 'BTL TUNISIAN LIBYAN BANK',
+            'BIATTNTT' => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
+            'ATTIJARX' => 'ATTIJARI BANK TUNISIE',
+            'BNATNTTX' => 'BANQUE NATIONALE AGRICOLE',
+            'UBCITNTT' => 'UIB UNION INTERNATIONALE DE BANQUES',
+            'STBKTNTT' => 'STB SOCIETE TUNISIENNE DE BANQUE',
+            'BNPAFRPP' => 'BNP PARIBAS',
+            'DEUTDEFF' => 'DEUTSCHE BANK AG',
+            'CITIUS33' => 'CITIBANK NA',
+            'BARCGB22' => 'BARCLAYS BANK PLC',
+            'SOGEFRPP' => 'SOCIETE GENERALE',
+            'HSBCGB2L' => 'HSBC BANK PLC LONDON',
             'ATLDTNTTXXX' => 'ARAB TUNISIAN LIBYAN DEVELOPMENT BANK',
             'LAFBLYLTXXX' => 'LIBYAN ARAB FOREIGN BANK',
-            'SHELBHBB'    => 'BELIZE SHELL BANK',
-            'OFFSHKYY'    => 'CAYMAN OFFSHORE LTD',
-            'PRVBKXXL'    => 'PRIVATE BANK XL',
-            'MHCBJPJT'    => 'MIZUHO BANK TOKYO',
-            'SABRRUMM'    => 'SBERBANK RUSSIA MOSCOW',
-            'ADCBAEAA'    => 'ABU DHABI COMMERCIAL BANK UAE',
-            'ICBKCNBJ'    => 'INDUSTRIAL AND COMMERCIAL BANK OF CHINA',
-            'CHASUS33'    => 'JPMORGAN CHASE BANK NA NEW YORK',
-            'UBSWCHZH'    => 'UBS AG SWITZERLAND',
+            'SHELBHBB' => 'BELIZE SHELL BANK',
+            'OFFSHKYY' => 'CAYMAN OFFSHORE LTD',
+            'PRVBKXXL' => 'PRIVATE BANK XL',
+            'MHCBJPJT' => 'MIZUHO BANK TOKYO',
+            'SABRRUMM' => 'SBERBANK RUSSIA MOSCOW',
+            'ADCBAEAA' => 'ABU DHABI COMMERCIAL BANK UAE',
+            'ICBKCNBJ' => 'INDUSTRIAL AND COMMERCIAL BANK OF CHINA',
+            'CHASUS33' => 'JPMORGAN CHASE BANK NA NEW YORK',
+            'UBSWCHZH' => 'UBS AG SWITZERLAND',
         ][$bic] ?? $bic;
     }
 
@@ -890,118 +917,118 @@ class MessageSwiftSeeder extends Seeder
             // INT-01: OFAC Russia — MT103 OUT RUB 3.2M Sberbank rejeté nuit (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'BTLMTNTT',
-                'senderName'  => 'BTL TUNISIAN LIBYAN BANK',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BTLMTNTT',
+                'senderName' => 'BTL TUNISIAN LIBYAN BANK',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'SABRRUMM',
-                'receiverName'=> 'SBERBANK RUSSIA MOSCOW',
-                'amount'      => 3_200_000.00, 'currency' => 'RUB',
-                'daysAgo'     => 3, 'hour' => 2,
-                'raison'      => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
+                'receiverName' => 'SBERBANK RUSSIA MOSCOW',
+                'amount' => 3_200_000.00, 'currency' => 'RUB',
+                'daysAgo' => 3, 'hour' => 2,
+                'raison' => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
             ],
 
             // INT-02: Panama Papers — MT202 IN USD 8.5M offshore BVI rejeté (HIGH)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'OFFSHKYY',
-                'senderName'  => 'BVI CAPITAL MANAGEMENT LTD',
-                'senderIban'  => 'VG96VPVG0000012345678901',
+                'senderBic' => 'OFFSHKYY',
+                'senderName' => 'BVI CAPITAL MANAGEMENT LTD',
+                'senderIban' => 'VG96VPVG0000012345678901',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TREASURY DEPT',
-                'amount'      => 8_500_000.00, 'currency' => 'USD',
-                'daysAgo'     => 5, 'hour' => 15,
-                'raison'      => 'MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'BTL TREASURY DEPT',
+                'amount' => 8_500_000.00, 'currency' => 'USD',
+                'daysAgo' => 5, 'hour' => 15,
+                'raison' => 'MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // INT-03: TBML UAE — MT103 OUT AED 620K Dubai shell nuit rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'BIATTNTT',
-                'senderName'  => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BIATTNTT',
+                'senderName' => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'ADCBAEAA',
-                'receiverName'=> 'DUBAI SHELL TRADING LLC',
-                'amount'      => 620_000.00, 'currency' => 'AED',
-                'daysAgo'     => 2, 'hour' => 3,
-                'raison'      => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'DUBAI SHELL TRADING LLC',
+                'amount' => 620_000.00, 'currency' => 'AED',
+                'daysAgo' => 2, 'hour' => 3,
+                'raison' => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // INT-04: Probe transaction zéro — MT103 IN 0 EUR Libye NOC rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 0.00, 'currency' => 'EUR',
-                'daysAgo'     => 1, 'hour' => 11,
-                'raison'      => 'MONTANT_ZERO+STATUT_REJETE',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 0.00, 'currency' => 'EUR',
+                'daysAgo' => 1, 'hour' => 11,
+                'raison' => 'MONTANT_ZERO+STATUT_REJETE',
             ],
 
             // INT-05: China layering — MT103 OUT CNY 1.8M ICBC rejeté 3h (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'STBKTNTT',
-                'senderName'  => 'STB SOCIETE TUNISIENNE DE BANQUE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'STBKTNTT',
+                'senderName' => 'STB SOCIETE TUNISIENNE DE BANQUE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'ICBKCNBJ',
-                'receiverName'=> 'ICBC INTERNATIONAL TRADING SHANGHAI',
-                'amount'      => 1_800_000.00, 'currency' => 'CNY',
-                'daysAgo'     => 4, 'hour' => 3,
-                'raison'      => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'ICBC INTERNATIONAL TRADING SHANGHAI',
+                'amount' => 1_800_000.00, 'currency' => 'CNY',
+                'daysAgo' => 4, 'hour' => 3,
+                'raison' => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // INT-06: Layering RUB — MT103 OUT RUB 5.5M banque privée rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'UBCITNTT',
-                'senderName'  => 'UIB UNION INTERNATIONALE DE BANQUES',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'UBCITNTT',
+                'senderName' => 'UIB UNION INTERNATIONALE DE BANQUES',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'PRVBKXXL',
-                'receiverName'=> 'PRIVATE BANK XL OFFSHORE',
-                'amount'      => 5_500_000.00, 'currency' => 'RUB',
-                'daysAgo'     => 6, 'hour' => 1,
-                'raison'      => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
+                'receiverName' => 'PRIVATE BANK XL OFFSHORE',
+                'amount' => 5_500_000.00, 'currency' => 'RUB',
+                'daysAgo' => 6, 'hour' => 1,
+                'raison' => 'MONTANT_ELEVE+DEVISE_INHABITUELLE+STATUT_REJETE',
             ],
 
             // INT-07: Financement suspect — MT103 IN 0 USD Belize rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'SHELBHBB',
-                'senderName'  => 'BELIZE SHELL FINANCIAL SA',
-                'senderIban'  => 'BZ04BELZ00001000006300029',
+                'senderBic' => 'SHELBHBB',
+                'senderName' => 'BELIZE SHELL FINANCIAL SA',
+                'senderIban' => 'BZ04BELZ00001000006300029',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TUNISIAN LIBYAN BANK',
-                'amount'      => 0.00, 'currency' => 'USD',
-                'daysAgo'     => 2, 'hour' => 22,
-                'raison'      => 'MONTANT_ZERO+STATUT_REJETE',
+                'receiverName' => 'BTL TUNISIAN LIBYAN BANK',
+                'amount' => 0.00, 'currency' => 'USD',
+                'daysAgo' => 2, 'hour' => 22,
+                'raison' => 'MONTANT_ZERO+STATUT_REJETE',
             ],
 
             // INT-08: Sanctions multiples — MT202 OUT USD 3.1M offshore rejeté nuit (HIGH)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => 'ATTIJARX',
-                'senderName'  => 'ATTIJARI BANK TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'ATTIJARX',
+                'senderName' => 'ATTIJARI BANK TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'PRVBKXXL',
-                'receiverName'=> 'PRIVATE BANK XL',
-                'amount'      => 3_100_000.00, 'currency' => 'USD',
-                'daysAgo'     => 7, 'hour' => 0,
-                'raison'      => 'MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'PRIVATE BANK XL',
+                'amount' => 3_100_000.00, 'currency' => 'USD',
+                'daysAgo' => 7, 'hour' => 0,
+                'raison' => 'MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // INT-09: MT940 JPY balance massive — IN JPY 18M rejeté (HIGH)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'MHCBJPJT',
-                'senderName'  => 'MIZUHO BANK TOKYO',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'MHCBJPJT',
+                'senderName' => 'MIZUHO BANK TOKYO',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL NOSTRO ACCOUNT JPY',
-                'amount'      => 18_000_000.00, 'currency' => 'JPY',
-                'daysAgo'     => 8, 'hour' => 7,
-                'raison'      => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
+                'receiverName' => 'BTL NOSTRO ACCOUNT JPY',
+                'amount' => 18_000_000.00, 'currency' => 'JPY',
+                'daysAgo' => 8, 'hour' => 7,
+                'raison' => 'DEVISE_INHABITUELLE+MONTANT_ELEVE+STATUT_REJETE',
             ],
 
             // ===== MEDIUM (11) — pending/processed, montants élevés légitimes =====
@@ -1009,144 +1036,144 @@ class MessageSwiftSeeder extends Seeder
             // INT-10: Deutsche Bank — MT103 IN USD 280K import acier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'DEUTDEFF',
-                'senderName'  => 'SIEMENS AG MUNICH',
-                'senderIban'  => 'DE89370400440532013000',
+                'senderBic' => 'DEUTDEFF',
+                'senderName' => 'SIEMENS AG MUNICH',
+                'senderIban' => 'DE89370400440532013000',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 280_000.00, 'currency' => 'USD',
-                'daysAgo'     => 10, 'hour' => 9,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 280_000.00, 'currency' => 'USD',
+                'daysAgo' => 10, 'hour' => 9,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-11: Libye NOC — MT103 IN USD 175K paiement pétrolier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 175_000.00, 'currency' => 'USD',
-                'daysAgo'     => 3, 'hour' => 10,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 175_000.00, 'currency' => 'USD',
+                'daysAgo' => 3, 'hour' => 10,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-12: HSBC London — MT202 OUT GBP 450K interbank (MEDIUM)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'BTLMTNTT',
-                'senderName'  => 'BTL TUNISIAN LIBYAN BANK',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BTLMTNTT',
+                'senderName' => 'BTL TUNISIAN LIBYAN BANK',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'HSBCGB2L',
-                'receiverName'=> 'HSBC BANK PLC LONDON',
-                'amount'      => 450_000.00, 'currency' => 'GBP',
-                'daysAgo'     => 12, 'hour' => 11,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'HSBC BANK PLC LONDON',
+                'amount' => 450_000.00, 'currency' => 'GBP',
+                'daysAgo' => 12, 'hour' => 11,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-13: Libye Libyan Iron Steel — MT103 IN USD 220K acier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[1]['bic'],
-                'senderName'  => $ly[1]['name'],
-                'senderIban'  => $ly[1]['iban'],
+                'senderBic' => $ly[1]['bic'],
+                'senderName' => $ly[1]['name'],
+                'senderIban' => $ly[1]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 220_000.00, 'currency' => 'USD',
-                'daysAgo'     => 4, 'hour' => 14,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 220_000.00, 'currency' => 'USD',
+                'daysAgo' => 4, 'hour' => 14,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-14: Citibank USA — MT103 OUT USD 320K énergie (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'BNATNTTX',
-                'senderName'  => 'BANQUE NATIONALE AGRICOLE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BNATNTTX',
+                'senderName' => 'BANQUE NATIONALE AGRICOLE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'CITIUS33',
-                'receiverName'=> 'EXXON MOBIL CORPORATION',
-                'amount'      => 320_000.00, 'currency' => 'USD',
-                'daysAgo'     => 15, 'hour' => 10,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'EXXON MOBIL CORPORATION',
+                'amount' => 320_000.00, 'currency' => 'USD',
+                'daysAgo' => 15, 'hour' => 10,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-15: MT940 relevé BNP 750K EUR — IN journalier (MEDIUM)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'BNP PARIBAS',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'BNP PARIBAS',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL NOSTRO EUR',
-                'amount'      => 750_000.00, 'currency' => 'EUR',
-                'daysAgo'     => 5, 'hour' => 8,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL NOSTRO EUR',
+                'amount' => 750_000.00, 'currency' => 'EUR',
+                'daysAgo' => 5, 'hour' => 8,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-16: Libye General Electricity — MT103 IN EUR 95K travaux (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[2]['bic'],
-                'senderName'  => $ly[2]['name'],
-                'senderIban'  => $ly[2]['iban'],
+                'senderBic' => $ly[2]['bic'],
+                'senderName' => $ly[2]['name'],
+                'senderIban' => $ly[2]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 95_000.00, 'currency' => 'EUR',
-                'daysAgo'     => 6, 'hour' => 13,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 95_000.00, 'currency' => 'EUR',
+                'daysAgo' => 6, 'hour' => 13,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-17: Barclays correspondant — MT202 IN EUR 200K (MEDIUM)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BARCGB22',
-                'senderName'  => 'BARCLAYS BANK PLC',
-                'senderIban'  => 'GB29NWBK60161331926819',
+                'senderBic' => 'BARCGB22',
+                'senderName' => 'BARCLAYS BANK PLC',
+                'senderIban' => 'GB29NWBK60161331926819',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL NOSTRO GBP',
-                'amount'      => 200_000.00, 'currency' => 'EUR',
-                'daysAgo'     => 20, 'hour' => 10,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL NOSTRO GBP',
+                'amount' => 200_000.00, 'currency' => 'EUR',
+                'daysAgo' => 20, 'hour' => 10,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-18: Vinci Construction — MT103 OUT EUR 85K travaux BTP (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'ATTIJARX',
-                'senderName'  => 'ATTIJARI BANK TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'ATTIJARX',
+                'senderName' => 'ATTIJARI BANK TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'SOGEFRPP',
-                'receiverName'=> 'VINCI CONSTRUCTION FRANCE',
-                'amount'      => 85_000.00, 'currency' => 'EUR',
-                'daysAgo'     => 8, 'hour' => 9,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'VINCI CONSTRUCTION FRANCE',
+                'amount' => 85_000.00, 'currency' => 'EUR',
+                'daysAgo' => 8, 'hour' => 9,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-19: Tripoli Port Authority — MT103 IN USD 130K ports (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[3]['bic'],
-                'senderName'  => $ly[3]['name'],
-                'senderIban'  => $ly[3]['iban'],
+                'senderBic' => $ly[3]['bic'],
+                'senderName' => $ly[3]['name'],
+                'senderIban' => $ly[3]['iban'],
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL TREASURY DEPT',
-                'amount'      => 130_000.00, 'currency' => 'USD',
-                'daysAgo'     => 9, 'hour' => 11,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'BTL TREASURY DEPT',
+                'amount' => 130_000.00, 'currency' => 'USD',
+                'daysAgo' => 9, 'hour' => 11,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // INT-20: JPMorgan Chase — MT103 OUT USD 165K pétrochimie (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'UBCITNTT',
-                'senderName'  => 'UIB UNION INTERNATIONALE DE BANQUES',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'UBCITNTT',
+                'senderName' => 'UIB UNION INTERNATIONALE DE BANQUES',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'CHASUS33',
-                'receiverName'=> 'JPMORGAN CHASE BANK NEW YORK',
-                'amount'      => 165_000.00, 'currency' => 'USD',
-                'daysAgo'     => 14, 'hour' => 12,
-                'raison'      => 'MONTANT_ELEVE',
+                'receiverName' => 'JPMORGAN CHASE BANK NEW YORK',
+                'amount' => 165_000.00, 'currency' => 'USD',
+                'daysAgo' => 14, 'hour' => 12,
+                'raison' => 'MONTANT_ELEVE',
             ],
 
             // ===== LOW (10) — processed, montants normaux, EUR/USD/GBP =====
@@ -1154,131 +1181,131 @@ class MessageSwiftSeeder extends Seeder
             // INT-21: Remittance salaire chercheur TN-France — IN EUR 2.8K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'DUPONT ET FILS INDUSTRIES SA',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'DUPONT ET FILS INDUSTRIES SA',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 2_800.00, 'currency' => 'EUR',
-                'daysAgo'     => 30, 'hour' => 10,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 2_800.00, 'currency' => 'EUR',
+                'daysAgo' => 30, 'hour' => 10,
+                'raison' => 'NORMAL',
             ],
 
             // INT-22: Facture fournisseur allemand Siemens — OUT EUR 12.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'BTLMTNTT',
-                'senderName'  => 'BTL TUNISIAN LIBYAN BANK',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BTLMTNTT',
+                'senderName' => 'BTL TUNISIAN LIBYAN BANK',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'DEUTDEFF',
-                'receiverName'=> 'SIEMENS AG MUNICH',
-                'amount'      => 12_500.00, 'currency' => 'EUR',
-                'daysAgo'     => 25, 'hour' => 11,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'SIEMENS AG MUNICH',
+                'amount' => 12_500.00, 'currency' => 'EUR',
+                'daysAgo' => 25, 'hour' => 11,
+                'raison' => 'NORMAL',
             ],
 
             // INT-23: Virement client Société Générale — IN EUR 8.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'SOGEFRPP',
-                'senderName'  => 'CREDIT AGRICOLE CORPORATE SA',
-                'senderIban'  => 'FR7630003000701234567890185',
+                'senderBic' => 'SOGEFRPP',
+                'senderName' => 'CREDIT AGRICOLE CORPORATE SA',
+                'senderIban' => 'FR7630003000701234567890185',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 8_500.00, 'currency' => 'EUR',
-                'daysAgo'     => 20, 'hour' => 9,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 8_500.00, 'currency' => 'EUR',
+                'daysAgo' => 20, 'hour' => 9,
+                'raison' => 'NORMAL',
             ],
 
             // INT-24: Frais académiques UK — OUT GBP 15.2K Université Manchester (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'BNATNTTX',
-                'senderName'  => 'BANQUE NATIONALE AGRICOLE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BNATNTTX',
+                'senderName' => 'BANQUE NATIONALE AGRICOLE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'HSBCGB2L',
-                'receiverName'=> 'UNIVERSITY OF MANCHESTER',
-                'amount'      => 15_200.00, 'currency' => 'GBP',
-                'daysAgo'     => 45, 'hour' => 14,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'UNIVERSITY OF MANCHESTER',
+                'amount' => 15_200.00, 'currency' => 'GBP',
+                'daysAgo' => 45, 'hour' => 14,
+                'raison' => 'NORMAL',
             ],
 
             // INT-25: Export produits agroalimentaires TN — IN USD 22.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'CITIUS33',
-                'senderName'  => 'JOHNSON AND JOHNSON INC',
-                'senderIban'  => 'ACT6789012345',
+                'senderBic' => 'CITIUS33',
+                'senderName' => 'JOHNSON AND JOHNSON INC',
+                'senderIban' => 'ACT6789012345',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 22_500.00, 'currency' => 'USD',
-                'daysAgo'     => 35, 'hour' => 10,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 22_500.00, 'currency' => 'USD',
+                'daysAgo' => 35, 'hour' => 10,
+                'raison' => 'NORMAL',
             ],
 
             // INT-26: Prestations IT Suisse UBS — OUT CHF 18.9K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'ATTIJARX',
-                'senderName'  => 'ATTIJARI BANK TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'ATTIJARX',
+                'senderName' => 'ATTIJARI BANK TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'UBSWCHZH',
-                'receiverName'=> 'UBS SWITZERLAND IT SERVICES SA',
-                'amount'      => 18_900.00, 'currency' => 'CHF',
-                'daysAgo'     => 28, 'hour' => 10,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'UBS SWITZERLAND IT SERVICES SA',
+                'amount' => 18_900.00, 'currency' => 'CHF',
+                'daysAgo' => 28, 'hour' => 10,
+                'raison' => 'NORMAL',
             ],
 
             // INT-27: Nostro BNP Paribas correspondant — MT202 IN EUR 145K (LOW)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'BNP PARIBAS',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'BNP PARIBAS',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL NOSTRO EUR',
-                'amount'      => 145_000.00, 'currency' => 'EUR',
-                'daysAgo'     => 40, 'hour' => 9,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'BTL NOSTRO EUR',
+                'amount' => 145_000.00, 'currency' => 'EUR',
+                'daysAgo' => 40, 'hour' => 9,
+                'raison' => 'NORMAL',
             ],
 
             // INT-28: Fournisseur textile Italie — OUT EUR 9.8K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'BIATTNTT',
-                'senderName'  => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'BIATTNTT',
+                'senderName' => 'BIAT BANQUE INTERNATIONALE ARABE DE TUNISIE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'BNPAFRPP',
-                'receiverName'=> 'COMPAGNIE SAINT GOBAIN',
-                'amount'      => 9_800.00, 'currency' => 'EUR',
-                'daysAgo'     => 50, 'hour' => 11,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'COMPAGNIE SAINT GOBAIN',
+                'amount' => 9_800.00, 'currency' => 'EUR',
+                'daysAgo' => 50, 'hour' => 11,
+                'raison' => 'NORMAL',
             ],
 
             // INT-29: Remittance famille TN-France — IN EUR 1.2K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'RENAULT FRANCE SA',
-                'senderIban'  => 'FR7630006000011234567890189',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'RENAULT FRANCE SA',
+                'senderIban' => 'FR7630006000011234567890189',
                 'receiverBic' => 'BTLMTNTT',
-                'receiverName'=> 'BTL CORRESPONDENT ACCOUNT',
-                'amount'      => 1_200.00, 'currency' => 'EUR',
-                'daysAgo'     => 60, 'hour' => 12,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'BTL CORRESPONDENT ACCOUNT',
+                'amount' => 1_200.00, 'currency' => 'EUR',
+                'daysAgo' => 60, 'hour' => 12,
+                'raison' => 'NORMAL',
             ],
 
             // INT-30: Formation professionnelle France AXA — OUT EUR 6.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => 'STBKTNTT',
-                'senderName'  => 'STB SOCIETE TUNISIENNE DE BANQUE',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'STBKTNTT',
+                'senderName' => 'STB SOCIETE TUNISIENNE DE BANQUE',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => 'SOGEFRPP',
-                'receiverName'=> 'AXA SA PARIS',
-                'amount'      => 6_500.00, 'currency' => 'EUR',
-                'daysAgo'     => 55, 'hour' => 10,
-                'raison'      => 'NORMAL',
+                'receiverName' => 'AXA SA PARIS',
+                'amount' => 6_500.00, 'currency' => 'EUR',
+                'daysAgo' => 55, 'hour' => 10,
+                'raison' => 'NORMAL',
             ],
         ];
     }

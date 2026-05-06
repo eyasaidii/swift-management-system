@@ -33,7 +33,7 @@ class AnomalyService
         $count = (int) Cache::increment('anomaly_analyzed_count');
 
         // Déclencher seulement si multiple du seuil et pas déjà en cours
-        if ($count % $threshold === 0 && !Cache::get('ai_retrain_running', false)) {
+        if ($count % $threshold === 0 && ! Cache::get('ai_retrain_running', false)) {
             Cache::put('ai_retrain_running', true, now()->addMinutes(10));
             RetrainModelJob::dispatch($count)->onQueue('default');
             Log::info("AnomalyService: auto-retrain déclenché (count={$count}, threshold={$threshold})");

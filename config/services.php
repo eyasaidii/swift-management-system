@@ -37,8 +37,8 @@ return [
 
     // Service IA — swift-IA FastAPI (XGBoost + Isolation Forest)
     'anomaly_ai' => [
-        'url'              => env('ANOMALY_AI_URL', 'http://127.0.0.1:8001'),
-        'timeout'          => env('ANOMALY_AI_TIMEOUT', 10),
+        'url' => env('ANOMALY_AI_URL', 'http://127.0.0.1:8001'),
+        'timeout' => env('ANOMALY_AI_TIMEOUT', 10),
         // Nombre de messages analysés avant auto-ré-entraînement du modèle
         'retrain_threshold' => env('AI_RETRAIN_THRESHOLD', 50),
     ],

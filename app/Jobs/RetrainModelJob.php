@@ -24,7 +24,8 @@ class RetrainModelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 2;
+    public int $tries = 2;
+
     public int $timeout = 300; // 5 min max
 
     public function __construct(
@@ -44,13 +45,13 @@ class RetrainModelJob implements ShouldQueue
             if ($response->successful()) {
                 $data = $response->json();
                 $version = $data['model_version'] ?? 'unknown';
-                $samples = $data['samples_used']  ?? '?';
+                $samples = $data['samples_used'] ?? '?';
 
                 Log::info("RetrainModelJob: succès — version={$version}, samples={$samples}");
 
                 // Stocker la version du dernier entraînement
-                Cache::put('ai_model_version',       $version, now()->addDays(30));
-                Cache::put('ai_last_retrain_at',     now()->toDateTimeString(), now()->addDays(30));
+                Cache::put('ai_model_version', $version, now()->addDays(30));
+                Cache::put('ai_last_retrain_at', now()->toDateTimeString(), now()->addDays(30));
                 Cache::put('ai_last_retrain_samples', $samples, now()->addDays(30));
 
                 // Marquer que le ré-entraînement est terminé

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Services\AnomalyService;
 use App\Models\AnomalySwift;
 use App\Models\MessageSwift;
+use App\Services\AnomalyService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -39,13 +39,15 @@ class DetectAnomalies extends Command
             $h = Http::timeout(3)->get("{$aiUrl}/api/health");
             if ($h->successful()) {
                 $iaOnline = true;
-                $version  = $h->json('model_version') ?? '?';
+                $version = $h->json('model_version') ?? '?';
                 $this->line("  Service IA   : <info>En ligne</info> — {$version}");
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         if (! $iaOnline) {
             $this->error('  Service IA   : HORS LIGNE — démarrez swift-IA avant de relancer');
+
             return self::FAILURE;
         }
 
@@ -54,6 +56,7 @@ class DetectAnomalies extends Command
             $message = MessageSwift::find((int) $id);
             if (! $message) {
                 $this->error("  Message #{$id} introuvable.");
+
                 return self::FAILURE;
             }
             $result = $service->analyze($message);
@@ -62,7 +65,8 @@ class DetectAnomalies extends Command
             $this->line("  Score        : {$result['score']}");
             $this->line("  Niveau       : {$result['niveau_risque']}");
             $this->line("  Source       : {$result['source']}");
-            $this->line("  Raisons      : " . implode(', ', $result['raisons'] ?: ['Aucune']));
+            $this->line('  Raisons      : '.implode(', ', $result['raisons'] ?: ['Aucune']));
+
             return self::SUCCESS;
         }
 
@@ -89,6 +93,7 @@ class DetectAnomalies extends Command
 
         if ($toProcess === 0) {
             $this->info('  Rien à traiter.');
+
             return self::SUCCESS;
         }
 
@@ -99,17 +104,25 @@ class DetectAnomalies extends Command
         $bar = $this->output->createProgressBar($toProcess);
         $bar->start();
 
-        $ok = 0; $errors = 0; $anomalies = 0;
-        $iaCount = 0; $rulesCount = 0;
+        $ok = 0;
+        $errors = 0;
+        $anomalies = 0;
+        $iaCount = 0;
+        $rulesCount = 0;
 
         $query->chunk(50, function ($messages) use ($service, $bar, &$ok, &$errors, &$anomalies, &$iaCount, &$rulesCount) {
             foreach ($messages as $message) {
                 try {
                     $result = $service->analyze($message);
                     $ok++;
-                    if ($result['niveau_risque'] !== 'LOW') $anomalies++;
-                    if ($result['source'] === 'IA')    $iaCount++;
-                    else                               $rulesCount++;
+                    if ($result['niveau_risque'] !== 'LOW') {
+                        $anomalies++;
+                    }
+                    if ($result['source'] === 'IA') {
+                        $iaCount++;
+                    } else {
+                        $rulesCount++;
+                    }
                 } catch (\Throwable $e) {
                     $errors++;
                 }
@@ -119,11 +132,13 @@ class DetectAnomalies extends Command
 
         $bar->finish();
         $this->line("\n");
-        $this->info("  Résultats :");
+        $this->info('  Résultats :');
         $this->line("  ✓ Analysés   : {$ok}");
         $this->line("  ⚠ Suspects   : {$anomalies} (MEDIUM ou HIGH)");
         $this->line("  🤖 Via IA     : {$iaCount}");
-        if ($errors > 0) $this->warn("  ✗ Erreurs    : {$errors}");
+        if ($errors > 0) {
+            $this->warn("  ✗ Erreurs    : {$errors}");
+        }
 
         return self::SUCCESS;
     }

@@ -31,9 +31,7 @@ class AnalyzeAnomalyJob implements ShouldQueue
 
     public int $backoff = 10;
 
-    public function __construct(protected int $messageId)
-    {
-    }
+    public function __construct(protected int $messageId) {}
 
     public function handle(): void
     {
@@ -41,6 +39,7 @@ class AnalyzeAnomalyJob implements ShouldQueue
 
         if (! $message) {
             Log::warning("AnalyzeAnomalyJob : message #{$this->messageId} introuvable");
+
             return;
         }
 
@@ -49,15 +48,15 @@ class AnalyzeAnomalyJob implements ShouldQueue
 
             Log::info('Analyse IA automatique (Observer)', [
                 'message_id' => $message->id,
-                'reference'  => $message->REFERENCE,
-                'score'      => $result['score'],
-                'niveau'     => $result['niveau_risque'],
-                'via_ia'     => $result['via_ia'] ?? true,
+                'reference' => $message->REFERENCE,
+                'score' => $result['score'],
+                'niveau' => $result['niveau_risque'],
+                'via_ia' => $result['via_ia'] ?? true,
             ]);
         } catch (Throwable $e) {
             Log::warning('AnalyzeAnomalyJob : analyse échouée (non bloquant)', [
                 'message_id' => $this->messageId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

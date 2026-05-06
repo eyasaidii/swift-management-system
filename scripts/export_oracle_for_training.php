@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Export Oracle → CSV pour ré-entraînement IA
  * Exporte MESSAGES_SWIFT jointée avec ANOMALIES_SWIFT (labels)
@@ -6,8 +7,8 @@
  * Usage : docker exec btl_swift_app php scripts/export_oracle_for_training.php
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ if (empty($rows)) {
     exit(1);
 }
 
-echo "Lignes trouvées : " . count($rows) . "\n";
+echo 'Lignes trouvées : '.count($rows)."\n";
 
 // ─── Écriture CSV ─────────────────────────────────────────────────────────────
 $fh = fopen($outputPath, 'w');
@@ -69,24 +70,24 @@ foreach ($rows as $row) {
     $r = array_change_key_case($r, CASE_LOWER);
 
     fputcsv($fh, [
-        $r['id']                 ?? '',
-        $r['reference']          ?? '',
-        $r['type_message']       ?? '',
-        $r['direction']          ?? 'OUT',
-        $r['sender_bic']         ?? '',
-        $r['receiver_bic']       ?? '',
-        $r['sender_name']        ?? '',
-        $r['receiver_name']      ?? '',
-        $r['amount']             ?? 0,
-        $r['currency']           ?? 'EUR',
-        $r['status']             ?? '',
-        $r['categorie']          ?? '',
+        $r['id'] ?? '',
+        $r['reference'] ?? '',
+        $r['type_message'] ?? '',
+        $r['direction'] ?? 'OUT',
+        $r['sender_bic'] ?? '',
+        $r['receiver_bic'] ?? '',
+        $r['sender_name'] ?? '',
+        $r['receiver_name'] ?? '',
+        $r['amount'] ?? 0,
+        $r['currency'] ?? 'EUR',
+        $r['status'] ?? '',
+        $r['categorie'] ?? '',
         $r['translation_errors'] ?? '',
-        $r['created_at']         ?? '',
-        $r['anomaly_score']      ?? '',
-        $r['anomaly_niveau']     ?? '',
-        $r['anomaly_raisons']    ?? '',
-        $r['is_anomaly']         ?? 0,
+        $r['created_at'] ?? '',
+        $r['anomaly_score'] ?? '',
+        $r['anomaly_niveau'] ?? '',
+        $r['anomaly_raisons'] ?? '',
+        $r['is_anomaly'] ?? 0,
     ]);
     $exported++;
 }
@@ -97,14 +98,14 @@ echo "CSV exporté : {$outputPath}\n";
 echo "Total lignes : {$exported}\n";
 
 // ─── Stats rapides ────────────────────────────────────────────────────────────
-$withLabel  = array_filter($rows, fn($r) => isset(((array)$r)['anomaly_score']) && ((array)$r)['anomaly_score'] !== null);
-$high       = array_filter($withLabel, fn($r) => (((array)$r)['anomaly_niveau'] ?? '') === 'HIGH');
-$medium     = array_filter($withLabel, fn($r) => (((array)$r)['anomaly_niveau'] ?? '') === 'MEDIUM');
-$low        = array_filter($withLabel, fn($r) => (((array)$r)['anomaly_niveau'] ?? '') === 'LOW');
+$withLabel = array_filter($rows, fn ($r) => isset(((array) $r)['anomaly_score']) && ((array) $r)['anomaly_score'] !== null);
+$high = array_filter($withLabel, fn ($r) => (((array) $r)['anomaly_niveau'] ?? '') === 'HIGH');
+$medium = array_filter($withLabel, fn ($r) => (((array) $r)['anomaly_niveau'] ?? '') === 'MEDIUM');
+$low = array_filter($withLabel, fn ($r) => (((array) $r)['anomaly_niveau'] ?? '') === 'LOW');
 
 echo "\n=== Distribution des labels ===\n";
-echo "  Avec label anomalie : " . count($withLabel) . "/" . count($rows) . "\n";
-echo "  HIGH   : " . count($high)   . "\n";
-echo "  MEDIUM : " . count($medium) . "\n";
-echo "  LOW    : " . count($low)    . "\n";
+echo '  Avec label anomalie : '.count($withLabel).'/'.count($rows)."\n";
+echo '  HIGH   : '.count($high)."\n";
+echo '  MEDIUM : '.count($medium)."\n";
+echo '  LOW    : '.count($low)."\n";
 echo "\nExport terminé ✔\n";

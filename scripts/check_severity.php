@@ -1,7 +1,8 @@
 <?php
+
 // Quick check: severity distribution for seeded SW* messages
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,7 @@ foreach ($rows as $row) {
     $total += $row->cnt;
 }
 echo "  Total anomaly records : $total\n";
-echo "  Total messages (SW%)  : " . DB::table('messages_swift')->where('REFERENCE','like','SW%')->count() . "\n";
+echo '  Total messages (SW%)  : '.DB::table('messages_swift')->where('REFERENCE', 'like', 'SW%')->count()."\n";
 
 // Top HIGH messages
 echo "\n=== HIGH severity messages ===\n";
@@ -35,13 +36,13 @@ $highs = DB::select("
     ORDER BY a.score DESC
 ");
 foreach ($highs as $h) {
-    $ref  = $h->reference  ?? '?';
-    $dir  = $h->direction  ?? '?';
+    $ref = $h->reference ?? '?';
+    $dir = $h->direction ?? '?';
     $type = $h->type_message ?? '?';
-    $amt  = $h->amount     ?? 0;
-    $cur  = $h->currency   ?? '?';
-    $sta  = $h->status     ?? '?';
-    $score= $h->score      ?? '?';
+    $amt = $h->amount ?? 0;
+    $cur = $h->currency ?? '?';
+    $sta = $h->status ?? '?';
+    $score = $h->score ?? '?';
     $sbic = $h->sender_bic ?? '?';
     $rbic = $h->receiver_bic ?? '?';
     echo sprintf("  [%s] %s %s %.0f %s status=%s score=%s | %s->%s\n",

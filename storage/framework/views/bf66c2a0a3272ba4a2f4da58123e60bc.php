@@ -65,16 +65,12 @@
                             <a href="<?php echo e(route('swift.show', $msg->id)); ?>" class="btn btn-outline-info" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <?php if($msg->XML_BRUT): ?>
-                                <button type="button" class="btn btn-outline-primary" onclick="openModal('mx', <?php echo e($msg->id); ?>)" title="View MX">
-                                    <i class="fas fa-code"></i>
-                                </button>
-                            <?php endif; ?>
-                            <?php if($msg->MT_CONTENT): ?>
-                                <button type="button" class="btn btn-outline-success" onclick="openModal('mt', <?php echo e($msg->id); ?>)" title="View MT">
-                                    <i class="fas fa-file-alt"></i>
-                                </button>
-                            <?php endif; ?>
+                            <button type="button" class="btn btn-outline-primary" onclick="openModal('mx', <?php echo e($msg->id); ?>)" title="View MX">
+                                <i class="fas fa-code"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-success" onclick="openModal('mt', <?php echo e($msg->id); ?>)" title="View MT">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>

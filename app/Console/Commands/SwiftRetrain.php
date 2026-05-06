@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Http;
  */
 class SwiftRetrain extends Command
 {
-    protected $signature   = 'swift:retrain {--sync : Attendre la fin du ré-entraînement} {--status : Afficher le statut du dernier entraînement}';
+    protected $signature = 'swift:retrain {--sync : Attendre la fin du ré-entraînement} {--status : Afficher le statut du dernier entraînement}';
+
     protected $description = 'Ré-entraîne le modèle IA de détection d\'anomalies sur les données Oracle';
 
     public function handle(): int
@@ -31,18 +32,20 @@ class SwiftRetrain extends Command
         // Vérifier que le service Python est disponible
         try {
             $health = Http::timeout(5)->get("{$aiUrl}/api/health");
-            if (!$health->successful()) {
+            if (! $health->successful()) {
                 $this->error("Service IA indisponible ({$health->status()})");
+
                 return self::FAILURE;
             }
         } catch (\Throwable $e) {
             $this->error("Impossible de joindre le service IA : {$e->getMessage()}");
+
             return self::FAILURE;
         }
 
         if ($this->option('sync')) {
             // Mode synchrone : appel direct et attente
-            $this->info("Ré-entraînement synchrone en cours...");
+            $this->info('Ré-entraînement synchrone en cours...');
             $this->newLine();
 
             $bar = $this->output->createProgressBar(3);
@@ -60,20 +63,20 @@ class SwiftRetrain extends Command
                 $bar->advance();
 
                 if ($response->successful()) {
-                    $data    = $response->json();
+                    $data = $response->json();
                     $version = $data['model_version'] ?? 'unknown';
-                    $samples = $data['samples_used']  ?? '?';
+                    $samples = $data['samples_used'] ?? '?';
 
-                    Cache::put('ai_model_version',        $version, now()->addDays(30));
-                    Cache::put('ai_last_retrain_at',      now()->toDateTimeString(), now()->addDays(30));
+                    Cache::put('ai_model_version', $version, now()->addDays(30));
+                    Cache::put('ai_last_retrain_at', now()->toDateTimeString(), now()->addDays(30));
                     Cache::put('ai_last_retrain_samples', $samples, now()->addDays(30));
-                    Cache::put('ai_retrain_running',      false, now()->addHours(1));
+                    Cache::put('ai_retrain_running', false, now()->addHours(1));
 
                     $bar->setMessage('Terminé !');
                     $bar->finish();
                     $this->newLine(2);
 
-                    $this->info("Ré-entraînement terminé avec succès !");
+                    $this->info('Ré-entraînement terminé avec succès !');
                     $this->table(
                         ['Paramètre', 'Valeur'],
                         [
@@ -82,11 +85,13 @@ class SwiftRetrain extends Command
                             ['Date', now()->format('Y-m-d H:i:s')],
                         ]
                     );
+
                     return self::SUCCESS;
                 } else {
                     $bar->finish();
                     $this->newLine();
                     $this->error("Erreur Python : {$response->status()} — {$response->body()}");
+
                     return self::FAILURE;
                 }
 
@@ -94,6 +99,7 @@ class SwiftRetrain extends Command
                 $bar->finish();
                 $this->newLine();
                 $this->error("Erreur : {$e->getMessage()}");
+
                 return self::FAILURE;
             }
         }
@@ -103,21 +109,22 @@ class SwiftRetrain extends Command
         Cache::put('ai_retrain_running', true, now()->addMinutes(10));
         RetrainModelJob::dispatch($count);
 
-        $this->info("Ré-entraînement lancé en arrière-plan.");
-        $this->line("  Vérifier le statut : php artisan swift:retrain --status");
+        $this->info('Ré-entraînement lancé en arrière-plan.');
+        $this->line('  Vérifier le statut : php artisan swift:retrain --status');
+
         return self::SUCCESS;
     }
 
     private function showStatus(): int
     {
-        $version  = Cache::get('ai_model_version',        'inconnu');
-        $lastAt   = Cache::get('ai_last_retrain_at',      'jamais');
-        $samples  = Cache::get('ai_last_retrain_samples', '?');
-        $running  = Cache::get('ai_retrain_running',      false);
-        $count    = Cache::get('anomaly_analyzed_count',  0);
+        $version = Cache::get('ai_model_version', 'inconnu');
+        $lastAt = Cache::get('ai_last_retrain_at', 'jamais');
+        $samples = Cache::get('ai_last_retrain_samples', '?');
+        $running = Cache::get('ai_retrain_running', false);
+        $count = Cache::get('anomaly_analyzed_count', 0);
         $threshold = (int) config('services.anomaly_ai.retrain_threshold', 50);
 
-        $this->info("=== Statut du modèle IA ===");
+        $this->info('=== Statut du modèle IA ===');
         $this->table(
             ['Paramètre', 'Valeur'],
             [
@@ -126,10 +133,11 @@ class SwiftRetrain extends Command
                 ['Échantillons utilisés',     $samples],
                 ['En cours de ré-entraînement', $running ? 'OUI' : 'non'],
                 ['Messages analysés (compteur)', $count],
-                ['Seuil auto-retrain',        $threshold . ' messages'],
-                ['Prochain retrain dans',     max(0, $threshold - ($count % $threshold)) . ' messages'],
+                ['Seuil auto-retrain',        $threshold.' messages'],
+                ['Prochain retrain dans',     max(0, $threshold - ($count % $threshold)).' messages'],
             ]
         );
+
         return self::SUCCESS;
     }
 }

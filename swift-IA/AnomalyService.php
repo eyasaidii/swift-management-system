@@ -18,29 +18,30 @@ class AnomalyService
     // URL microservice Python FastAPI
     // docker-compose : http://python-api:8001  |  local : http://localhost:8001
     private string $pythonApiUrl;
-    private int    $apiTimeout;
 
-public function __construct()
+    private int $apiTimeout;
+
+    public function __construct()
     {
         $this->pythonApiUrl = env('AI_SERVICE_URL', 'http://python-api:8001');
-        $this->apiTimeout   = (int) env('AI_SERVICE_TIMEOUT', 5);
+        $this->apiTimeout = (int) env('AI_SERVICE_TIMEOUT', 5);
     }
 
     public function analyze(MessageSwift $message): array
     {
-        $score   = 0;
+        $score = 0;
         $raisons = [];
 
         // Champs normalises (MAJUSCULES Oracle + fallback minuscules)
-        $amount            = (float) ($message->AMOUNT            ?? $message->amount            ?? 0);
-        $status            = strtolower(trim($message->STATUS     ?? $message->status            ?? ''));
-        $typeMessage       = strtoupper(trim($message->TYPE_MESSAGE ?? $message->type_message    ?? ''));
-        $reference         = $message->REFERENCE                  ?? $message->reference         ?? null;
-        $currency          = strtoupper(trim($message->CURRENCY   ?? $message->currency          ?? ''));
-        $senderBic         = $message->SENDER_BIC                 ?? $message->sender_bic        ?? null;
-        $receiverBic       = $message->RECEIVER_BIC               ?? $message->receiver_bic      ?? null;
-        $receiverName      = strtoupper($message->RECEIVER_NAME   ?? $message->receiver_name     ?? '');
-        $translationErrors = $message->TRANSLATION_ERRORS         ?? $message->translation_errors ?? null;
+        $amount = (float) ($message->AMOUNT ?? $message->amount ?? 0);
+        $status = strtolower(trim($message->STATUS ?? $message->status ?? ''));
+        $typeMessage = strtoupper(trim($message->TYPE_MESSAGE ?? $message->type_message ?? ''));
+        $reference = $message->REFERENCE ?? $message->reference ?? null;
+        $currency = strtoupper(trim($message->CURRENCY ?? $message->currency ?? ''));
+        $senderBic = $message->SENDER_BIC ?? $message->sender_bic ?? null;
+        $receiverBic = $message->RECEIVER_BIC ?? $message->receiver_bic ?? null;
+        $receiverName = strtoupper($message->RECEIVER_NAME ?? $message->receiver_name ?? '');
+        $translationErrors = $message->TRANSLATION_ERRORS ?? $message->translation_errors ?? null;
 
         // Regle 1 - Montant zero sur un message de virement (+40)
         // CORRECTION : seulement pour PAYMENT_TYPES (MT940/CAMT.053 ont amount=0 normalement)
@@ -116,23 +117,23 @@ public function __construct()
 
         // Mention ML dans les raisons si score eleve
         if ($scoreMl >= 50) {
-            $raisons[] = 'ML_SCORE_' . round($scoreMl);
+            $raisons[] = 'ML_SCORE_'.round($scoreMl);
         }
 
         // Niveau de risque selon seuils BTL
         $niveau = match (true) {
             $scoreFinal >= 60 => 'HIGH',
             $scoreFinal >= 20 => 'MEDIUM',
-            default           => 'LOW',
+            default => 'LOW',
         };
 
         // Sauvegarder dans ANOMALIES_SWIFT
         AnomalySwift::updateOrCreate(
             ['message_id' => $message->id],
             [
-                'score'         => $scoreFinal,
+                'score' => $scoreFinal,
                 'niveau_risque' => $niveau,
-                'raisons'       => $raisons,
+                'raisons' => $raisons,
             ]
         );
 
@@ -141,11 +142,11 @@ public function __construct()
         }
 
         return [
-            'score'         => $scoreFinal,
-            'score_regles'  => $scoreRegles,
-            'score_ml'      => $scoreMl,
+            'score' => $scoreFinal,
+            'score_regles' => $scoreRegles,
+            'score_ml' => $scoreMl,
             'niveau_risque' => $niveau,
-            'raisons'       => $raisons,
+            'raisons' => $raisons,
         ];
     }
 
@@ -156,21 +157,21 @@ public function __construct()
         try {
             $response = Http::timeout($this->apiTimeout)
                 ->post("{$this->pythonApiUrl}/api/predict", [
-                    'id'                 => $message->id,
-                    'type_message'       => $message->TYPE_MESSAGE       ?? $message->type_message,
-                    'direction'          => $message->DIRECTION           ?? $message->direction,
-                    'sender_bic'         => $message->SENDER_BIC         ?? $message->sender_bic,
-                    'receiver_bic'       => $message->RECEIVER_BIC       ?? $message->receiver_bic,
-                    'sender_name'        => $message->SENDER_NAME        ?? $message->sender_name,
-                    'receiver_name'      => $message->RECEIVER_NAME      ?? $message->receiver_name,
-                    'amount'             => (float) ($message->AMOUNT    ?? $message->amount ?? 0),
-                    'currency'           => $message->CURRENCY            ?? $message->currency,
-                    'value_date'         => optional($message->VALUE_DATE)->format('Y-m-d'),
-                    'created_at'         => optional($message->CREATED_AT)->format('Y-m-d\TH:i:s'),
-                    'reference'          => $message->REFERENCE           ?? $message->reference,
-                    'status'             => $message->STATUS              ?? $message->status,
+                    'id' => $message->id,
+                    'type_message' => $message->TYPE_MESSAGE ?? $message->type_message,
+                    'direction' => $message->DIRECTION ?? $message->direction,
+                    'sender_bic' => $message->SENDER_BIC ?? $message->sender_bic,
+                    'receiver_bic' => $message->RECEIVER_BIC ?? $message->receiver_bic,
+                    'sender_name' => $message->SENDER_NAME ?? $message->sender_name,
+                    'receiver_name' => $message->RECEIVER_NAME ?? $message->receiver_name,
+                    'amount' => (float) ($message->AMOUNT ?? $message->amount ?? 0),
+                    'currency' => $message->CURRENCY ?? $message->currency,
+                    'value_date' => optional($message->VALUE_DATE)->format('Y-m-d'),
+                    'created_at' => optional($message->CREATED_AT)->format('Y-m-d\TH:i:s'),
+                    'reference' => $message->REFERENCE ?? $message->reference,
+                    'status' => $message->STATUS ?? $message->status,
                     'translation_errors' => $message->TRANSLATION_ERRORS ?? $message->translation_errors,
-                    'category'           => $message->CATEGORY            ?? $message->category,
+                    'category' => $message->CATEGORY ?? $message->category,
                 ]);
 
             if ($response->successful()) {
@@ -178,6 +179,7 @@ public function __construct()
             }
 
             Log::warning("AnomalyService: Python API HTTP {$response->status()} — message #{$message->id}");
+
             return 0.0;
 
         } catch (\Illuminate\Http\Client\ConnectionException) {
@@ -185,6 +187,7 @@ public function __construct()
             return 0.0;
         } catch (\Exception $e) {
             Log::error("AnomalyService: Erreur Python API — {$e->getMessage()}");
+
             return 0.0;
         }
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class RetrainModelCommand extends Command
 {
     protected $signature = 'retrain:model {--sync : Attendre la fin du réentraînement}';
+
     protected $description = 'Déclenche le réentraînement du modèle IA depuis Oracle';
 
     public function handle(): int
@@ -18,7 +19,7 @@ class RetrainModelCommand extends Command
             ? "{$aiUrl}/api/train-from-oracle/sync"
             : "{$aiUrl}/api/train-from-oracle";
 
-        $this->info("Réentraînement IA depuis Oracle...");
+        $this->info('Réentraînement IA depuis Oracle...');
         $this->info("URL : {$endpoint}");
 
         try {
@@ -26,22 +27,25 @@ class RetrainModelCommand extends Command
 
             if ($response->successful()) {
                 $data = $response->json();
-                $this->info("✅ ".$data['message']);
+                $this->info('✅ '.$data['message']);
                 if (isset($data['model_version'])) {
-                    $this->line("   Version : ".$data['model_version']);
+                    $this->line('   Version : '.$data['model_version']);
                 }
                 if (isset($data['samples_used'])) {
-                    $this->line("   Échantillons : ".$data['samples_used']);
+                    $this->line('   Échantillons : '.$data['samples_used']);
                 }
+
                 return self::SUCCESS;
             }
 
-            $this->error("Erreur IA : ".$response->status()." — ".$response->body());
+            $this->error('Erreur IA : '.$response->status().' — '.$response->body());
+
             return self::FAILURE;
 
         } catch (\Throwable $e) {
-            $this->error("Exception : ".$e->getMessage());
+            $this->error('Exception : '.$e->getMessage());
             Log::error('retrain:model — '.$e->getMessage());
+
             return self::FAILURE;
         }
     }
