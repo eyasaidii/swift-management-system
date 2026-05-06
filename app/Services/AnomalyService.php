@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Jobs\RetrainModelJob;
 use App\Models\AnomalySwift;
 use App\Models\MessageSwift;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,6 +19,25 @@ class AnomalyService
     {
         $this->aiUrl = rtrim(config('services.anomaly_ai.url', 'http://127.0.0.1:8001'), '/');
         $this->aiTimeout = (int) config('services.anomaly_ai.timeout', 10);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Auto-retrain : déclenché tous les N messages analysés
+    // ─────────────────────────────────────────────────────────────
+
+    private function maybeScheduleRetrain(): void
+    {
+        $threshold = (int) config('services.anomaly_ai.retrain_threshold', 50);
+
+        // Incrémenter le compteur global (persisté en cache)
+        $count = (int) Cache::increment('anomaly_analyzed_count');
+
+        // Déclencher seulement si multiple du seuil et pas déjà en cours
+        if ($count % $threshold === 0 && !Cache::get('ai_retrain_running', false)) {
+            Cache::put('ai_retrain_running', true, now()->addMinutes(10));
+            RetrainModelJob::dispatch($count)->onQueue('default');
+            Log::info("AnomalyService: auto-retrain déclenché (count={$count}, threshold={$threshold})");
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -57,6 +78,9 @@ class AnomalyService
                 'raisons' => $raisons,
             ]
         );
+
+        // Auto-retrain : incrémente le compteur et déclenche si seuil atteint
+        $this->maybeScheduleRetrain();
 
         return [
             'score' => $score,

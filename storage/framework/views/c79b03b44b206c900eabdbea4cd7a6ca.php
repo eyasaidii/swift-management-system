@@ -414,6 +414,21 @@
             </a>
         <?php endif; ?>
 
+        <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'swift-manager|super-admin')): ?>
+            <div class="sb-divider"></div>
+            <span class="sb-section-label">Intelligence Artificielle</span>
+            <a class="util-link <?php echo e(request()->is('international-admin/ia-analytics') ? 'active' : ''); ?>"
+               href="<?php echo e(route('international-admin.ia-analytics')); ?>">
+                <span class="util-icon"><i class="fas fa-chart-bar"></i></span>
+                Graphiques IA
+            </a>
+            <a class="util-link <?php echo e(request()->is('swift/anomalies*') ? 'active' : ''); ?>"
+               href="<?php echo e(route('swift.anomalies.index')); ?>">
+                <span class="util-icon"><i class="fas fa-brain"></i></span>
+                Anomalies IA
+            </a>
+        <?php endif; ?>
+
         <?php if($canViewAdmin): ?>
             <div class="sb-divider"></div>
             <span class="sb-section-label">Administration</span>

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
 
             // ENFIN les autres seeders si nécessaire
             // RoleSeeder::class, // À supprimer si conflit avec BankRolesSeeder
+            MessageSwiftSeeder::class,
         ]);
     }
 }

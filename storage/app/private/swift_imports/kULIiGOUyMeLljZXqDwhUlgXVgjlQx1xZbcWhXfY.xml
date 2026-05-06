@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?><Saa:DataPDU xmlns:Saa="urn:swift:saa:xsd:saa.2.0" xmlns:Sw="urn:swift:snl:ns.Sw" xmlns:SwInt="urn:swift:snl:ns.SwInt" xmlns:SwGbl="urn:swift:snl:ns.SwGbl" xmlns:SwSec="urn:swift:snl:ns.SwSec"><Saa:Revision>2.0.15</Saa:Revision><Saa:Header><Saa:Message><Saa:SenderReference>OLAFBLYLTXXX008$2511241692342</Saa:SenderReference><Saa:MessageIdentifier>pacs.008.001.08</Saa:MessageIdentifier><Saa:Format>MX</Saa:Format><Saa:SubFormat>Output</Saa:SubFormat><Saa:Sender><Saa:DN>ou=xxx,o=lafblylt,o=swift</Saa:DN><Saa:FullName><Saa:X1>LAFBLYLTXXX</Saa:X1><Saa:X2>xxx</Saa:X2></Saa:FullName></Saa:Sender><Saa:Receiver><Saa:DN>ou=xxx,o=atldtntt,o=swift</Saa:DN><Saa:FullName><Saa:X1>ATLDTNTTXXX</Saa:X1><Saa:X2>xxx</Saa:X2></Saa:FullName></Saa:Receiver><Saa:InterfaceInfo><Saa:MessageCreator>SWIFTNetInterface</Saa:MessageCreator><Saa:MessageContext>Original</Saa:MessageContext><Saa:MessageNature>Financial</Saa:MessageNature><Saa:Sumid>16DBE9C4FFE62D49</Saa:Sumid></Saa:InterfaceInfo><Saa:NetworkInfo><Saa:Priority>Normal</Saa:Priority><Saa:IsPossibleDuplicate>false</Saa:IsPossibleDuplicate><Saa:Service>swift.finplus</Saa:Service><Saa:Network>SWIFTNet</Saa:Network><Saa:SessionNr>000449</Saa:SessionNr><Saa:SeqNr>000003859</Saa:SeqNr><Saa:TransactionData><Saa:TransactionDataResult>CONV</Saa:TransactionDataResult></Saa:TransactionData><Saa:TranslatedResult>Partial</Saa:TranslatedResult><Saa:TranslationResultDetails>TranslationInfo version 1.0.0.1
+{
+	"errors": [
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '20' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+			"path": "MT103CORE"
+		}
+	]
+}
+</Saa:TranslationResultDetails><Saa:SWIFTNetNetworkInfo><Saa:RequestType>pacs.008.001.08</Saa:RequestType><Saa:RequestSubtype>swift.cbprplus.03</Saa:RequestSubtype><Saa:SWIFTRef>swi99998-2025-11-23T09:59:01.9177.000148Z</Saa:SWIFTRef><Saa:SNLRef>SNL99998-2025-11-23T09:59:21.9200.770822Z</Saa:SNLRef><Saa:Reference>251123LAFBLYLTAXXX1247576173</Saa:Reference><Saa:SnFQueueName>atldtntt_finplus</Saa:SnFQueueName><Saa:SnFInputTime>0402:2025-11-23T09:59:21</Saa:SnFInputTime><Saa:SnFDeliveryTime>2025-11-24T08:20:01Z</Saa:SnFDeliveryTime><Saa:ValidationDescriptor><SwInt:ValResult>Success</SwInt:ValResult></Saa:ValidationDescriptor></Saa:SWIFTNetNetworkInfo></Saa:NetworkInfo><Saa:SecurityInfo><Saa:TransactionDataSecurityResult>Success</Saa:TransactionDataSecurityResult><Saa:SWIFTNetSecurityInfo><Saa:SignatureResult>Success</Saa:SignatureResult><Saa:SignatureValue><SwSec:Signature><SwSec:SignedInfo><Sw:Reference><Sw:DigestValue>aSEVWETcpqcue2cAtw6SbATZxUQjvY2JqPckYx9Emas=</Sw:DigestValue></Sw:Reference></SwSec:SignedInfo><SwSec:SignatureValue>PEMF@Proc-Type: 4,MIC-ONLY
+Content-Domain: RFC822
+EntrustFile-Version: 2.0
+Originator-DN: cn=%1,cn=live,ou=transaction-signing,ou=transactionmanager,o=swift,o=swift
+Orig-SN: 1740290302
+MIC-Info: SHA256, RSA,
+ YuHoD0ft9wDI7WsHSVbrseQQsArliMXbliYVc3EryLtBQPcrUgiUksUAej2O0S1G
+ b0zU1anzwNx2keAYhfBvo9fvQ2D/KaNxet2fNmp4Oax7ojC4jT/D+iXWzJBeuMtg
+ OZXFX07tDTPDzKpS6JJj50HjyQE3Ly3VYUvetdOyxA56WhUAl8oceOsGx4t/vyQy
+ Qe6Kq8BjBynRmn7daECrL3JidK5RVEKsoIIEYNY7D7jVRhF2IQD7OZfuKEtHgW0z
+ JiCXHE1SyAXBMPKnRHKO69DDayPLXbf5xuZuqtmgEx42ssi/GHE4I/MJ/IHGKNY8
+ 89RPxJgcmdetXeNUjq37UA==
+</SwSec:SignatureValue><SwSec:KeyInfo><SwSec:SignDN>cn=%1,cn=live,ou=transaction-signing,ou=transactionmanager,o=swift,o=swift</SwSec:SignDN><SwSec:CertPolicyId>1.3.21.6.3.10.200.4</SwSec:CertPolicyId></SwSec:KeyInfo><SwSec:Manifest><Sw:Reference><Sw:DigestRef>TRD</Sw:DigestRef><Sw:DigestValue>1DJLqs5SY5nUFqYaPki7SJZEWBZzRwY2kbkDiTabAys=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.IARequestHeader</Sw:DigestRef><Sw:DigestValue>qd3ZZED1FTlQuSHg8ZkkhwhTILUcu4tIkLDzCPmZYHc=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.RequestPayload and RND</Sw:DigestRef><Sw:DigestValue>UMAd12IPC80LtimQ9CiLYOQWZJudYW9X3GrZDTwXxks=</Sw:DigestValue></Sw:Reference></SwSec:Manifest><Sw:Object><Sw:RND>Jzp3I0FsNHpefXZxYVNeXXV7TG0=</Sw:RND></Sw:Object></SwSec:Signature><SwSec:Signature><SwSec:SignedInfo><Sw:Reference><Sw:DigestValue>QHKd+QM89iN7ouzfkOedEIZxH8AWhfW2tXPp204ZNTA=</Sw:DigestValue></Sw:Reference></SwSec:SignedInfo><SwSec:SignatureValue>PEMF@Proc-Type: 4,MIC-ONLY
+Content-Domain: RFC822
+EntrustFile-Version: 2.0
+Originator-DN: cn=%2,cn=sfm,o=swift,o=swift
+Orig-SN: 1756003492
+MIC-Info: SHA256, RSA,
+ oeuwSBZ7KVjwVmetzPHfkMKZFhRofOIVAGngzL2y351/nPOv4b6LgDxCiOFC+0V9
+ bhQesCYmrrw1D8DzWMWfQZAimjOpMNGnavPHv0ztVDUBoVkrc3N2MnboF0ABH53v
+ 8+IId7wqJWP2f/1rkQnuQ6ExBo3IUdJVa/0BAGl741pgipWdd4DW/HmI8OubYDED
+ 3RRoTabBEmrdtSpN+W34aPA88q3rYsgTAkX1J4xCvWeLPBav2ToHjDhzO7hhQ6sy
+ RI0sylSo83+36KIbk9LFy2o7q94VoKoc5eONEbrBqAu5BBRDQ/cftjjmpcm+ex/+
+ rny6GwuZixIS9c+/FtUgMw==
+</SwSec:SignatureValue><SwSec:KeyInfo><SwSec:SignDN>cn=%2,cn=sfm,o=swift,o=swift</SwSec:SignDN><SwSec:CertPolicyId>1.3.21.6.3.10.100.3</SwSec:CertPolicyId></SwSec:KeyInfo><SwSec:Manifest><Sw:Reference><Sw:DigestRef>TRD</Sw:DigestRef><Sw:DigestValue>1DJLqs5SY5nUFqYaPki7SJZEWBZzRwY2kbkDiTabAys=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.IARequestHeader</Sw:DigestRef><Sw:DigestValue>qd3ZZED1FTlQuSHg8ZkkhwhTILUcu4tIkLDzCPmZYHc=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.RequestPayload and RND</Sw:DigestRef><Sw:DigestValue>UMAd12IPC80LtimQ9CiLYOQWZJudYW9X3GrZDTwXxks=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Translated MT</Sw:DigestRef><Sw:DigestValue>zJCzkEtaO1VKwgGHzvYpOU2GTflU8d1P14jv0I0CMuo=</Sw:DigestValue></Sw:Reference></SwSec:Manifest><Sw:Object><Sw:RND>Jzp3I0FsNHpefXZxYVNeXXV7TG0=</Sw:RND></Sw:Object></SwSec:Signature></Saa:SignatureValue></Saa:SWIFTNetSecurityInfo></Saa:SecurityInfo><Saa:ExpiryDateTime>20251214082012</Saa:ExpiryDateTime></Saa:Message></Saa:Header><Saa:Body><head:AppHdr xmlns:head="urn:iso:std:iso:20022:tech:xsd:head.001.001.02"><head:Fr><head:FIId><head:FinInstnId><head:BICFI>LAFBLYLTXXX</head:BICFI></head:FinInstnId></head:FIId></head:Fr><head:To><head:FIId><head:FinInstnId><head:BICFI>ATLDTNTTXXX</head:BICFI></head:FinInstnId></head:FIId></head:To><head:BizMsgIdr>FT2532731514</head:BizMsgIdr><head:MsgDefIdr>pacs.008.001.08</head:MsgDefIdr><head:BizSvc>swift.cbprplus.03</head:BizSvc><head:CreDt>2025-11-23T09:58:59+00:00</head:CreDt></head:AppHdr><pacs:Document xmlns:pacs="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"><pacs:FIToFICstmrCdtTrf><pacs:GrpHdr><pacs:MsgId>FT2532731514</pacs:MsgId><pacs:CreDtTm>2025-11-23T09:58:59+00:00</pacs:CreDtTm><pacs:NbOfTxs>1</pacs:NbOfTxs><pacs:SttlmInf><pacs:SttlmMtd>INGA</pacs:SttlmMtd><pacs:SttlmAcct><pacs:Id><pacs:IBAN>LY57009001000000000007943</pacs:IBAN></pacs:Id></pacs:SttlmAcct></pacs:SttlmInf></pacs:GrpHdr><pacs:CdtTrfTxInf><pacs:PmtId><pacs:InstrId>FT2532731514</pacs:InstrId><pacs:EndToEndId>NOTPROVIDED</pacs:EndToEndId><pacs:UETR>95c533db-03c0-4c6b-831e-813566e0bb80</pacs:UETR></pacs:PmtId><pacs:PmtTpInf><pacs:SvcLvl><pacs:Cd>G001</pacs:Cd></pacs:SvcLvl></pacs:PmtTpInf><pacs:IntrBkSttlmAmt Ccy="USD">100</pacs:IntrBkSttlmAmt><pacs:IntrBkSttlmDt>2025-11-24</pacs:IntrBkSttlmDt><pacs:ChrgBr>SHAR</pacs:ChrgBr><pacs:InstgAgt><pacs:FinInstnId><pacs:BICFI>LAFBLYLTXXX</pacs:BICFI></pacs:FinInstnId></pacs:InstgAgt><pacs:InstdAgt><pacs:FinInstnId><pacs:BICFI>ATLDTNTTXXX</pacs:BICFI></pacs:FinInstnId></pacs:InstdAgt><pacs:Dbtr><pacs:Nm>NATIONAL OIL CORPORATION</pacs:Nm><pacs:PstlAdr><pacs:AdrLine>BASHER ALSAADAOI STR. P.O 5335/2655</pacs:AdrLine><pacs:AdrLine>TRIPOLI - LIBYA</pacs:AdrLine></pacs:PstlAdr></pacs:Dbtr><pacs:DbtrAcct><pacs:Id><pacs:IBAN>LY82009001000000000044741</pacs:IBAN></pacs:Id></pacs:DbtrAcct><pacs:DbtrAgt><pacs:FinInstnId><pacs:BICFI>LAFBLYLTXXX</pacs:BICFI></pacs:FinInstnId></pacs:DbtrAgt><pacs:CdtrAgt><pacs:FinInstnId><pacs:BICFI>BIATTNTT</pacs:BICFI></pacs:FinInstnId></pacs:CdtrAgt><pacs:Cdtr><pacs:Nm>MASOUD ATIYA HAMED</pacs:Nm></pacs:Cdtr><pacs:CdtrAcct><pacs:Id><pacs:IBAN>TN5908004000625101252939</pacs:IBAN></pacs:Id></pacs:CdtrAcct><pacs:Purp><pacs:Prtry>:26T:921</pacs:Prtry></pacs:Purp><pacs:RmtInf><pacs:Ustrd>REIMBURSEMENT EXPENSES</pacs:Ustrd></pacs:RmtInf></pacs:CdtTrfTxInf></pacs:FIToFICstmrCdtTrf></pacs:Document><!-- {1:F01ATLDTNTTXXXX0000000000}{2:O1031159251123LAFBLYLTXXXX00000000002511231059N}{3:{111:001}{121:95c533db-03c0-4c6b-831e-813566e0bb80}}{4:^~:20:FT2532731514^~:23B:CRED^~:26T:921^~:32A:251124USD100,^~:50K:/LY82009001000000000044741^~NATIONAL OIL CORPORATION^~BASHER ALSAADAOI STR. P.O 5335/2655^~TRIPOLI - LIBYA^~:52A:LAFBLYLTXXX^~:53B:/C/LY57009001000000000007943^~:57A:BIATTNTT^~:59:/TN5908004000625101252939^~MASOUD ATIYA HAMED^~:70:REIMBURSEMENT EXPENSES^~:71A:SHA^~-}{5:{CHK:90C44B9579E4}} --><!-- TranslationResult=TRAK --><!-- TranslationInfo version 1.0.0.1
+{
+	"errors": [
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '20' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+			"path": "MT103CORE"
+		}
+	]
+}
+ --></Saa:Body></Saa:DataPDU>

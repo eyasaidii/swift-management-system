@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>BTLMTNTT-20260416-001</MsgId>
+            <CreDtTm>2026-04-16T10:30:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>INSTR-2026041600001</InstrId>
+                <EndToEndId>E2E-ALPHA-2026-0045</EndToEndId>
+                <UETR>a1b2c3d4-e5f6-7890-abcd-ef1234567890</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="EUR">25000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-04-16</IntrBkSttlmDt>
+            <ChrgBr>SHAR</ChrgBr>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                    <Nm>Tunisian Libyan Bank</Nm>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BNPAFRPP</BICFI>
+                    <Nm>BNP Paribas SA</Nm>
+                </FinInstnId>
+            </InstdAgt>
+            <Dbtr>
+                <Nm>SOCIETE MEDITERRANEENNE D EXPORT SARL</Nm>
+                <PstlAdr>
+                    <StrtNm>Avenue Habib Bourguiba 127</StrtNm>
+                    <TwnNm>Tunis</TwnNm>
+                    <Ctry>TN</Ctry>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN5910006035183456789012</IBAN>
+                </Id>
+            </DbtrAcct>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </DbtrAgt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>BNPAFRPP</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>DUPONT ET FILS INDUSTRIES SA</Nm>
+                <PstlAdr>
+                    <StrtNm>15 Rue de Rivoli</StrtNm>
+                    <TwnNm>Paris</TwnNm>
+                    <Ctry>FR</Ctry>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>FR7630004000031234567890143</IBAN>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>PAIEMENT FACTURE INV-2026-0312 MATERIEL INDUSTRIEL MARS 2026</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

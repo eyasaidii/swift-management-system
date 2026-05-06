@@ -1,0 +1,85 @@
+# ── BTL SWIFT Platform — Docker Compose ────────────────────────────────────
+#
+# Services :
+#   btl_swift_app    — Laravel PHP (port 8000)  ← existant
+#   db               — Oracle / MySQL           ← existant
+#   python-api       — FastAPI Python (port 8001) ← NOUVEAU
+#
+# Usage :
+#   docker compose up -d               # démarrer tout
+#   docker compose logs python-api -f  # voir logs IA
+#   docker compose exec python-api python train.py  # réentraîner
+# ───────────────────────────────────────────────────────────────────────────
+
+version: "3.9"
+
+services:
+
+  # ── Application Laravel (existante — adapter selon votre config réelle) ──
+  btl_swift_app:
+    image: btl_swift_app:latest          # ou build: ./laravel
+    container_name: btl_swift_app
+    ports:
+      - "8000:8000"
+    environment:
+      - AI_SERVICE_URL=http://python-api:8001
+      - AI_SERVICE_TIMEOUT=5
+    depends_on:
+      - db
+      - python-api
+    networks:
+      - btl_network
+
+  # ── Base de données (Oracle ou MySQL) ───────────────────────────────────
+  db:
+    image: mysql:8.0                     # remplacer par oracle si besoin
+    container_name: btl_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-btl_swift}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - btl_network
+
+  # ── Microservice Python FastAPI (NOUVEAU) ────────────────────────────────
+  python-api:
+    build:
+      context: .                         # utilise le Dockerfile à la racine
+      dockerfile: Dockerfile
+    container_name: btl_python_api
+    image: btl_python_api:latest
+    ports:
+      - "8001:8001"                      # accessible depuis l'hôte pour debug
+    environment:
+      - APP_ENV=production
+      - DEBUG=false
+      - MODEL_DIR=/app/model
+      - DATA_DIR=/app/data
+      - ANOMALY_THRESHOLD=0.65
+      - IF_CONTAMINATION=0.05
+      - CORS_ORIGINS=http://btl_swift_app:8000,http://localhost:8000
+      - LARAVEL_BASE_URL=http://btl_swift_app:8000
+    volumes:
+      # Persister les modèles entraînés en dehors du conteneur
+      - ./model:/app/model
+      # Persister les données (optionnel)
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - btl_network
+
+# ── Volumes persistants ──────────────────────────────────────────────────
+volumes:
+  db_data:
+
+# ── Réseau interne BTL ───────────────────────────────────────────────────
+networks:
+  btl_network:
+    driver: bridge

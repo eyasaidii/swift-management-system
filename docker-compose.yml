@@ -39,7 +39,7 @@ services:
 
   python-api:
     build:
-      context: ../../../swift-IA
+      context: ./swift-IA
       dockerfile: Dockerfile
     container_name: btl_python_api
     restart: unless-stopped

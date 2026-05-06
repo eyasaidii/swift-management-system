@@ -552,14 +552,20 @@ class MessageSwiftController extends Controller
     public function viewMx($id)
     {
         $message = MessageSwift::with('details')->findOrFail($id);
-        $xml = $message->XML_BRUT ?? $message->xml_brut ?? null;
+
+        // Oracle returns lowercase attributes — normalize for converter and attribute access
+        $message->setRawAttributes(
+            array_change_key_case($message->getAttributes(), CASE_UPPER), true
+        );
+
+        $xml = $message->XML_BRUT ?? null;
 
         // Génération à la volée si XML absent
         if (empty($xml)) {
             try {
                 $xml = app(UniversalMtToMxConverter::class)->convert($message);
                 if ($xml) {
-                    $message->update(['XML_BRUT' => $xml]);
+                    MessageSwift::where('id', $id)->update(['XML_BRUT' => $xml]);
                 }
             } catch (\Throwable $e) {
                 \Log::warning("Génération XML à la volée échouée #{$id} : {$e->getMessage()}");
@@ -567,11 +573,11 @@ class MessageSwiftController extends Controller
         }
 
         if (empty($xml)) {
-            $ref = $message->REFERENCE ?? $message->reference ?? $id;
+            $ref = $message->REFERENCE ?? $id;
 
             return Response::make(
-                '<?xml version="1.0" encoding="UTF-8"?>'."\n".
-                "<!-- MX non disponible pour le message {$ref}. -->",
+                '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<MxNotAvailable><message>MX non disponible pour le message '.$ref.'.</message></MxNotAvailable>',
                 200, ['Content-Type' => 'application/xml; charset=UTF-8']
             );
         }
@@ -585,7 +591,13 @@ class MessageSwiftController extends Controller
     public function viewMt($id)
     {
         $message = MessageSwift::with('details')->findOrFail($id);
-        $mt = $message->MT_CONTENT ?? $message->mt_content ?? null;
+
+        // Oracle returns lowercase attributes — normalize for builder and attribute access
+        $message->setRawAttributes(
+            array_change_key_case($message->getAttributes(), CASE_UPPER), true
+        );
+
+        $mt = $message->MT_CONTENT ?? null;
 
         // Génération à la volée si MT absent
         if (empty($mt)) {
@@ -593,7 +605,7 @@ class MessageSwiftController extends Controller
                 $details = $message->details->pluck('tag_value', 'tag_name')->toArray();
                 $mt = app(SwiftMtBuilder::class)->build($message, $details);
                 if ($mt) {
-                    $message->update(['MT_CONTENT' => $mt]);
+                    MessageSwift::where('id', $id)->update(['MT_CONTENT' => $mt]);
                 }
             } catch (\Throwable $e) {
                 \Log::warning("Génération MT à la volée échouée #{$id} : {$e->getMessage()}");

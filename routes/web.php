@@ -5,12 +5,16 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MessageSwiftController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\ProfileController;              // ← AJOUT IA
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SwiftExportController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::aliasMiddleware('role', RoleMiddleware::class);
+
+// Export pour réentraînement IA (appelé par le microservice Python)
+Route::get('/api/swift-export', [SwiftExportController::class, 'export']);
 
 Route::get('/', function () {
     return redirect()->route('login');

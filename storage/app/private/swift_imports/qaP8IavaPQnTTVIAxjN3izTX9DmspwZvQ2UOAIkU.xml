@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>SUSPTEST-20260501-HIGH001</MsgId>
+            <CreDtTm>2026-05-01T02:30:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>ANOM-TEST-20260501-001</InstrId>
+                <EndToEndId>NOTPROVIDED</EndToEndId>
+                <UETR>a1b2c3d4-e5f6-7890-abcd-ef1234567890</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="JPY">9500000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-05-01</IntrBkSttlmDt>
+            <ChrgBr>SHAR</ChrgBr>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>MHCBJPJT</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+            <Dbtr>
+                <Nm>SHELL CORP ANONYMOUS</Nm>
+                <PstlAdr>
+                    <TwnNm>Tokyo</TwnNm>
+                    <Ctry>JP</Ctry>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>JP12345678901234567890</IBAN>
+                </Id>
+            </DbtrAcct>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BICFI>MHCBJPJT</BICFI>
+                </FinInstnId>
+            </DbtrAgt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>IMPORT GENERAL TRADING</Nm>
+                <PstlAdr>
+                    <TwnNm>Tunis</TwnNm>
+                    <Ctry>TN</Ctry>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>TN5910006035111222333444</IBAN>
+                </Id>
+            </CdtrAcct>
+            <RmtInf>
+                <Ustrd>PAYMENT REF UNKNOWN</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>
