@@ -108,7 +108,7 @@ class AnomalySwiftController extends Controller
         // Marquer l'anomalie comme rejetée (prise en charge)
         $anomaly->update([
             'rejetee_par' => $user->id,
-            'rejetee_at'  => now(),
+            'rejetee_at' => now(),
         ]);
 
         // Passer le message SWIFT en rejected
@@ -141,7 +141,7 @@ class AnomalySwiftController extends Controller
             ->get();
 
         $authorized = 0;
-        $processed  = 0;
+        $processed = 0;
 
         foreach ($anomalies as $anomaly) {
             if (! $anomaly->message) {
@@ -165,6 +165,7 @@ class AnomalySwiftController extends Controller
         }
 
         $total = $authorized;
+
         return redirect()->route('swift.anomalies.index')
             ->with('success', "{$total} anomalie(s) traitées automatiquement par l'IA → toutes autorisées (LOW + MEDIUM). Les anomalies critiques (HIGH) restent en attente de revue manuelle.");
     }
@@ -193,7 +194,7 @@ class AnomalySwiftController extends Controller
         foreach ($anomalies as $anomaly) {
             $anomaly->update([
                 'verifie_par' => $user->id,
-                'verifie_at'  => now(),
+                'verifie_at' => now(),
             ]);
             if ($anomaly->message) {
                 $anomaly->message->update(['STATUS' => 'processed']);
