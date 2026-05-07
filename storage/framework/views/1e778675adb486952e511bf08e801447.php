@@ -14,11 +14,25 @@
             </h4>
             <small class="text-muted">Moteur de détection — Règles métier SWIFT</small>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <a href="<?php echo e(route('swift.index')); ?>" class="btn btn-outline-secondary btn-sm">
                 &#8592; Retour Messages
             </a>
             <?php if (\Illuminate\Support\Facades\Blade::check('role', 'super-admin|swift-manager')): ?>
+            <form method="POST" action="<?php echo e(route('swift.anomalies.auto-decide-all')); ?>"
+                  onsubmit="return confirm('Appliquer la décision IA automatique ?\n\n✅ LOW (score < 20)  → Autorisé\n🟡 MEDIUM (20-59)   → Traité\n🔴 HIGH (≥ 60)      → Reste en attente (revue manuelle)\n\nContinuer ?')">
+                <?php echo csrf_field(); ?>
+                <button type="submit" class="btn btn-sm text-white fw-bold" style="background:#0d6efd">
+                    &#129302; Décision IA automatique
+                </button>
+            </form>
+            <form method="POST" action="<?php echo e(route('swift.anomalies.auto-process-low')); ?>"
+                  onsubmit="return confirm('Traiter automatiquement TOUTES les anomalies à risque faible (LOW) non traitées ?')">
+                <?php echo csrf_field(); ?>
+                <button type="submit" class="btn btn-sm text-white" style="background:#198754">
+                    &#9881; Auto-traiter risques faibles
+                </button>
+            </form>
             <form method="POST" action="<?php echo e(route('swift.anomalies.analyze-all')); ?>"
                   onsubmit="return confirm('Analyser tous les messages SWIFT existants ?')">
                 <?php echo csrf_field(); ?>
@@ -257,18 +271,25 @@
 
                             
                             <td>
-                                <?php if($anomaly->verifie_par): ?>
-                                    <span class="text-success fw-bold">✓</span>
-                                    <small class="text-muted d-block">
-                                        <?php echo e(optional($anomaly->verificateur)->name ?? '—'); ?>
+                                <?php if($anomaly->rejetee_par): ?>
+                                    <span class="badge rounded-pill" style="background:#dc3545; color:white; font-size:12px">&#10006; Rejeté</span>
+                                    <small class="text-muted d-block mt-1">
+                                        <?php echo e(optional($anomaly->rejecteur)->name ?? '—'); ?>
 
                                     </small>
-                                    <small class="text-muted">
-                                        <?php echo e(optional($anomaly->verifie_at)->format('d/m/Y')); ?>
+                                <?php elseif($anomaly->verifie_par): ?>
+                                    <?php $msgStatus = strtolower($anomaly->message?->STATUS ?? $anomaly->message?->status ?? ''); ?>
+                                    <?php if($msgStatus === 'authorized'): ?>
+                                        <span class="badge rounded-pill" style="background:#198754; color:white; font-size:12px">&#10004; Autorisé</span>
+                                    <?php else: ?>
+                                        <span class="badge rounded-pill" style="background:#198754; color:white; font-size:12px">&#10004; Traité</span>
+                                    <?php endif; ?>
+                                    <small class="text-muted d-block mt-1">
+                                        <?php echo e(optional($anomaly->verificateur)->name ?? 'IA Auto'); ?>
 
                                     </small>
                                 <?php else: ?>
-                                    <span class="text-danger fw-bold">✗ En attente</span>
+                                    <span class="badge rounded-pill" style="background:#fd7e14; color:white; font-size:12px">&#9888; En attente</span>
                                 <?php endif; ?>
                             </td>
 
@@ -288,14 +309,25 @@
                                     <?php endif; ?>
 
                                     <?php if (\Illuminate\Support\Facades\Blade::check('role', 'super-admin|swift-manager')): ?>
-                                    <?php if(!$anomaly->verifie_par): ?>
+                                    <?php if(!$anomaly->verifie_par && !$anomaly->rejetee_par): ?>
+                                        
                                         <form method="POST"
                                               action="<?php echo e(route('swift.anomalies.verify', $anomaly->id)); ?>">
                                             <?php echo csrf_field(); ?>
                                             <?php echo method_field('PATCH'); ?>
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-success"
-                                                    title="Marquer vérifié">✓</button>
+                                                    title="Accepter — marquer vérifié">&#10004;</button>
+                                        </form>
+                                        
+                                        <form method="POST"
+                                              action="<?php echo e(route('swift.anomalies.reject', $anomaly->id)); ?>"
+                                              onsubmit="return confirm('Rejeter ce message SWIFT ?')">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('PATCH'); ?>
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Rejeter — passer le message en rejeté">&#10006;</button>
                                         </form>
                                     <?php endif; ?>
 

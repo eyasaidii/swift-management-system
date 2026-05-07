@@ -14,11 +14,25 @@
             </h4>
             <small class="text-muted">Moteur de détection — Règles métier SWIFT</small>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('swift.index') }}" class="btn btn-outline-secondary btn-sm">
                 &#8592; Retour Messages
             </a>
             @role('super-admin|swift-manager')
+            <form method="POST" action="{{ route('swift.anomalies.auto-decide-all') }}"
+                  onsubmit="return confirm('Appliquer la décision IA automatique ?\n\n✅ LOW (score < 20)  → Autorisé\n🟡 MEDIUM (20-59)   → Traité\n🔴 HIGH (≥ 60)      → Reste en attente (revue manuelle)\n\nContinuer ?')">
+                @csrf
+                <button type="submit" class="btn btn-sm text-white fw-bold" style="background:#0d6efd">
+                    &#129302; Décision IA automatique
+                </button>
+            </form>
+            <form method="POST" action="{{ route('swift.anomalies.auto-process-low') }}"
+                  onsubmit="return confirm('Traiter automatiquement TOUTES les anomalies à risque faible (LOW) non traitées ?')">
+                @csrf
+                <button type="submit" class="btn btn-sm text-white" style="background:#198754">
+                    &#9881; Auto-traiter risques faibles
+                </button>
+            </form>
             <form method="POST" action="{{ route('swift.anomalies.analyze-all') }}"
                   onsubmit="return confirm('Analyser tous les messages SWIFT existants ?')">
                 @csrf
@@ -248,16 +262,23 @@
 
                             {{-- Vérifié --}}
                             <td>
-                                @if($anomaly->verifie_par)
-                                    <span class="text-success fw-bold">✓</span>
-                                    <small class="text-muted d-block">
-                                        {{ optional($anomaly->verificateur)->name ?? '—' }}
+                                @if($anomaly->rejetee_par)
+                                    <span class="badge rounded-pill" style="background:#dc3545; color:white; font-size:12px">&#10006; Rejeté</span>
+                                    <small class="text-muted d-block mt-1">
+                                        {{ optional($anomaly->rejecteur)->name ?? '—' }}
                                     </small>
-                                    <small class="text-muted">
-                                        {{ optional($anomaly->verifie_at)->format('d/m/Y') }}
+                                @elseif($anomaly->verifie_par)
+                                    @php $msgStatus = strtolower($anomaly->message?->STATUS ?? $anomaly->message?->status ?? ''); @endphp
+                                    @if($msgStatus === 'authorized')
+                                        <span class="badge rounded-pill" style="background:#198754; color:white; font-size:12px">&#10004; Autorisé</span>
+                                    @else
+                                        <span class="badge rounded-pill" style="background:#198754; color:white; font-size:12px">&#10004; Traité</span>
+                                    @endif
+                                    <small class="text-muted d-block mt-1">
+                                        {{ optional($anomaly->verificateur)->name ?? 'IA Auto' }}
                                     </small>
                                 @else
-                                    <span class="text-danger fw-bold">✗ En attente</span>
+                                    <span class="badge rounded-pill" style="background:#fd7e14; color:white; font-size:12px">&#9888; En attente</span>
                                 @endif
                             </td>
 
@@ -277,14 +298,25 @@
                                     @endif
 
                                     @role('super-admin|swift-manager')
-                                    @if(!$anomaly->verifie_par)
+                                    @if(!$anomaly->verifie_par && !$anomaly->rejetee_par)
+                                        {{-- Accepter --}}
                                         <form method="POST"
                                               action="{{ route('swift.anomalies.verify', $anomaly->id) }}">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-success"
-                                                    title="Marquer vérifié">✓</button>
+                                                    title="Accepter — marquer vérifié">&#10004;</button>
+                                        </form>
+                                        {{-- Rejeter --}}
+                                        <form method="POST"
+                                              action="{{ route('swift.anomalies.reject', $anomaly->id) }}"
+                                              onsubmit="return confirm('Rejeter ce message SWIFT ?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Rejeter — passer le message en rejeté">&#10006;</button>
                                         </form>
                                     @endif
 

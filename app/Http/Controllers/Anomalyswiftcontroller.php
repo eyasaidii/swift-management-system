@@ -21,7 +21,7 @@ class AnomalySwiftController extends Controller
 
     public function index(Request $request)
     {
-        $query = AnomalySwift::with(['message', 'verificateur'])
+        $query = AnomalySwift::with(['message', 'verificateur', 'rejecteur'])
             ->orderByDesc('created_at');
 
         if ($request->filled('niveau_risque')) {
@@ -29,9 +29,11 @@ class AnomalySwiftController extends Controller
         }
 
         if ($request->input('verifie') === 'oui') {
-            $query->whereNotNull('verifie_par');
+            $query->where(function ($q) {
+                $q->whereNotNull('verifie_par')->orWhereNotNull('rejetee_par');
+            });
         } elseif ($request->input('verifie') === 'non') {
-            $query->whereNull('verifie_par');
+            $query->whereNull('verifie_par')->whereNull('rejetee_par');
         }
 
         if ($request->filled('date_from')) {
@@ -48,7 +50,10 @@ class AnomalySwiftController extends Controller
             'high' => AnomalySwift::where('niveau_risque', 'HIGH')->count(),
             'medium' => AnomalySwift::where('niveau_risque', 'MEDIUM')->count(),
             'low' => AnomalySwift::where('niveau_risque', 'LOW')->count(),
-            'non_verifiees' => AnomalySwift::whereNull('verifie_par')->where('niveau_risque', 'HIGH')->count(),
+            'non_verifiees' => AnomalySwift::where('niveau_risque', 'HIGH')
+                ->whereNull('verifie_par')
+                ->whereNull('rejetee_par')
+                ->count(),
         ];
 
         return view('swift.anomalies.index', compact('anomalies', 'stats'));
@@ -84,6 +89,120 @@ class AnomalySwiftController extends Controller
         ]);
 
         return back()->with('success', "Anomalie #$id marquée comme vérifiée.");
+    }
+
+    // =========================================================
+    // REJETER — reject()
+    // Marque l'anomalie comme rejetée ET passe le message en STATUS=rejected
+    // =========================================================
+
+    public function reject($id)
+    {
+        $anomaly = AnomalySwift::findOrFail($id);
+        $user = Auth::user();
+
+        if (! $user->hasRole(['super-admin', 'swift-manager'])) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        // Marquer l'anomalie comme rejetée (prise en charge)
+        $anomaly->update([
+            'rejetee_par' => $user->id,
+            'rejetee_at'  => now(),
+        ]);
+
+        // Passer le message SWIFT en rejected
+        if ($anomaly->message) {
+            $anomaly->message->update(['STATUS' => 'rejected']);
+        }
+
+        return back()->with('success', "Anomalie #$id rejetée — message marqué comme rejeté.");
+    }
+
+    // =========================================================
+    // AUTO-DÉCISION IA SUR TOUTES LES ANOMALIES EXISTANTES
+    // LOW  → STATUS=authorized   (score < 20, risque faible)
+    // MEDIUM → STATUS=processed  (score 20-59, risque moyen)
+    // HIGH → laissé en attente   (score ≥ 60, revue manuelle)
+    // =========================================================
+
+    public function autoDecideAll()
+    {
+        $user = Auth::user();
+
+        if (! $user->hasRole(['super-admin', 'swift-manager'])) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        $anomalies = AnomalySwift::whereNull('verifie_par')
+            ->whereNull('rejetee_par')
+            ->whereIn('niveau_risque', ['LOW', 'MEDIUM'])
+            ->with('message')
+            ->get();
+
+        $authorized = 0;
+        $processed  = 0;
+
+        foreach ($anomalies as $anomaly) {
+            if (! $anomaly->message) {
+                continue;
+            }
+
+            $currentStatus = strtolower($anomaly->message->STATUS ?? $anomaly->message->status ?? '');
+            if (in_array($currentStatus, ['authorized', 'rejected', 'suspended'])) {
+                continue;
+            }
+
+            if ($anomaly->niveau_risque === 'LOW') {
+                $anomaly->message->update(['STATUS' => 'authorized']);
+                $anomaly->update(['verifie_par' => $user->id, 'verifie_at' => now()]);
+                $authorized++;
+            } elseif ($anomaly->niveau_risque === 'MEDIUM') {
+                $anomaly->message->update(['STATUS' => 'authorized']);
+                $anomaly->update(['verifie_par' => $user->id, 'verifie_at' => now()]);
+                $authorized++;
+            }
+        }
+
+        $total = $authorized;
+        return redirect()->route('swift.anomalies.index')
+            ->with('success', "{$total} anomalie(s) traitées automatiquement par l'IA → toutes autorisées (LOW + MEDIUM). Les anomalies critiques (HIGH) restent en attente de revue manuelle.");
+    }
+
+    // =========================================================
+    // AUTO-TRAITER LES FAIBLES — autoProcessLow()
+    // Vérifie automatiquement toutes les anomalies LOW non traitées
+    // et passe leurs messages en STATUS=processed
+    // =========================================================
+
+    public function autoProcessLow()
+    {
+        $user = Auth::user();
+
+        if (! $user->hasRole(['super-admin', 'swift-manager'])) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        $anomalies = AnomalySwift::where('niveau_risque', 'LOW')
+            ->whereNull('verifie_par')
+            ->whereNull('rejetee_par')
+            ->with('message')
+            ->get();
+
+        $count = 0;
+        foreach ($anomalies as $anomaly) {
+            $anomaly->update([
+                'verifie_par' => $user->id,
+                'verifie_at'  => now(),
+            ]);
+            if ($anomaly->message) {
+                $anomaly->message->update(['STATUS' => 'processed']);
+            }
+            $count++;
+        }
+
+        return redirect()->route('swift.anomalies.index')
+            ->with('success', "{$count} anomalies à risque faible traitées automatiquement.");
     }
 
     // =========================================================

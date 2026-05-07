@@ -281,9 +281,52 @@ class DashboardController extends Controller
         $lowCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'LOW')->count();
         $avgScore = round((float) \App\Models\AnomalySwift::avg('SCORE'), 1);
 
+        // Statut vérification par niveau
+        $verifiedCount  = \App\Models\AnomalySwift::whereNotNull('verifie_par')->count();
+        $rejectedCount  = \App\Models\AnomalySwift::whereNotNull('rejetee_par')->count();
+        $pendingCount   = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->count();
+
+        // Anomalies MEDIUM+HIGH par type, séparées
+        $anomalyByTypeMedium = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
+            ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', 'MEDIUM')
+            ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
+            ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
+            ->get()->pluck('total', 'type_msg')->toArray();
+
+        $anomalyByTypeHigh = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
+            ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', 'HIGH')
+            ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
+            ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
+            ->get()->pluck('total', 'type_msg')->toArray();
+
+        $allTypes = array_unique(array_merge(array_keys($anomalyByTypeMedium), array_keys($anomalyByTypeHigh)));
+        sort($allTypes);
+
+        // Taux de résolution
+        $resolutionRate = $totalAnomalies > 0
+            ? round(($verifiedCount + $rejectedCount) / $totalAnomalies * 100, 1)
+            : 0;
+
+        // Top 5 anomalies HIGH les plus récentes non traitées
+        $topHighAnomalies = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'HIGH')
+            ->whereNull('verifie_par')->whereNull('rejetee_par')
+            ->with('message')->orderByDesc('SCORE')->limit(5)->get();
+
+        // Distribution des scores par tranches
+        $scoreRanges = [
+            '0–19'   => \App\Models\AnomalySwift::whereBetween('SCORE', [0, 19.99])->count(),
+            '20–39'  => \App\Models\AnomalySwift::whereBetween('SCORE', [20, 39.99])->count(),
+            '40–59'  => \App\Models\AnomalySwift::whereBetween('SCORE', [40, 59.99])->count(),
+            '60–79'  => \App\Models\AnomalySwift::whereBetween('SCORE', [60, 79.99])->count(),
+            '80–100' => \App\Models\AnomalySwift::whereBetween('SCORE', [80, 100])->count(),
+        ];
+
         return view('swift-manager.ia-analytics', array_merge(
             compact('anomalyByLevel', 'anomalyByType', 'scoreTimeline',
-                'totalAnomalies', 'highCount', 'mediumCount', 'lowCount', 'avgScore'),
+                'totalAnomalies', 'highCount', 'mediumCount', 'lowCount', 'avgScore',
+                'verifiedCount', 'rejectedCount', 'pendingCount',
+                'anomalyByTypeMedium', 'anomalyByTypeHigh', 'allTypes',
+                'resolutionRate', 'topHighAnomalies', 'scoreRanges'),
             $sidebarData
         ));
     }
@@ -298,26 +341,21 @@ class DashboardController extends Controller
         $sidebarData = $this->getSidebarData();
         $base = $this->baseQuery();
 
-        $transCount = (clone $base)->count();
-        $volumeByDevise = $this->getVolumeByDevise($base);
+        $transCount      = (clone $base)->count();
+        $inCount         = (clone $base)->whereIn('DIRECTION', ['IN','RECU'])->count();
+        $outCount        = (clone $base)->whereIn('DIRECTION', ['OUT','EMIS'])->count();
+        $authorizedCount = (clone $base)->where('STATUS', 'authorized')->count();
+        $rejectedCount   = (clone $base)->where('STATUS', 'rejected')->count();
+        $pendingAuth     = (clone $base)->whereNotIn('STATUS', ['authorized','rejected','suspended'])->count();
+
+        $volumeByDevise  = $this->getVolumeByDevise($base);
         $volumeFormatted = $this->getDominantVolumeFormatted($volumeByDevise);
-
-        $bankCount = (clone $base)
-            ->where(function ($q) {
-                $q->where(function ($q2) {
-                    $q2->whereNotNull('SENDER_BIC')->where('SENDER_BIC', '!=', '');
-                })->orWhere(function ($q2) {
-                    $q2->whereNotNull('RECEIVER_BIC')->where('RECEIVER_BIC', '!=', '');
-                });
-            })
-            ->selectRaw('COUNT(DISTINCT COALESCE(SENDER_BIC, RECEIVER_BIC)) as cnt')
-            ->value('cnt') ?? 0;
-
-        $pendingAuth = (clone $base)->where('STATUS', 'processed')->count();
-        $transactions = $messages;
+        $transactions    = $messages;
 
         return view('swift-operator.dashboard', array_merge(
-            compact('messages', 'transactions', 'transCount', 'volumeFormatted', 'volumeByDevise', 'bankCount', 'pendingAuth'),
+            compact('messages', 'transactions', 'transCount', 'inCount', 'outCount',
+                    'authorizedCount', 'rejectedCount', 'pendingAuth',
+                    'volumeFormatted', 'volumeByDevise'),
             $sidebarData
         ));
     }

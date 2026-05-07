@@ -15,11 +15,14 @@ class AnomalySwift extends Model
         'raisons',
         'verifie_par',
         'verifie_at',
+        'rejetee_par',
+        'rejetee_at',
     ];
 
     protected $casts = [
         'raisons' => 'array',
         'verifie_at' => 'datetime',
+        'rejetee_at' => 'datetime',
         'score' => 'float',
     ];
 
@@ -29,9 +32,15 @@ class AnomalySwift extends Model
         return $this->belongsTo(MessageSwift::class, 'message_id');
     }
 
-    // Relation vers User
+    // Relation vers User (vérificateur)
     public function verificateur()
     {
         return $this->belongsTo(User::class, 'verifie_par');
+    }
+
+    // Relation vers User (agent ayant rejeté)
+    public function rejecteur()
+    {
+        return $this->belongsTo(User::class, 'rejetee_par');
     }
 }

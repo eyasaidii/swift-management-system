@@ -44,7 +44,7 @@
 .sb-processed{background:#eff6ff;color:#1e40af;}
 .sb-authorized{background:#ecfdf5;color:#065f46;}
 .sb-suspended{background:#fef2f2;color:#991b1b;}
-.sb-rejected{background:#f3f4f6;color:#6b7280;}
+.sb-rejected{background:#dc3545;color:#fff;}
 .dir-in{background:#dbeafe;color:#1d4ed8;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .dir-out{background:#f0fdf4;color:#166534;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .tbl-actions{display:flex;gap:.25rem;}

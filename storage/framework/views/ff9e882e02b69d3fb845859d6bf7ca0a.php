@@ -190,7 +190,7 @@
                 ?>
 
                 
-                <?php if($niveau === 'HIGH' && !$anomaly->verifie_par): ?>
+                <?php if($niveau === 'HIGH' && !$anomaly->verifie_par && !$anomaly->rejetee_par): ?>
                     <?php if (\Illuminate\Support\Facades\Blade::check('role', 'super-admin|swift-manager')): ?>
                     <a href="<?php echo e(route('swift.anomalies.index', ['niveau_risque' => 'HIGH', 'verifie' => 'non'])); ?>"
                        class="d-flex align-items-center gap-3 text-decoration-none mb-3 px-4 py-3 rounded-3"
@@ -300,7 +300,22 @@
                             <div class="col-md-4 border-start ps-4">
                                 <div class="text-muted small fw-bold mb-2 text-uppercase"
                                      style="letter-spacing:.05em">Vérification</div>
-                                <?php if($anomaly->verifie_par): ?>
+                                <?php if($anomaly->rejetee_par): ?>
+                                    <div class="d-flex align-items-center gap-2 text-danger mb-1">
+                                        <i class="fas fa-times-circle fs-5"></i>
+                                        <span class="fw-bold">Rejetée</span>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-user me-1"></i>
+                                        <?php echo e(optional($anomaly->rejecteur)->name ?? '—'); ?>
+
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <?php echo e(optional($anomaly->rejetee_at)->format('d/m/Y à H:i')); ?>
+
+                                    </div>
+                                <?php elseif($anomaly->verifie_par): ?>
                                     <div class="d-flex align-items-center gap-2 text-success mb-1">
                                         <i class="fas fa-check-circle fs-5"></i>
                                         <span class="fw-bold">Vérifiée</span>
@@ -316,8 +331,8 @@
 
                                     </div>
                                 <?php else: ?>
-                                    <div class="d-flex align-items-center gap-2 text-danger mb-2">
-                                        <i class="fas fa-times-circle fs-5"></i>
+                                    <div class="d-flex align-items-center gap-2 text-warning mb-2">
+                                        <i class="fas fa-clock fs-5"></i>
                                         <span class="fw-bold">En attente</span>
                                     </div>
                                     <?php if (\Illuminate\Support\Facades\Blade::check('role', 'super-admin|swift-manager')): ?>
@@ -326,7 +341,16 @@
                                           class="d-inline">
                                         <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
                                         <button type="submit" class="btn btn-sm btn-outline-success me-1">
-                                            <i class="fas fa-check me-1"></i>Marquer vérifiée
+                                            <i class="fas fa-check me-1"></i>Accepter
+                                        </button>
+                                    </form>
+                                    <form method="POST"
+                                          action="<?php echo e(route('swift.anomalies.reject', $anomaly->id)); ?>"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Rejeter ce message SWIFT ?')">
+                                        <?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times me-1"></i>Rejeter
                                         </button>
                                     </form>
                                     <?php endif; ?>

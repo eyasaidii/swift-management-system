@@ -217,6 +217,21 @@ Route::middleware(['auth'])->group(function () {
                 [AnomalySwiftController::class, 'verify'])
                 ->name('anomalies.verify');
 
+            // Rejeter une anomalie (passe le message en rejected)
+            Route::patch('/anomalies/{id}/reject',
+                [AnomalySwiftController::class, 'reject'])
+                ->name('anomalies.reject');
+
+            // Auto-décision IA sur toutes les anomalies (LOW→authorized, MEDIUM→processed)
+            Route::post('/anomalies/auto-decide-all',
+                [AnomalySwiftController::class, 'autoDecideAll'])
+                ->name('anomalies.auto-decide-all');
+
+            // Auto-traiter toutes les anomalies LOW non traitées
+            Route::post('/anomalies/auto-process-low',
+                [AnomalySwiftController::class, 'autoProcessLow'])
+                ->name('anomalies.auto-process-low');
+
             // Re-analyser une anomalie existante
             Route::post('/anomalies/{id}/reanalyze',
                 [AnomalySwiftController::class, 'reanalyze'])

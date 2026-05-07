@@ -2,160 +2,415 @@
 
 @section('title', 'Analyse IA — BTL Bank')
 
-@section('content')
-<div class="container-fluid py-4">
+@push('styles')
+<style>
+.bi-header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1a4a3a 100%);border-radius:14px;padding:1.5rem 2rem;margin-bottom:1.5rem;color:#fff;}
+.bi-header h1{font-size:1.45rem;font-weight:700;margin:0;}
+.bi-header p{margin:0;opacity:.7;font-size:.82rem;}
+.bi-header .back-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:.4rem 1rem;font-size:.8rem;text-decoration:none;transition:.2s;}
+.bi-header .back-btn:hover{background:rgba(255,255,255,.22);color:#fff;}
+.bi-header .ts{font-size:.7rem;opacity:.55;}
+.kpi-card{border:none;border-radius:14px;padding:1.25rem 1.4rem;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.12)!important;}
+.kpi-card .kpi-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.kpi-card .kpi-val{font-size:2rem;font-weight:700;line-height:1;}
+.kpi-card .kpi-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;opacity:.65;}
+.kpi-card .kpi-trend{font-size:.7rem;margin-top:.3rem;}
+.kpi-card .kpi-bg-icon{position:absolute;right:-10px;bottom:-10px;font-size:4rem;opacity:.06;}
+.kpi-total{background:linear-gradient(135deg,#1e293b,#334155);color:#fff;}
+.kpi-total .kpi-icon{background:rgba(255,255,255,.12);color:#93c5fd;}
+.kpi-high{background:linear-gradient(135deg,#7f1d1d,#991b1b);color:#fff;}
+.kpi-high .kpi-icon{background:rgba(255,255,255,.12);color:#fca5a5;}
+.kpi-medium{background:linear-gradient(135deg,#713f12,#92400e);color:#fff;}
+.kpi-medium .kpi-icon{background:rgba(255,255,255,.12);color:#fcd34d;}
+.kpi-low{background:linear-gradient(135deg,#14532d,#166534);color:#fff;}
+.kpi-low .kpi-icon{background:rgba(255,255,255,.12);color:#86efac;}
+.kpi-avg{background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff;}
+.kpi-avg .kpi-icon{background:rgba(255,255,255,.12);color:#93c5fd;}
+.kpi-rate{background:linear-gradient(135deg,#134e4a,#0f766e);color:#fff;}
+.kpi-rate .kpi-icon{background:rgba(255,255,255,.12);color:#5eead4;}
+.chart-card{border:none;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;}
+.chart-card .chart-header{padding:.9rem 1.2rem;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:.6rem;background:#fff;}
+.chart-card .chart-title{font-size:.82rem;font-weight:600;color:#1e293b;margin:0;}
+.chart-card .chart-subtitle{font-size:.68rem;color:#94a3b8;margin:0;}
+.chart-card .chart-body{padding:1.2rem;background:#fff;}
+.risk-bar-wrap{margin-bottom:.6rem;}
+.risk-bar-label{display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:.2rem;}
+.risk-bar{height:8px;border-radius:20px;overflow:hidden;background:#f1f5f9;}
+.risk-bar-fill{height:100%;border-radius:20px;}
+.top-table{width:100%;border-collapse:separate;border-spacing:0;}
+.top-table th{font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;padding:.5rem .8rem;border-bottom:2px solid #f1f5f9;background:#fafafa;font-weight:600;}
+.top-table td{font-size:.75rem;padding:.55rem .8rem;border-bottom:1px solid #f8fafc;vertical-align:middle;}
+.top-table tr:last-child td{border-bottom:none;}
+.top-table tr:hover td{background:#f8fafc;}
+.score-pill{display:inline-block;padding:.18rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700;}
+.score-high{background:#fee2e2;color:#dc2626;}
+.gauge-wrap{position:relative;display:inline-block;}
+.gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.gauge-val{font-size:1.5rem;font-weight:700;line-height:1;}
+.gauge-sub{font-size:.62rem;color:#94a3b8;}
+</style>
+@endpush
 
-    {{-- En-tête --}}
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h1 class="h2 mb-0 fw-bold">
-                <i class="fas fa-brain text-danger me-2"></i>Analyse IA — Détection d'Anomalies
-            </h1>
-            <p class="text-muted mb-0">Tableaux de bord Intelligence Artificielle · 30 derniers jours</p>
-        </div>
-        <a href="{{ route('international-admin.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+@section('content')
+<div style="max-width:1400px;margin:0 auto;">
+
+{{-- HEADER --}}
+<div class="bi-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <div class="ts mb-1"><i class="fas fa-circle me-1" style="color:#22c55e;font-size:.5rem;"></i>INTELLIGENCE ARTIFICIELLE — BTL BANK</div>
+        <h1><i class="fas fa-brain me-2" style="color:#60a5fa;"></i>Tableau de Bord IA — Détection d'Anomalies SWIFT</h1>
+        <p class="mt-1">Analyse statistique sur {{ $totalAnomalies }} transactions · Modèle v2.0 · 30 derniers jours</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ route('swift.anomalies.index', ['niveau_risque'=>'HIGH']) }}" class="back-btn">
+            <i class="fas fa-exclamation-triangle me-1" style="color:#fca5a5;"></i>{{ $highCount }} HIGH critiques
+        </a>
+        <a href="{{ route('international-admin.dashboard') }}" class="back-btn">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard
         </a>
     </div>
+</div>
 
-    {{-- KPI Résumé --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #6c757d !important;">
-                <div class="card-body text-center py-3">
-                    <div class="fs-1 fw-bold text-secondary">{{ $totalAnomalies }}</div>
-                    <div class="small text-muted">Total analysées</div>
+{{-- KPI ROW --}}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-total shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-database"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $totalAnomalies }}</div>
+                    <div class="kpi-label">Total analysées</div>
                 </div>
             </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
-                <div class="card-body text-center py-3">
-                    <div class="fs-1 fw-bold text-danger">{{ $highCount }}</div>
-                    <div class="small text-muted">Risque HIGH</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107 !important;">
-                <div class="card-body text-center py-3">
-                    <div class="fs-1 fw-bold text-warning">{{ $mediumCount }}</div>
-                    <div class="small text-muted">Risque MEDIUM</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
-                <div class="card-body text-center py-3">
-                    <div class="fs-1 fw-bold text-success">{{ $avgScore }}</div>
-                    <div class="small text-muted">Score moyen IA</div>
-                </div>
-            </div>
+            <i class="fas fa-layer-group kpi-bg-icon"></i>
         </div>
     </div>
-
-    {{-- Ligne 1 : Donut + Barres --}}
-    <div class="row g-4 mb-4">
-
-        {{-- Donut : Répartition niveaux de risque --}}
-        <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white d-flex align-items-center gap-2">
-                    <i class="fas fa-chart-pie text-danger"></i>
-                    <h6 class="mb-0 fw-semibold">Répartition par Niveau de Risque</h6>
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-high shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-skull-crossbones"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $highCount }}</div>
+                    <div class="kpi-label">Risque HIGH</div>
+                    <div class="kpi-trend opacity-75">≥ 60/100</div>
                 </div>
-                <div class="card-body d-flex flex-column align-items-center justify-content-center gap-3">
-                    <canvas id="chartRiskLevel" style="max-height:220px;max-width:220px;"></canvas>
-                    <div class="d-flex gap-3 flex-wrap justify-content-center">
-                        <span class="badge bg-success px-3 py-2">
-                            <i class="fas fa-check-circle me-1"></i>LOW : {{ $anomalyByLevel['LOW'] ?? $anomalyByLevel['low'] ?? 0 }}
-                        </span>
-                        <span class="badge bg-warning text-dark px-3 py-2">
-                            <i class="fas fa-exclamation-triangle me-1"></i>MEDIUM : {{ $anomalyByLevel['MEDIUM'] ?? $anomalyByLevel['medium'] ?? 0 }}
-                        </span>
-                        <span class="badge bg-danger px-3 py-2">
-                            <i class="fas fa-skull-crossbones me-1"></i>HIGH : {{ $anomalyByLevel['HIGH'] ?? $anomalyByLevel['high'] ?? 0 }}
-                        </span>
+            </div>
+            <i class="fas fa-radiation kpi-bg-icon"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-medium shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $mediumCount }}</div>
+                    <div class="kpi-label">Risque MEDIUM</div>
+                    <div class="kpi-trend opacity-75">20–59/100</div>
+                </div>
+            </div>
+            <i class="fas fa-exclamation kpi-bg-icon"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-low shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $lowCount }}</div>
+                    <div class="kpi-label">Risque LOW</div>
+                    <div class="kpi-trend opacity-75">&lt; 20/100</div>
+                </div>
+            </div>
+            <i class="fas fa-shield-alt kpi-bg-icon"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-avg shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $avgScore }}</div>
+                    <div class="kpi-label">Score moyen IA</div>
+                    <div class="kpi-trend opacity-75">sur 100</div>
+                </div>
+            </div>
+            <i class="fas fa-tachometer-alt kpi-bg-icon"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="kpi-card kpi-rate shadow-sm h-100">
+            <div class="d-flex align-items-start gap-3">
+                <div class="kpi-icon"><i class="fas fa-tasks"></i></div>
+                <div>
+                    <div class="kpi-val">{{ $resolutionRate }}%</div>
+                    <div class="kpi-label">Taux résolution</div>
+                    <div class="kpi-trend opacity-75">{{ $verifiedCount + $rejectedCount }} / {{ $totalAnomalies }}</div>
+                </div>
+            </div>
+            <i class="fas fa-bullseye kpi-bg-icon"></i>
+        </div>
+    </div>
+</div>
+
+{{-- ROW 2 : Donut + Barres empilées --}}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="chart-card shadow-sm h-100">
+            <div class="chart-header">
+                <i class="fas fa-chart-pie" style="color:#6366f1;"></i>
+                <div>
+                    <div class="chart-title">Répartition par Niveau de Risque</div>
+                    <div class="chart-subtitle">Distribution des {{ $totalAnomalies }} anomalies détectées</div>
+                </div>
+            </div>
+            <div class="chart-body d-flex flex-column align-items-center gap-3">
+                @php
+                    $low    = $anomalyByLevel['LOW']    ?? $anomalyByLevel['low']    ?? 0;
+                    $medium = $anomalyByLevel['MEDIUM'] ?? $anomalyByLevel['medium'] ?? 0;
+                    $high   = $anomalyByLevel['HIGH']   ?? $anomalyByLevel['high']   ?? 0;
+                    $total  = max(1, $totalAnomalies);
+                @endphp
+                <div class="gauge-wrap">
+                    <canvas id="chartRiskLevel" width="200" height="200"></canvas>
+                    <div class="gauge-center">
+                        <div class="gauge-val" style="color:#1e293b;">{{ $totalAnomalies }}</div>
+                        <div class="gauge-sub">total</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        {{-- Barres : Anomalies MEDIUM+HIGH par type SWIFT --}}
-        <div class="col-md-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white d-flex align-items-center gap-2">
-                    <i class="fas fa-chart-bar text-primary"></i>
-                    <h6 class="mb-0 fw-semibold">Anomalies (MEDIUM + HIGH) par Type SWIFT</h6>
-                </div>
-                <div class="card-body">
-                    @if(empty($anomalyByType))
-                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                            <div class="text-center">
-                                <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
-                                <p>Aucune anomalie MEDIUM ou HIGH détectée</p>
-                            </div>
+                <div class="w-100 px-2">
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#16a34a;font-weight:600;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>LOW</span>
+                            <span style="color:#16a34a;font-weight:600;">{{ $low }} <span style="color:#94a3b8;font-weight:400;">({{ round($low/$total*100) }}%)</span></span>
                         </div>
-                    @else
-                        <canvas id="chartByType" style="max-height:240px;"></canvas>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Ligne 2 : Courbe 30 jours (pleine largeur) --}}
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex align-items-center gap-2">
-                    <i class="fas fa-chart-line text-warning"></i>
-                    <h6 class="mb-0 fw-semibold">Score Moyen IA — 30 derniers jours</h6>
-                </div>
-                <div class="card-body">
-                    @if(empty($scoreTimeline))
-                        <div class="text-center py-5 text-muted">
-                            <i class="fas fa-clock fa-2x mb-2"></i>
-                            <p>Pas de données sur les 30 derniers jours</p>
-                        </div>
-                    @else
-                        <canvas id="chartTimeline" style="max-height:260px;"></canvas>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Lien vers anomalies --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 bg-light shadow-sm">
-                <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="fas fa-search fa-2x text-secondary"></i>
-                        <div>
-                            <div class="fw-semibold">Inspecter les anomalies en détail</div>
-                            <div class="small text-muted">Accédez à la liste complète avec filtres et actions</div>
-                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ round($low/$total*100) }}%;background:#22c55e;"></div></div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('swift.anomalies.index', ['niveau_risque' => 'HIGH']) }}"
-                           class="btn btn-danger btn-sm">
-                            <i class="fas fa-skull-crossbones me-1"></i>Voir HIGH
-                        </a>
-                        <a href="{{ route('swift.anomalies.index', ['niveau_risque' => 'MEDIUM']) }}"
-                           class="btn btn-warning btn-sm text-dark">
-                            <i class="fas fa-exclamation-triangle me-1"></i>Voir MEDIUM
-                        </a>
-                        <a href="{{ route('swift.anomalies.index') }}"
-                           class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-list me-1"></i>Toutes
-                        </a>
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#d97706;font-weight:600;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>MEDIUM</span>
+                            <span style="color:#d97706;font-weight:600;">{{ $medium }} <span style="color:#94a3b8;font-weight:400;">({{ round($medium/$total*100) }}%)</span></span>
+                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ round($medium/$total*100) }}%;background:#f59e0b;"></div></div>
+                    </div>
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#dc2626;font-weight:600;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>HIGH</span>
+                            <span style="color:#dc2626;font-weight:600;">{{ $high }} <span style="color:#94a3b8;font-weight:400;">({{ round($high/$total*100) }}%)</span></span>
+                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ round($high/$total*100) }}%;background:#ef4444;"></div></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="col-md-8">
+        <div class="chart-card shadow-sm h-100">
+            <div class="chart-header justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-chart-bar" style="color:#3b82f6;"></i>
+                    <div>
+                        <div class="chart-title">Anomalies à Risque par Type de Message SWIFT</div>
+                        <div class="chart-subtitle">Barres empilées MEDIUM (jaune) + HIGH (rouge)</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-1">
+                    <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.63rem;">MEDIUM</span>
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:.63rem;">HIGH</span>
+                </div>
+            </div>
+            <div class="chart-body">
+                @if(empty($allTypes))
+                    <div class="d-flex align-items-center justify-content-center py-5 text-muted">
+                        <div class="text-center"><i class="fas fa-check-circle fa-3x text-success mb-2"></i><p>Aucune anomalie MEDIUM ou HIGH</p></div>
+                    </div>
+                @else
+                    <canvas id="chartByType" style="max-height:280px;"></canvas>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ROW 3 : Timeline + Statut + Distribution --}}
+<div class="row g-4 mb-4">
+    <div class="col-md-7">
+        <div class="chart-card shadow-sm h-100">
+            <div class="chart-header justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-chart-area" style="color:#f59e0b;"></i>
+                    <div>
+                        <div class="chart-title">Score Moyen IA — Évolution 30 jours</div>
+                        <div class="chart-subtitle">Avec lignes de seuil LOW / MEDIUM / HIGH</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-1 flex-wrap">
+                    <span class="badge" style="background:#dcfce7;color:#166534;font-size:.6rem;">LOW &lt;20</span>
+                    <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.6rem;">MED 20-59</span>
+                    <span class="badge" style="background:#fee2e2;color:#991b1b;font-size:.6rem;">HIGH ≥60</span>
+                </div>
+            </div>
+            <div class="chart-body">
+                @if(empty($scoreTimeline))
+                    <div class="text-center py-5 text-muted"><i class="fas fa-clock fa-2x mb-2"></i><p>Pas de données sur les 30 derniers jours</p></div>
+                @else
+                    <canvas id="chartTimeline" style="max-height:250px;"></canvas>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5 d-flex flex-column gap-4">
+        <div class="chart-card shadow-sm" style="flex:1;">
+            <div class="chart-header">
+                <i class="fas fa-clipboard-check" style="color:#10b981;"></i>
+                <div>
+                    <div class="chart-title">Statut des Vérifications</div>
+                    <div class="chart-subtitle">Taux de résolution global</div>
+                </div>
+            </div>
+            <div class="chart-body d-flex align-items-center gap-4">
+                <div class="gauge-wrap flex-shrink-0">
+                    <canvas id="chartStatus" width="130" height="130"></canvas>
+                    <div class="gauge-center">
+                        <div class="gauge-val" style="font-size:1.1rem;color:#1e293b;">{{ $resolutionRate }}%</div>
+                        <div class="gauge-sub">résolu</div>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#16a34a;font-weight:600;font-size:.72rem;"><i class="fas fa-check me-1"></i>Autorisées</span>
+                            <span style="color:#16a34a;font-weight:600;font-size:.72rem;">{{ $verifiedCount }}</span>
+                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ $total>0?round($verifiedCount/$total*100):0 }}%;background:#22c55e;"></div></div>
+                    </div>
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#dc2626;font-weight:600;font-size:.72rem;"><i class="fas fa-times me-1"></i>Rejetées</span>
+                            <span style="color:#dc2626;font-weight:600;font-size:.72rem;">{{ $rejectedCount }}</span>
+                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ $total>0?round($rejectedCount/$total*100):0 }}%;background:#ef4444;"></div></div>
+                    </div>
+                    <div class="risk-bar-wrap">
+                        <div class="risk-bar-label">
+                            <span style="color:#f59e0b;font-weight:600;font-size:.72rem;"><i class="fas fa-clock me-1"></i>En attente</span>
+                            <span style="color:#f59e0b;font-weight:600;font-size:.72rem;">{{ $pendingCount }}</span>
+                        </div>
+                        <div class="risk-bar"><div class="risk-bar-fill" style="width:{{ $total>0?round($pendingCount/$total*100):0 }}%;background:#f59e0b;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card shadow-sm" style="flex:1;">
+            <div class="chart-header">
+                <i class="fas fa-chart-bar" style="color:#8b5cf6;"></i>
+                <div>
+                    <div class="chart-title">Distribution des Scores IA</div>
+                    <div class="chart-subtitle">Répartition par tranche (0-100)</div>
+                </div>
+            </div>
+            <div class="chart-body">
+                <canvas id="chartScoreDist" style="max-height:140px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ROW 4 : Top anomalies HIGH --}}
+@if($topHighAnomalies->count() > 0)
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="chart-card shadow-sm">
+            <div class="chart-header justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-radiation" style="color:#dc2626;"></i>
+                    <div>
+                        <div class="chart-title">Top Anomalies HIGH — Action Requise</div>
+                        <div class="chart-subtitle">Transactions critiques non vérifiées, triées par score décroissant</div>
+                    </div>
+                </div>
+                <a href="{{ route('swift.anomalies.index', ['niveau_risque'=>'HIGH','verifie'=>'non']) }}"
+                   class="btn btn-danger btn-sm" style="font-size:.72rem;">
+                    <i class="fas fa-arrow-right me-1"></i>Voir toutes
+                </a>
+            </div>
+            <div class="chart-body p-0">
+                <table class="top-table">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Type</th>
+                            <th>Émetteur</th>
+                            <th>Score IA</th>
+                            <th>Raisons</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($topHighAnomalies as $a)
+                        <tr>
+                            <td><span class="fw-semibold" style="font-size:.72rem;color:#1e293b;">{{ $a->message->REFERENCE ?? '—' }}</span></td>
+                            <td><span class="badge" style="background:#eff6ff;color:#1d4ed8;font-size:.65rem;">{{ $a->message->TYPE_MESSAGE ?? '—' }}</span></td>
+                            <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ Str::limit($a->message->SENDER_NAME ?? $a->message->EMETTEUR ?? '—', 22) }}
+                            </td>
+                            <td><span class="score-pill score-high">{{ number_format($a->score, 1) }}</span></td>
+                            <td style="max-width:200px;">
+                                @if($a->raisons && count($a->raisons) > 0)
+                                    <span style="font-size:.68rem;color:#64748b;">{{ Str::limit(implode(', ', array_slice($a->raisons, 0, 2)), 48) }}</span>
+                                @else
+                                    <span style="color:#94a3b8;font-size:.68rem;">—</span>
+                                @endif
+                            </td>
+                            <td style="color:#94a3b8;font-size:.68rem;">{{ optional($a->created_at)->format('d/m H:i') }}</td>
+                            <td>
+                                <a href="{{ route('swift.show', $a->message_id) }}"
+                                   style="background:#fee2e2;color:#dc2626;border:none;font-size:.65rem;padding:.25rem .6rem;border-radius:6px;text-decoration:none;display:inline-block;">
+                                    <i class="fas fa-eye me-1"></i>Inspecter
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Footer actions --}}
+<div class="chart-card shadow-sm mb-4">
+    <div class="chart-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-2">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width:38px;height:38px;background:#f1f5f9;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-search" style="color:#64748b;"></i>
+            </div>
+            <div>
+                <div style="font-size:.82rem;font-weight:600;color:#1e293b;">Accès direct aux anomalies</div>
+                <div style="font-size:.7rem;color:#94a3b8;">Filtres par niveau de risque</div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('swift.anomalies.index', ['niveau_risque'=>'HIGH','verifie'=>'non']) }}"
+               style="background:#dc2626;color:#fff;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;text-decoration:none;">
+                <i class="fas fa-radiation me-1"></i>HIGH non vérifiés
+            </a>
+            <a href="{{ route('swift.anomalies.index', ['niveau_risque'=>'MEDIUM']) }}"
+               style="background:#f59e0b;color:#fff;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;text-decoration:none;">
+                <i class="fas fa-exclamation-triangle me-1"></i>MEDIUM ({{ $mediumCount }})
+            </a>
+            <a href="{{ route('swift.anomalies.index') }}"
+               style="background:#f1f5f9;color:#475569;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;text-decoration:none;">
+                <i class="fas fa-list me-1"></i>Toutes ({{ $totalAnomalies }})
+            </a>
+        </div>
+    </div>
+</div>
 
 </div>
 @endsection
@@ -163,7 +418,10 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
-// ── Donut : Niveaux de risque ─────────────────────────────
+Chart.defaults.font.family = "'Inter','Segoe UI',sans-serif";
+Chart.defaults.color = '#64748b';
+
+// Donut risque
 new Chart(document.getElementById('chartRiskLevel'), {
     type: 'doughnut',
     data: {
@@ -174,74 +432,158 @@ new Chart(document.getElementById('chartRiskLevel'), {
                 {{ $anomalyByLevel['MEDIUM'] ?? $anomalyByLevel['medium'] ?? 0 }},
                 {{ $anomalyByLevel['HIGH'] ?? $anomalyByLevel['high'] ?? 0 }}
             ],
-            backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-            borderWidth: 2,
+            backgroundColor: ['#22c55e','#f59e0b','#ef4444'],
+            borderColor: '#fff',
+            borderWidth: 3,
+            hoverOffset: 6,
         }]
     },
     options: {
+        cutout: '68%',
         plugins: {
-            legend: { position: 'bottom' },
-            tooltip: {
-                callbacks: {
-                    label: ctx => ` ${ctx.label} : ${ctx.parsed}`
-                }
-            }
-        },
-        cutout: '60%',
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label} : ${ctx.parsed} (${Math.round(ctx.parsed/{{ max(1,$totalAnomalies) }}*100)}%)` } }
+        }
     }
 });
 
-// ── Barres : Anomalies par type SWIFT ────────────────────
-@if(!empty($anomalyByType))
+// Barres empilées
+@if(!empty($allTypes))
+const types = {!! json_encode($allTypes) !!};
+const mediumData = {!! json_encode($anomalyByTypeMedium) !!};
+const highData   = {!! json_encode($anomalyByTypeHigh) !!};
 new Chart(document.getElementById('chartByType'), {
     type: 'bar',
     data: {
-        labels: {!! json_encode(array_keys($anomalyByType)) !!},
-        datasets: [{
-            label: 'Anomalies (MEDIUM + HIGH)',
-            data: {!! json_encode(array_values($anomalyByType)) !!},
-            backgroundColor: ['#0d6efd','#6f42c1','#d63384','#fd7e14','#20c997','#0dcaf0','#ffc107'],
-            borderRadius: 6,
-        }]
+        labels: types,
+        datasets: [
+            {
+                label: 'MEDIUM',
+                data: types.map(t => mediumData[t] ?? 0),
+                backgroundColor: 'rgba(245,158,11,0.85)',
+                borderWidth: 0,
+                borderRadius: 4,
+                borderSkipped: false,
+            },
+            {
+                label: 'HIGH',
+                data: types.map(t => highData[t] ?? 0),
+                backgroundColor: 'rgba(239,68,68,0.85)',
+                borderWidth: 0,
+                borderRadius: 4,
+                borderSkipped: false,
+            }
+        ]
     },
     options: {
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, padding: 16, font: { size: 11 } } },
+            tooltip: { mode: 'index', intersect: false }
+        },
         scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } },
+            y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
         }
     }
 });
 @endif
 
-// ── Courbe : Score moyen 30 jours ────────────────────────
+// Timeline score + seuils
 @if(!empty($scoreTimeline))
+const tlL = {!! json_encode(array_column($scoreTimeline, 'jour')) !!};
+const tlS = {!! json_encode(array_column($scoreTimeline, 'avg_score')) !!};
 new Chart(document.getElementById('chartTimeline'), {
     type: 'line',
     data: {
-        labels: {!! json_encode(array_column($scoreTimeline, 'jour')) !!},
-        datasets: [{
-            label: 'Score moyen IA',
-            data: {!! json_encode(array_column($scoreTimeline, 'avg_score')) !!},
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245,158,11,0.12)',
-            borderWidth: 2.5,
-            pointRadius: 4,
-            pointBackgroundColor: '#f59e0b',
-            fill: true,
-            tension: 0.35,
-        }]
+        labels: tlL,
+        datasets: [
+            {
+                label: 'Score moyen IA',
+                data: tlS,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245,158,11,0.08)',
+                borderWidth: 2.5,
+                pointRadius: 5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#f59e0b',
+                pointBorderWidth: 2,
+                fill: true,
+                tension: 0.4,
+            },
+            {
+                label: 'Seuil HIGH (60)',
+                data: tlL.map(() => 60),
+                borderColor: 'rgba(239,68,68,0.5)',
+                borderWidth: 1.5,
+                borderDash: [5,4],
+                pointRadius: 0,
+                fill: false,
+            },
+            {
+                label: 'Seuil MEDIUM (20)',
+                data: tlL.map(() => 20),
+                borderColor: 'rgba(245,158,11,0.5)',
+                borderWidth: 1.5,
+                borderDash: [5,4],
+                pointRadius: 0,
+                fill: false,
+            }
+        ]
     },
     options: {
-        plugins: { legend: { display: false } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 16, font: { size: 11 } } } },
         scales: {
-            y: {
-                beginAtZero: true,
-                suggestedMax: 100,
-                ticks: { callback: v => v + '' }
-            }
+            y: { beginAtZero: true, suggestedMax: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 11 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } }
         }
     }
 });
 @endif
+
+// Donut statut
+new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Autorisées','Rejetées','En attente'],
+        datasets: [{
+            data: [{{ $verifiedCount }}, {{ $rejectedCount }}, {{ $pendingCount }}],
+            backgroundColor: ['#22c55e','#ef4444','#f59e0b'],
+            borderColor: '#fff',
+            borderWidth: 3,
+            hoverOffset: 4,
+        }]
+    },
+    options: {
+        cutout: '65%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label} : ${ctx.parsed}` } }
+        }
+    }
+});
+
+// Distribution scores horizontale
+new Chart(document.getElementById('chartScoreDist'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_keys($scoreRanges)) !!},
+        datasets: [{
+            label: 'Anomalies',
+            data: {!! json_encode(array_values($scoreRanges)) !!},
+            backgroundColor: ['#22c55e','#84cc16','#f59e0b','#f97316','#ef4444'],
+            borderRadius: 6,
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+    }
+});
 </script>
 @endpush

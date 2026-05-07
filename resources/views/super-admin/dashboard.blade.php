@@ -44,7 +44,7 @@
 .sb-processed{background:#eff6ff;color:#1e40af;}
 .sb-authorized{background:#ecfdf5;color:#065f46;}
 .sb-suspended{background:#fef2f2;color:#991b1b;}
-.sb-rejected{background:#f3f4f6;color:#6b7280;}
+.sb-rejected{background:#dc3545;color:#fff;}
 .dir-in{background:#dbeafe;color:#1d4ed8;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .dir-out{background:#f0fdf4;color:#166534;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .tbl-actions{display:flex;gap:.25rem;}
@@ -75,15 +75,15 @@
         </div>
         <div class="dash-btns">
             @php
-                $criticalCount  = \App\Models\AnomalySwift::where('niveau_risque','HIGH')->whereNull('verifie_par')->count();
-                $totalAnomalies = \App\Models\AnomalySwift::count();
+                $criticalCount  = \App\Models\AnomalySwift::where('niveau_risque','HIGH')->whereNull('verifie_par')->whereNull('rejetee_par')->count();
+                $pendingAnomalies = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->count();
             @endphp
             <a href="{{ route('admin.users.index') }}" class="dbtn dbtn-blue"><i class="fas fa-users"></i> Utilisateurs</a>
             <a href="{{ route('swift.anomalies.index') }}" class="dbtn dbtn-red position-relative">
                 <i class="fas fa-brain"></i> Anomalies IA
-                @if($totalAnomalies > 0)
+                @if($pendingAnomalies > 0)
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-                          style="background:#f59e0b;color:#fff;font-size:.58rem;padding:.15rem .38rem;">{{ $totalAnomalies }}</span>
+                          style="background:#f59e0b;color:#fff;font-size:.58rem;padding:.15rem .38rem;">{{ $pendingAnomalies }}</span>
                 @endif
             </a>
             <a href="{{ route('swift.export-center') }}" class="dbtn dbtn-gray"><i class="fas fa-download"></i> Exporter</a>

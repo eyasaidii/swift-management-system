@@ -44,7 +44,7 @@
 .sb-processed{background:#eff6ff;color:#1e40af;}
 .sb-authorized{background:#ecfdf5;color:#065f46;}
 .sb-suspended{background:#fef2f2;color:#991b1b;}
-.sb-rejected{background:#f3f4f6;color:#6b7280;}
+.sb-rejected{background:#dc3545;color:#fff;}
 .dir-in{background:#dbeafe;color:#1d4ed8;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .dir-out{background:#f0fdf4;color:#166534;font-size:.65rem;font-weight:700;padding:.18rem .45rem;border-radius:4px;}
 .tbl-actions{display:flex;gap:.25rem;}
@@ -73,7 +73,10 @@
             <p>Op&eacute;rations transfrontali&egrave;res &amp; correspondants internationaux</p>
         </div>
         <div class="dash-btns">
-            <?php $criticalCount = \App\Models\AnomalySwift::where('niveau_risque','HIGH')->whereNull('verifie_par')->count(); ?>
+            <?php
+                $criticalCount = \App\Models\AnomalySwift::where('niveau_risque','HIGH')->whereNull('verifie_par')->whereNull('rejetee_par')->count();
+                $pendingIaCount = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->whereIn('niveau_risque',['LOW','MEDIUM'])->count();
+            ?>
             <a href="<?php echo e(route('swift.index')); ?>" class="dbtn dbtn-gray"><i class="fas fa-list"></i> Messages</a>
             <a href="<?php echo e(route('international-admin.ia-analytics')); ?>" class="dbtn dbtn-blue"><i class="fas fa-chart-bar"></i> Graphiques IA</a>
             <a href="<?php echo e(route('swift.anomalies.index', ['niveau_risque'=>'HIGH','verifie'=>'non'])); ?>"
@@ -84,6 +87,18 @@
                           style="background:#f59e0b;color:#fff;font-size:.58rem;padding:.15rem .38rem;"><?php echo e($criticalCount); ?></span>
                 <?php endif; ?>
             </a>
+            <?php if($pendingIaCount > 0): ?>
+            <form method="POST" action="<?php echo e(route('swift.anomalies.auto-decide-all')); ?>" class="d-inline"
+                  onsubmit="return confirm('Appliquer la décision IA automatique ?\n\n✅ LOW → Autorisé\n🟡 MEDIUM → Traité\n🔴 HIGH → Revue manuelle\n\nContinuer ?')">
+                <?php echo csrf_field(); ?>
+                <button type="submit" class="dbtn position-relative"
+                        style="background:#2563eb;color:#fff;border:none;cursor:pointer;">
+                    <i class="fas fa-robot"></i> Décision IA
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                          style="background:#f59e0b;color:#fff;font-size:.58rem;padding:.15rem .38rem;"><?php echo e($pendingIaCount); ?></span>
+                </button>
+            </form>
+            <?php endif; ?>
             <a href="<?php echo e(route('swift.index', ['status'=>'processed'])); ?>"
                class="dbtn <?php echo e(($pendingAuth??0)>0 ? 'dbtn-green' : 'dbtn-gray'); ?> position-relative">
                 <i class="fas fa-check-double"></i> Autorisations
