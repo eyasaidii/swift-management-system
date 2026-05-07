@@ -282,9 +282,9 @@ class DashboardController extends Controller
         $avgScore = round((float) \App\Models\AnomalySwift::avg('SCORE'), 1);
 
         // Statut vérification par niveau
-        $verifiedCount  = \App\Models\AnomalySwift::whereNotNull('verifie_par')->count();
-        $rejectedCount  = \App\Models\AnomalySwift::whereNotNull('rejetee_par')->count();
-        $pendingCount   = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->count();
+        $verifiedCount = \App\Models\AnomalySwift::whereNotNull('verifie_par')->count();
+        $rejectedCount = \App\Models\AnomalySwift::whereNotNull('rejetee_par')->count();
+        $pendingCount = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->count();
 
         // Anomalies MEDIUM+HIGH par type, séparées
         $anomalyByTypeMedium = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
@@ -314,10 +314,10 @@ class DashboardController extends Controller
 
         // Distribution des scores par tranches
         $scoreRanges = [
-            '0–19'   => \App\Models\AnomalySwift::whereBetween('SCORE', [0, 19.99])->count(),
-            '20–39'  => \App\Models\AnomalySwift::whereBetween('SCORE', [20, 39.99])->count(),
-            '40–59'  => \App\Models\AnomalySwift::whereBetween('SCORE', [40, 59.99])->count(),
-            '60–79'  => \App\Models\AnomalySwift::whereBetween('SCORE', [60, 79.99])->count(),
+            '0–19' => \App\Models\AnomalySwift::whereBetween('SCORE', [0, 19.99])->count(),
+            '20–39' => \App\Models\AnomalySwift::whereBetween('SCORE', [20, 39.99])->count(),
+            '40–59' => \App\Models\AnomalySwift::whereBetween('SCORE', [40, 59.99])->count(),
+            '60–79' => \App\Models\AnomalySwift::whereBetween('SCORE', [60, 79.99])->count(),
             '80–100' => \App\Models\AnomalySwift::whereBetween('SCORE', [80, 100])->count(),
         ];
 
@@ -341,21 +341,21 @@ class DashboardController extends Controller
         $sidebarData = $this->getSidebarData();
         $base = $this->baseQuery();
 
-        $transCount      = (clone $base)->count();
-        $inCount         = (clone $base)->whereIn('DIRECTION', ['IN','RECU'])->count();
-        $outCount        = (clone $base)->whereIn('DIRECTION', ['OUT','EMIS'])->count();
+        $transCount = (clone $base)->count();
+        $inCount = (clone $base)->whereIn('DIRECTION', ['IN', 'RECU'])->count();
+        $outCount = (clone $base)->whereIn('DIRECTION', ['OUT', 'EMIS'])->count();
         $authorizedCount = (clone $base)->where('STATUS', 'authorized')->count();
-        $rejectedCount   = (clone $base)->where('STATUS', 'rejected')->count();
-        $pendingAuth     = (clone $base)->whereNotIn('STATUS', ['authorized','rejected','suspended'])->count();
+        $rejectedCount = (clone $base)->where('STATUS', 'rejected')->count();
+        $pendingAuth = (clone $base)->whereNotIn('STATUS', ['authorized', 'rejected', 'suspended'])->count();
 
-        $volumeByDevise  = $this->getVolumeByDevise($base);
+        $volumeByDevise = $this->getVolumeByDevise($base);
         $volumeFormatted = $this->getDominantVolumeFormatted($volumeByDevise);
-        $transactions    = $messages;
+        $transactions = $messages;
 
         return view('swift-operator.dashboard', array_merge(
             compact('messages', 'transactions', 'transCount', 'inCount', 'outCount',
-                    'authorizedCount', 'rejectedCount', 'pendingAuth',
-                    'volumeFormatted', 'volumeByDevise'),
+                'authorizedCount', 'rejectedCount', 'pendingAuth',
+                'volumeFormatted', 'volumeByDevise'),
             $sidebarData
         ));
     }

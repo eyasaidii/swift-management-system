@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Log;
 class MessageSwiftSeeder extends Seeder
 {
     // BIC/Nom officiel BTL
-    private const BTL_BIC  = 'BTLMTNTT';
+    private const BTL_BIC = 'BTLMTNTT';
+
     private const BTL_NAME = 'BANQUE TUNISO-LIBYENNE';
 
     // -- Normal BICs (correspondents, sans BTL) --
@@ -646,9 +647,9 @@ class MessageSwiftSeeder extends Seeder
             // 1. OUT MT103 — Montant ULTRA élevé + devise suspecte (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'OFFSHKYY',
                 'receiverName' => 'CAYMAN OFFSHORE LTD',
                 'amount' => 4_750_000.00, 'currency' => 'RUB',
@@ -659,9 +660,9 @@ class MessageSwiftSeeder extends Seeder
             // 2. IN MT103 — Montant zéro + statut rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 0.00, 'currency' => 'EUR',
@@ -672,9 +673,9 @@ class MessageSwiftSeeder extends Seeder
             // 3. OUT MT202 — BIC offshore + devise AED + rejeté (HIGH attendu)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'SHELBHBB',
                 'receiverName' => 'BELIZE SHELL BANK',
                 'amount' => 890_000.00, 'currency' => 'AED',
@@ -685,9 +686,9 @@ class MessageSwiftSeeder extends Seeder
             // 4. IN MT103 — Société libyenne + montant élevé USD (MEDIUM attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => $ly[1]['bic'],
-                'senderName'  => $ly[1]['name'],
-                'senderIban'  => $ly[1]['iban'],
+                'senderBic' => $ly[1]['bic'],
+                'senderName' => $ly[1]['name'],
+                'senderIban' => $ly[1]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 325_000.00, 'currency' => 'USD',
@@ -698,9 +699,9 @@ class MessageSwiftSeeder extends Seeder
             // 5. OUT MT103 — Auto-virement BTL + CNY + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 55_000.00, 'currency' => 'CNY',
@@ -711,9 +712,9 @@ class MessageSwiftSeeder extends Seeder
             // 6. IN MT940 — Devise JPY + montant massif + rejeté (HIGH attendu)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'MHCBJPJT',
-                'senderName'  => 'MIZUHO BANK TOKYO',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'MHCBJPJT',
+                'senderName' => 'MIZUHO BANK TOKYO',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 12_000_000.00, 'currency' => 'JPY',
@@ -724,9 +725,9 @@ class MessageSwiftSeeder extends Seeder
             // 7. OUT MT103 — Montant > 2M + devise RUB + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'PRVBKXXL',
                 'receiverName' => 'PRIVATE BANK XL',
                 'amount' => 2_100_000.00, 'currency' => 'RUB',
@@ -737,9 +738,9 @@ class MessageSwiftSeeder extends Seeder
             // 8. IN MT103 — Montant zéro reçu de BNP Paribas (MEDIUM attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'BNP PARIBAS',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'BNP PARIBAS',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 0.00, 'currency' => 'EUR',
@@ -750,9 +751,9 @@ class MessageSwiftSeeder extends Seeder
             // 9. OUT MT202 — Rejeté + RUB + montant élevé (HIGH attendu)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'OFFSHKYY',
                 'receiverName' => 'CAYMAN OFFSHORE LTD',
                 'amount' => 600_000.00, 'currency' => 'RUB',
@@ -763,9 +764,9 @@ class MessageSwiftSeeder extends Seeder
             // 10. IN MT103 — Libyen + 5.8M USD + rejeté (HIGH attendu)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[2]['bic'],
-                'senderName'  => $ly[2]['name'],
-                'senderIban'  => $ly[2]['iban'],
+                'senderBic' => $ly[2]['bic'],
+                'senderName' => $ly[2]['name'],
+                'senderIban' => $ly[2]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 5_800_000.00, 'currency' => 'USD',
@@ -984,9 +985,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-01: OFAC Russia — MT103 OUT RUB 3.2M Sberbank rejeté nuit (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'SABRRUMM',
                 'receiverName' => 'SBERBANK RUSSIA MOSCOW',
                 'amount' => 3_200_000.00, 'currency' => 'RUB',
@@ -997,9 +998,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-02: Panama Papers — MT202 IN USD 8.5M offshore BVI rejeté (HIGH)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'OFFSHKYY',
-                'senderName'  => 'BVI CAPITAL MANAGEMENT LTD',
-                'senderIban'  => 'VG96VPVG0000012345678901',
+                'senderBic' => 'OFFSHKYY',
+                'senderName' => 'BVI CAPITAL MANAGEMENT LTD',
+                'senderIban' => 'VG96VPVG0000012345678901',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 8_500_000.00, 'currency' => 'USD',
@@ -1010,9 +1011,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-03: TBML UAE — MT103 OUT AED 620K Dubai shell nuit rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'ADCBAEAA',
                 'receiverName' => 'DUBAI SHELL TRADING LLC',
                 'amount' => 620_000.00, 'currency' => 'AED',
@@ -1023,9 +1024,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-04: Probe transaction zéro — MT103 IN 0 EUR Libye NOC rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 0.00, 'currency' => 'EUR',
@@ -1036,9 +1037,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-05: China layering — MT103 OUT CNY 1.8M ICBC rejeté 3h (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'ICBKCNBJ',
                 'receiverName' => 'ICBC INTERNATIONAL TRADING SHANGHAI',
                 'amount' => 1_800_000.00, 'currency' => 'CNY',
@@ -1049,9 +1050,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-06: Layering RUB — MT103 OUT RUB 5.5M banque privée rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'PRVBKXXL',
                 'receiverName' => 'PRIVATE BANK XL OFFSHORE',
                 'amount' => 5_500_000.00, 'currency' => 'RUB',
@@ -1062,9 +1063,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-07: Financement suspect — MT103 IN 0 USD Belize rejeté (HIGH)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'SHELBHBB',
-                'senderName'  => 'BELIZE SHELL FINANCIAL SA',
-                'senderIban'  => 'BZ04BELZ00001000006300029',
+                'senderBic' => 'SHELBHBB',
+                'senderName' => 'BELIZE SHELL FINANCIAL SA',
+                'senderIban' => 'BZ04BELZ00001000006300029',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 0.00, 'currency' => 'USD',
@@ -1075,9 +1076,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-08: Sanctions multiples — MT202 OUT USD 3.1M offshore rejeté nuit (HIGH)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'rejected',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'PRVBKXXL',
                 'receiverName' => 'PRIVATE BANK XL',
                 'amount' => 3_100_000.00, 'currency' => 'USD',
@@ -1088,9 +1089,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-09: MT940 JPY balance massive — IN JPY 18M rejeté (HIGH)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'rejected',
-                'senderBic'   => 'MHCBJPJT',
-                'senderName'  => 'MIZUHO BANK TOKYO',
-                'senderIban'  => $this->genTnIban(),
+                'senderBic' => 'MHCBJPJT',
+                'senderName' => 'MIZUHO BANK TOKYO',
+                'senderIban' => $this->genTnIban(),
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 18_000_000.00, 'currency' => 'JPY',
@@ -1103,9 +1104,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-10: Deutsche Bank — MT103 IN USD 280K import acier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'DEUTDEFF',
-                'senderName'  => 'SIEMENS AG MUNICH',
-                'senderIban'  => 'DE89370400440532013000',
+                'senderBic' => 'DEUTDEFF',
+                'senderName' => 'SIEMENS AG MUNICH',
+                'senderIban' => 'DE89370400440532013000',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 280_000.00, 'currency' => 'USD',
@@ -1116,9 +1117,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-11: Libye NOC — MT103 IN USD 175K paiement pétrolier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[0]['bic'],
-                'senderName'  => $ly[0]['name'],
-                'senderIban'  => $ly[0]['iban'],
+                'senderBic' => $ly[0]['bic'],
+                'senderName' => $ly[0]['name'],
+                'senderIban' => $ly[0]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 175_000.00, 'currency' => 'USD',
@@ -1129,9 +1130,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-12: HSBC London — MT202 OUT GBP 450K interbank (MEDIUM)
             [
                 'type' => 'MT202', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'HSBCGB2L',
                 'receiverName' => 'HSBC BANK PLC LONDON',
                 'amount' => 450_000.00, 'currency' => 'GBP',
@@ -1142,9 +1143,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-13: Libye Libyan Iron Steel — MT103 IN USD 220K acier (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[1]['bic'],
-                'senderName'  => $ly[1]['name'],
-                'senderIban'  => $ly[1]['iban'],
+                'senderBic' => $ly[1]['bic'],
+                'senderName' => $ly[1]['name'],
+                'senderIban' => $ly[1]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 220_000.00, 'currency' => 'USD',
@@ -1155,9 +1156,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-14: BTL envoie USD 320K à Citibank pour énergie (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'CITIUS33',
                 'receiverName' => 'EXXON MOBIL CORPORATION',
                 'amount' => 320_000.00, 'currency' => 'USD',
@@ -1168,9 +1169,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-15: MT940 relevé BNP 750K EUR — IN journalier (MEDIUM)
             [
                 'type' => 'MT940', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'BNP PARIBAS',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'BNP PARIBAS',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 750_000.00, 'currency' => 'EUR',
@@ -1181,9 +1182,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-16: Libye General Electricity — MT103 IN EUR 95K travaux (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[2]['bic'],
-                'senderName'  => $ly[2]['name'],
-                'senderIban'  => $ly[2]['iban'],
+                'senderBic' => $ly[2]['bic'],
+                'senderName' => $ly[2]['name'],
+                'senderIban' => $ly[2]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 95_000.00, 'currency' => 'EUR',
@@ -1194,9 +1195,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-17: Barclays correspondant — MT202 IN EUR 200K (MEDIUM)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BARCGB22',
-                'senderName'  => 'BARCLAYS BANK PLC',
-                'senderIban'  => 'GB29NWBK60161331926819',
+                'senderBic' => 'BARCGB22',
+                'senderName' => 'BARCLAYS BANK PLC',
+                'senderIban' => 'GB29NWBK60161331926819',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 200_000.00, 'currency' => 'EUR',
@@ -1207,9 +1208,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-18: BTL envoie EUR 85K à Vinci Construction France (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'SOGEFRPP',
                 'receiverName' => 'VINCI CONSTRUCTION FRANCE',
                 'amount' => 85_000.00, 'currency' => 'EUR',
@@ -1220,9 +1221,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-19: Tripoli Port Authority — MT103 IN USD 130K ports (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'pending',
-                'senderBic'   => $ly[3]['bic'],
-                'senderName'  => $ly[3]['name'],
-                'senderIban'  => $ly[3]['iban'],
+                'senderBic' => $ly[3]['bic'],
+                'senderName' => $ly[3]['name'],
+                'senderIban' => $ly[3]['iban'],
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 130_000.00, 'currency' => 'USD',
@@ -1233,9 +1234,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-20: BTL envoie USD 165K à JPMorgan Chase pétrochimie (MEDIUM)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'CHASUS33',
                 'receiverName' => 'JPMORGAN CHASE BANK NEW YORK',
                 'amount' => 165_000.00, 'currency' => 'USD',
@@ -1248,9 +1249,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-21: Remittance salaire chercheur TN-France — IN EUR 2.8K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'DUPONT ET FILS INDUSTRIES SA',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'DUPONT ET FILS INDUSTRIES SA',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 2_800.00, 'currency' => 'EUR',
@@ -1261,9 +1262,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-22: Facture fournisseur allemand Siemens — OUT EUR 12.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'DEUTDEFF',
                 'receiverName' => 'SIEMENS AG MUNICH',
                 'amount' => 12_500.00, 'currency' => 'EUR',
@@ -1274,9 +1275,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-23: Virement Société Générale — IN EUR 8.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'SOGEFRPP',
-                'senderName'  => 'CREDIT AGRICOLE CORPORATE SA',
-                'senderIban'  => 'FR7630003000701234567890185',
+                'senderBic' => 'SOGEFRPP',
+                'senderName' => 'CREDIT AGRICOLE CORPORATE SA',
+                'senderIban' => 'FR7630003000701234567890185',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 8_500.00, 'currency' => 'EUR',
@@ -1287,9 +1288,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-24: Frais académiques UK — OUT GBP 15.2K Université Manchester (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'HSBCGB2L',
                 'receiverName' => 'UNIVERSITY OF MANCHESTER',
                 'amount' => 15_200.00, 'currency' => 'GBP',
@@ -1300,9 +1301,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-25: Export agroalimentaire TN — IN USD 22.5K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'CITIUS33',
-                'senderName'  => 'JOHNSON AND JOHNSON INC',
-                'senderIban'  => 'ACT67890123450002',
+                'senderBic' => 'CITIUS33',
+                'senderName' => 'JOHNSON AND JOHNSON INC',
+                'senderIban' => 'ACT67890123450002',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 22_500.00, 'currency' => 'USD',
@@ -1313,9 +1314,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-26: BTL envoie CHF 18.9K à UBS Switzerland IT Services (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'UBSWCHZH',
                 'receiverName' => 'UBS SWITZERLAND IT SERVICES SA',
                 'amount' => 18_900.00, 'currency' => 'CHF',
@@ -1326,9 +1327,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-27: Nostro BNP Paribas correspondant — MT202 IN EUR 145K (LOW)
             [
                 'type' => 'MT202', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'BNP PARIBAS',
-                'senderIban'  => 'FR7630006000011234567890143',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'BNP PARIBAS',
+                'senderIban' => 'FR7630006000011234567890143',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 145_000.00, 'currency' => 'EUR',
@@ -1339,9 +1340,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-28: BTL envoie EUR 9.8K à Compagnie Saint-Gobain (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'BNPAFRPP',
                 'receiverName' => 'COMPAGNIE SAINT GOBAIN',
                 'amount' => 9_800.00, 'currency' => 'EUR',
@@ -1352,9 +1353,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-29: Remittance famille TN-France — IN EUR 1.2K (LOW)
             [
                 'type' => 'MT103', 'direction' => 'IN', 'status' => 'processed',
-                'senderBic'   => 'BNPAFRPP',
-                'senderName'  => 'RENAULT FRANCE SA',
-                'senderIban'  => 'FR7630006000011234567890189',
+                'senderBic' => 'BNPAFRPP',
+                'senderName' => 'RENAULT FRANCE SA',
+                'senderIban' => 'FR7630006000011234567890189',
                 'receiverBic' => self::BTL_BIC,
                 'receiverName' => self::BTL_NAME,
                 'amount' => 1_200.00, 'currency' => 'EUR',
@@ -1365,9 +1366,9 @@ class MessageSwiftSeeder extends Seeder
             // INT-30: BTL envoie EUR 6.5K à AXA SA Paris formation (LOW)
             [
                 'type' => 'MT103', 'direction' => 'OUT', 'status' => 'processed',
-                'senderBic'   => self::BTL_BIC,
-                'senderName'  => self::BTL_NAME,
-                'senderIban'  => $this->btlIban(),
+                'senderBic' => self::BTL_BIC,
+                'senderName' => self::BTL_NAME,
+                'senderIban' => $this->btlIban(),
                 'receiverBic' => 'SOGEFRPP',
                 'receiverName' => 'AXA SA PARIS',
                 'amount' => 6_500.00, 'currency' => 'EUR',
