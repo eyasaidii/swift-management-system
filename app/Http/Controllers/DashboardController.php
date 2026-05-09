@@ -265,7 +265,9 @@ class DashboardController extends Controller
 
         // Appliquer filtre niveau si demandé
         $levelFilter = function ($q) use ($filterLevel) {
-            if ($filterLevel) $q->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', strtoupper($filterLevel));
+            if ($filterLevel) {
+                $q->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', strtoupper($filterLevel));
+            }
         };
 
         $anomalyByLevel = ($baseQuery)()->selectRaw('NIVEAU_RISQUE as niveau, COUNT(*) as total')

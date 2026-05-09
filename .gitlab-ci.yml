@@ -121,6 +121,7 @@ test:pest:
     - <<: *cache-composer
       policy: pull
   script:
+    - php artisan key:generate
     - php artisan config:clear
     - php artisan migrate --force --no-interaction
     - ./vendor/bin/pest --ci
