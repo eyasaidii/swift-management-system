@@ -60,7 +60,7 @@
     <div>
         <div class="ts mb-1"><i class="fas fa-circle me-1" style="color:#22c55e;font-size:.5rem;"></i>INTELLIGENCE ARTIFICIELLE — BTL BANK</div>
         <h1><i class="fas fa-brain me-2" style="color:#60a5fa;"></i>Tableau de Bord IA — Détection d'Anomalies SWIFT</h1>
-        <p class="mt-1">Analyse statistique sur <?php echo e($totalAnomalies); ?> transactions · Modèle v2.0 · 30 derniers jours</p>
+        <p class="mt-1">Analyse statistique sur <?php echo e($totalAnomalies); ?> transactions · Modèle v2.0 · <?php echo e($days); ?> derniers jours</p>
     </div>
     <div class="d-flex gap-2 align-items-center flex-wrap">
         <a href="<?php echo e(route('swift.anomalies.index', ['niveau_risque'=>'HIGH'])); ?>" class="back-btn">
@@ -73,6 +73,41 @@
 </div>
 
 
+<form method="GET" action="<?php echo e(route('international-admin.ia-analytics')); ?>" class="mb-4">
+<div style="background:#fff;border-radius:12px;padding:.85rem 1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <div style="font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;">
+        <i class="fas fa-filter me-1" style="color:#6366f1;"></i>Filtres BI
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <label style="font-size:.72rem;color:#94a3b8;white-space:nowrap;">Période</label>
+        <select name="days" onchange="this.form.submit()" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:7px;padding:.3rem .6rem;color:#334155;background:#f8fafc;">
+            <?php $__currentLoopData = [7=>'7 jours',30=>'30 jours',90=>'3 mois',180=>'6 mois',365=>'1 an']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d=>$label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <option value="<?php echo e($d); ?>" <?php echo e($days==$d?'selected':''); ?>><?php echo e($label); ?></option>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </select>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <label style="font-size:.72rem;color:#94a3b8;white-space:nowrap;">Niveau</label>
+        <select name="niveau" onchange="this.form.submit()" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:7px;padding:.3rem .6rem;color:#334155;background:#f8fafc;">
+            <option value="">Tous</option>
+            <?php $__currentLoopData = ['HIGH','MEDIUM','LOW']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $niv): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <option value="<?php echo e($niv); ?>" <?php echo e($filterLevel==$niv?'selected':''); ?>><?php echo e($niv); ?></option>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </select>
+    </div>
+    <?php if($filterLevel || $days != 30): ?>
+    <a href="<?php echo e(route('international-admin.ia-analytics')); ?>" style="font-size:.7rem;color:#6366f1;text-decoration:none;">
+        <i class="fas fa-times-circle me-1"></i>Réinitialiser
+    </a>
+    <?php endif; ?>
+    <div class="ms-auto" style="font-size:.68rem;color:#94a3b8;">
+        <i class="fas fa-clock me-1"></i>Du <?php echo e(now()->subDays($days)->format('d/m/Y')); ?> au <?php echo e(now()->format('d/m/Y')); ?>
+
+    </div>
+</div>
+</form>
+
+
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-2">
         <div class="kpi-card kpi-total shadow-sm h-100">
@@ -81,6 +116,11 @@
                 <div>
                     <div class="kpi-val"><?php echo e($totalAnomalies); ?></div>
                     <div class="kpi-label">Total analysées</div>
+                    <?php if($trendTotal !== null): ?>
+                    <div class="kpi-trend" style="color:<?php echo e($trendTotal > 0 ? '#fca5a5' : '#86efac'); ?>;">
+                        <i class="fas fa-arrow-<?php echo e($trendTotal > 0 ? 'up' : 'down'); ?> me-1"></i><?php echo e(abs($trendTotal)); ?>% vs période préc.
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <i class="fas fa-layer-group kpi-bg-icon"></i>
@@ -94,6 +134,11 @@
                     <div class="kpi-val"><?php echo e($highCount); ?></div>
                     <div class="kpi-label">Risque HIGH</div>
                     <div class="kpi-trend opacity-75">≥ 60/100</div>
+                    <?php if($trendHigh !== null): ?>
+                    <div class="kpi-trend" style="color:<?php echo e($trendHigh > 0 ? '#fca5a5' : '#86efac'); ?>;font-size:.65rem;">
+                        <i class="fas fa-arrow-<?php echo e($trendHigh > 0 ? 'up' : 'down'); ?> me-1"></i><?php echo e(abs($trendHigh)); ?>%
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <i class="fas fa-radiation kpi-bg-icon"></i>
@@ -133,6 +178,11 @@
                     <div class="kpi-val"><?php echo e($avgScore); ?></div>
                     <div class="kpi-label">Score moyen IA</div>
                     <div class="kpi-trend opacity-75">sur 100</div>
+                    <?php if($trendAvg !== null): ?>
+                    <div class="kpi-trend" style="color:<?php echo e($trendAvg > 0 ? '#fca5a5' : '#86efac'); ?>;font-size:.65rem;">
+                        <i class="fas fa-arrow-<?php echo e($trendAvg > 0 ? 'up' : 'down'); ?> me-1"></i><?php echo e($trendAvg > 0 ? '+' : ''); ?><?php echo e($trendAvg); ?> pts
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <i class="fas fa-tachometer-alt kpi-bg-icon"></i>
@@ -320,6 +370,26 @@
 </div>
 
 
+<?php if(!empty($topRules)): ?>
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="chart-card shadow-sm">
+            <div class="chart-header">
+                <i class="fas fa-balance-scale" style="color:#8b5cf6;"></i>
+                <div>
+                    <div class="chart-title">Règles Métier les Plus Déclenchées</div>
+                    <div class="chart-subtitle">Analyse BI — fréquence des règles sur <?php echo e($days); ?> jours</div>
+                </div>
+            </div>
+            <div class="chart-body">
+                <canvas id="chartTopRules" style="max-height:180px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+
 <?php if($topHighAnomalies->count() > 0): ?>
 <div class="row g-4 mb-4">
     <div class="col-12">
@@ -409,6 +479,10 @@
                style="background:#f1f5f9;color:#475569;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;text-decoration:none;">
                 <i class="fas fa-list me-1"></i>Toutes (<?php echo e($totalAnomalies); ?>)
             </a>
+            <button onclick="window.print()"
+               style="background:#6366f1;color:#fff;border:none;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;cursor:pointer;">
+                <i class="fas fa-print me-1"></i>Imprimer / PDF
+            </button>
         </div>
     </div>
 </div>
@@ -587,6 +661,38 @@ new Chart(document.getElementById('chartScoreDist'), {
         }
     }
 });
+
+// Top règles métier déclenchées (BI)
+<?php if(!empty($topRules)): ?>
+new Chart(document.getElementById('chartTopRules'), {
+    type: 'bar',
+    data: {
+        labels: <?php echo json_encode(array_keys($topRules)); ?>,
+        datasets: [{
+            label: 'Nombre de déclenchements',
+            data: <?php echo json_encode(array_values($topRules)); ?>,
+            backgroundColor: [
+                'rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(234,179,8,0.8)',
+                'rgba(168,85,247,0.8)','rgba(59,130,246,0.8)','rgba(16,185,129,0.8)',
+                'rgba(249,115,22,0.8)','rgba(100,116,139,0.8)'
+            ],
+            borderRadius: 6,
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} déclenchements` } }
+        },
+        scales: {
+            x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+    }
+});
+<?php endif; ?>
 </script>
 <?php $__env->stopPush(); ?>
 

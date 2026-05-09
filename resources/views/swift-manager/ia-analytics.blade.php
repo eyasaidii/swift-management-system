@@ -60,7 +60,7 @@
     <div>
         <div class="ts mb-1"><i class="fas fa-circle me-1" style="color:#22c55e;font-size:.5rem;"></i>INTELLIGENCE ARTIFICIELLE — BTL BANK</div>
         <h1><i class="fas fa-brain me-2" style="color:#60a5fa;"></i>Tableau de Bord IA — Détection d'Anomalies SWIFT</h1>
-        <p class="mt-1">Analyse statistique sur {{ $totalAnomalies }} transactions · Modèle v2.0 · 30 derniers jours</p>
+        <p class="mt-1">Analyse statistique sur {{ $totalAnomalies }} transactions · Modèle v2.0 · {{ $days }} derniers jours</p>
     </div>
     <div class="d-flex gap-2 align-items-center flex-wrap">
         <a href="{{ route('swift.anomalies.index', ['niveau_risque'=>'HIGH']) }}" class="back-btn">
@@ -72,6 +72,40 @@
     </div>
 </div>
 
+{{-- BARRE DE FILTRES BI --}}
+<form method="GET" action="{{ route('international-admin.ia-analytics') }}" class="mb-4">
+<div style="background:#fff;border-radius:12px;padding:.85rem 1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <div style="font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;">
+        <i class="fas fa-filter me-1" style="color:#6366f1;"></i>Filtres BI
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <label style="font-size:.72rem;color:#94a3b8;white-space:nowrap;">Période</label>
+        <select name="days" onchange="this.form.submit()" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:7px;padding:.3rem .6rem;color:#334155;background:#f8fafc;">
+            @foreach([7=>'7 jours',30=>'30 jours',90=>'3 mois',180=>'6 mois',365=>'1 an'] as $d=>$label)
+                <option value="{{ $d }}" {{ $days==$d?'selected':'' }}>{{ $label }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <label style="font-size:.72rem;color:#94a3b8;white-space:nowrap;">Niveau</label>
+        <select name="niveau" onchange="this.form.submit()" style="font-size:.75rem;border:1px solid #e2e8f0;border-radius:7px;padding:.3rem .6rem;color:#334155;background:#f8fafc;">
+            <option value="">Tous</option>
+            @foreach(['HIGH','MEDIUM','LOW'] as $niv)
+                <option value="{{ $niv }}" {{ $filterLevel==$niv?'selected':'' }}>{{ $niv }}</option>
+            @endforeach
+        </select>
+    </div>
+    @if($filterLevel || $days != 30)
+    <a href="{{ route('international-admin.ia-analytics') }}" style="font-size:.7rem;color:#6366f1;text-decoration:none;">
+        <i class="fas fa-times-circle me-1"></i>Réinitialiser
+    </a>
+    @endif
+    <div class="ms-auto" style="font-size:.68rem;color:#94a3b8;">
+        <i class="fas fa-clock me-1"></i>Du {{ now()->subDays($days)->format('d/m/Y') }} au {{ now()->format('d/m/Y') }}
+    </div>
+</div>
+</form>
+
 {{-- KPI ROW --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-2">
@@ -81,6 +115,11 @@
                 <div>
                     <div class="kpi-val">{{ $totalAnomalies }}</div>
                     <div class="kpi-label">Total analysées</div>
+                    @if($trendTotal !== null)
+                    <div class="kpi-trend" style="color:{{ $trendTotal > 0 ? '#fca5a5' : '#86efac' }};">
+                        <i class="fas fa-arrow-{{ $trendTotal > 0 ? 'up' : 'down' }} me-1"></i>{{ abs($trendTotal) }}% vs période préc.
+                    </div>
+                    @endif
                 </div>
             </div>
             <i class="fas fa-layer-group kpi-bg-icon"></i>
@@ -94,6 +133,11 @@
                     <div class="kpi-val">{{ $highCount }}</div>
                     <div class="kpi-label">Risque HIGH</div>
                     <div class="kpi-trend opacity-75">≥ 60/100</div>
+                    @if($trendHigh !== null)
+                    <div class="kpi-trend" style="color:{{ $trendHigh > 0 ? '#fca5a5' : '#86efac' }};font-size:.65rem;">
+                        <i class="fas fa-arrow-{{ $trendHigh > 0 ? 'up' : 'down' }} me-1"></i>{{ abs($trendHigh) }}%
+                    </div>
+                    @endif
                 </div>
             </div>
             <i class="fas fa-radiation kpi-bg-icon"></i>
@@ -133,6 +177,11 @@
                     <div class="kpi-val">{{ $avgScore }}</div>
                     <div class="kpi-label">Score moyen IA</div>
                     <div class="kpi-trend opacity-75">sur 100</div>
+                    @if($trendAvg !== null)
+                    <div class="kpi-trend" style="color:{{ $trendAvg > 0 ? '#fca5a5' : '#86efac' }};font-size:.65rem;">
+                        <i class="fas fa-arrow-{{ $trendAvg > 0 ? 'up' : 'down' }} me-1"></i>{{ $trendAvg > 0 ? '+' : '' }}{{ $trendAvg }} pts
+                    </div>
+                    @endif
                 </div>
             </div>
             <i class="fas fa-tachometer-alt kpi-bg-icon"></i>
@@ -319,7 +368,27 @@
     </div>
 </div>
 
-{{-- ROW 4 : Top anomalies HIGH --}}
+{{-- ROW 4 : Top règles BI --}}
+@if(!empty($topRules))
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="chart-card shadow-sm">
+            <div class="chart-header">
+                <i class="fas fa-balance-scale" style="color:#8b5cf6;"></i>
+                <div>
+                    <div class="chart-title">Règles Métier les Plus Déclenchées</div>
+                    <div class="chart-subtitle">Analyse BI — fréquence des règles sur {{ $days }} jours</div>
+                </div>
+            </div>
+            <div class="chart-body">
+                <canvas id="chartTopRules" style="max-height:180px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- ROW 5 : Top anomalies HIGH --}}
 @if($topHighAnomalies->count() > 0)
 <div class="row g-4 mb-4">
     <div class="col-12">
@@ -408,6 +477,10 @@
                style="background:#f1f5f9;color:#475569;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;text-decoration:none;">
                 <i class="fas fa-list me-1"></i>Toutes ({{ $totalAnomalies }})
             </a>
+            <button onclick="window.print()"
+               style="background:#6366f1;color:#fff;border:none;border-radius:8px;padding:.4rem 1rem;font-size:.75rem;cursor:pointer;">
+                <i class="fas fa-print me-1"></i>Imprimer / PDF
+            </button>
         </div>
     </div>
 </div>
@@ -585,5 +658,37 @@ new Chart(document.getElementById('chartScoreDist'), {
         }
     }
 });
+
+// Top règles métier déclenchées (BI)
+@if(!empty($topRules))
+new Chart(document.getElementById('chartTopRules'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode(array_keys($topRules)) !!},
+        datasets: [{
+            label: 'Nombre de déclenchements',
+            data: {!! json_encode(array_values($topRules)) !!},
+            backgroundColor: [
+                'rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(234,179,8,0.8)',
+                'rgba(168,85,247,0.8)','rgba(59,130,246,0.8)','rgba(16,185,129,0.8)',
+                'rgba(249,115,22,0.8)','rgba(100,116,139,0.8)'
+            ],
+            borderRadius: 6,
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} déclenchements` } }
+        },
+        scales: {
+            x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+    }
+});
+@endif
 </script>
 @endpush

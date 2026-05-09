@@ -26,7 +26,7 @@
             --accent:     #34d399;
             --gold:       #f59e0b;
             --sidebar-w:  290px;
-            --header-h:   60px;
+            --header-h:   64px;
             --text-primary:   rgba(255,255,255,0.95);
             --text-secondary: rgba(255,255,255,0.55);
             --text-muted:     rgba(255,255,255,0.30);
@@ -34,9 +34,13 @@
             --hover-bg:       rgba(255,255,255,0.06);
             --active-bg:      rgba(52,211,153,0.12);
         }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: #eef2ee; color: #111; }
 
+        /* ══════════════════════════════════════════
+           SIDEBAR
+        ══════════════════════════════════════════ */
         .sidebar {
             position: fixed; inset: 0 auto 0 0; width: var(--sidebar-w);
             background: linear-gradient(180deg, var(--green-800) 0%, var(--green-900) 100%);
@@ -87,6 +91,7 @@
         }
         .sb-body::-webkit-scrollbar { width: 3px; }
         .sb-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+
         .sec-btn {
             display: flex; align-items: center; justify-content: space-between;
             width: calc(100% - 1.6rem); margin: .5rem .8rem 0; padding: .65rem 1rem;
@@ -112,6 +117,7 @@
         .sec-btn .sec-chevron { color: var(--text-muted); font-size: .65rem; transition: transform .25s ease; }
         .sec-btn[aria-expanded="true"] .sec-chevron { transform: rotate(180deg); }
         .sec-btn.is-disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+
         .cat-btn {
             display: flex; align-items: center; justify-content: space-between;
             width: calc(100% - 2rem); margin: .2rem 1rem 0; padding: .5rem .85rem;
@@ -134,6 +140,7 @@
         .cat-btn .cat-count { font-size: .62rem; font-weight: 700; padding: .1rem .42rem; border-radius: 20px; line-height: 1.4; }
         .cat-btn .cat-chevron { color: var(--text-muted); font-size: .55rem; transition: transform .2s ease, color .15s; }
         .cat-btn[aria-expanded="true"] .cat-chevron { transform: rotate(90deg); color: var(--accent); }
+
         .type-wrap { padding: .1rem 1rem 0 2.3rem; }
         .type-link {
             display: flex; align-items: center; justify-content: space-between;
@@ -161,6 +168,7 @@
             min-width: 22px; text-align: center; transition: background .15s, color .15s;
         }
         .type-link.active .type-badge { background: rgba(52,211,153,.2); color: var(--accent); }
+
         .sb-divider { height: 1px; background: var(--border); margin: .8rem 1.25rem; }
         .sb-section-label {
             font-family: 'Sora', sans-serif; font-size: .58rem; font-weight: 700;
@@ -182,6 +190,7 @@
         }
         .util-link:hover .util-icon  { background: rgba(255,255,255,.1); color: var(--text-primary); }
         .util-link.active .util-icon { background: rgba(52,211,153,.15); color: var(--accent); }
+
         .sb-footer {
             flex-shrink: 0; padding: .75rem 1.25rem; border-top: 1px solid var(--border);
             background: rgba(0,0,0,.15);
@@ -193,22 +202,38 @@
         }
         .logout-btn:hover { background: rgba(220,38,38,.12); color: #fca5a5; }
         .logout-btn i { font-size: .82rem; }
+
+        /* ══════════════════════════════════════════
+           TOP NAVBAR — fond blanc
+        ══════════════════════════════════════════ */
         .top-navbar {
-            position: sticky; top: 0; z-index: 100; background: white;
-            border-bottom: 1px solid #e5e7eb; height: var(--header-h);
+            position: sticky; top: 0; z-index: 100;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            height: var(--header-h);
             display: flex; align-items: center; padding: 0 2rem;
-            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+            box-shadow: 0 1px 8px rgba(0,0,0,.06);
         }
-        .tn-sup    { font-size: .62rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #9ca3af; }
-        .tn-title  { font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 700; color: #111827; line-height: 1.1; }
-        .tn-user   { display: flex; align-items: center; gap: .7rem; }
-        .tn-uname  { font-size: .84rem; font-weight: 600; color: #111827; text-align: right; }
-        .tn-urole  { font-size: .68rem; color: #6b7280; text-align: right; }
-        .tn-avatar {
-            width: 34px; height: 34px; background: var(--green-700); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: .82rem; font-weight: 700; flex-shrink: 0;
+
+        /* Point vert animé En ligne */
+        .online-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e; flex-shrink: 0;
+            position: relative; display: inline-block;
         }
+        .online-dot::after {
+            content: ''; position: absolute; inset: -3px; border-radius: 50%;
+            background: #22c55e; opacity: .35;
+            animation: onlinePulse 1.8s ease-in-out infinite;
+        }
+        @keyframes onlinePulse {
+            0%, 100% { transform: scale(1); opacity: .35; }
+            50%       { transform: scale(1.9); opacity: 0; }
+        }
+
+        /* ══════════════════════════════════════════
+           MAIN WRAPPER
+        ══════════════════════════════════════════ */
         .main-wrapper {
             margin-left: var(--sidebar-w); min-height: 100vh;
             display: flex; flex-direction: column; transition: margin-left .3s ease;
@@ -216,13 +241,13 @@
         .main-content { flex: 1; padding: 1.75rem 2rem; }
         .card { border: none; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); }
 
-        /* ── Tableaux SWIFT : colonnes compactes ── */
+        /* Tableaux SWIFT : colonnes compactes */
         .table-responsive .table { table-layout: fixed; width: 100%; }
         .table-responsive .table th,
         .table-responsive .table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; padding: .5rem .6rem; font-size: .85rem; }
         .table-responsive .table td.wrap-cell { white-space: normal; }
 
-        /* ── Fix: Tailwind .collapse { visibility: collapse } écrase Bootstrap ── */
+        /* Fix : Tailwind .collapse { visibility: collapse } écrase Bootstrap */
         .collapse.show { visibility: visible !important; }
         .collapsing { visibility: visible !important; }
 
@@ -249,7 +274,9 @@
     $initials = $user ? strtoupper(substr($user->name, 0, 1)) : 'U';
 ?>
 
+
 <nav class="sidebar" id="sidebar">
+
     <div class="sb-brand">
         <div class="sb-brand-logo">
             <img src="<?php echo e(asset('images/logo-btl.png')); ?>" alt="BTL"
@@ -271,6 +298,8 @@
     </div>
 
     <div class="sb-body">
+
+        
         <?php if($canViewReceived): ?>
             <a class="sec-btn" data-bs-toggle="collapse" href="#collapseRecu"
                aria-expanded="<?php echo e(request('direction') === 'RECU' ? 'true' : 'false'); ?>">
@@ -333,6 +362,7 @@
 
         <div class="sb-divider"></div>
 
+        
         <?php if($canViewEmitted): ?>
             <a class="sec-btn" data-bs-toggle="collapse" href="#collapseEmis"
                aria-expanded="<?php echo e(request('direction') === 'EMIS' ? 'true' : 'false'); ?>">
@@ -393,6 +423,7 @@
             </div>
         <?php endif; ?>
 
+        
         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->any(['import', 'export'], App\Models\MessageSwift::class)): ?>
             <div class="sb-divider"></div>
             <span class="sb-section-label">Outils</span>
@@ -414,6 +445,7 @@
             </a>
         <?php endif; ?>
 
+        
         <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'swift-manager|super-admin')): ?>
             <div class="sb-divider"></div>
             <span class="sb-section-label">Intelligence Artificielle</span>
@@ -429,6 +461,7 @@
             </a>
         <?php endif; ?>
 
+        
         <?php if($canViewAdmin): ?>
             <div class="sb-divider"></div>
             <span class="sb-section-label">Administration</span>
@@ -446,6 +479,7 @@
                 Permissions
             </a>
         <?php endif; ?>
+
     </div>
 
     <div class="sb-footer">
@@ -457,107 +491,217 @@
             </button>
         </form>
     </div>
+
 </nav>
 
+
 <div class="main-wrapper">
+
+    
     <header class="top-navbar">
+
+        
         <button class="btn btn-sm me-3 d-lg-none"
                 style="background:none;border:1px solid #e5e7eb;color:#374151;"
                 onclick="document.getElementById('sidebar').classList.toggle('show')">
             <i class="fas fa-bars"></i>
         </button>
-        <div style="flex:1;">
-            <div class="tn-sup">Operations Dashboard</div>
-            <div class="tn-title"><?php echo $__env->yieldContent('page-title', 'SWIFT Messages'); ?></div>
-        </div>
-        <div class="tn-user">
-            <div>
-                <div class="tn-uname"><?php echo e(auth()->user()->name); ?></div>
-                <div class="tn-urole"><?php echo e($primaryRole ?? 'Utilisateur'); ?></div>
+
+        
+        <div style="display:flex;align-items:center;gap:12px;flex:1;">
+            <div style="width:40px;height:40px;background:#f0fdf4;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;
+                        border:1.5px solid #bbf7d0;flex-shrink:0;">
+                <i class="fas fa-globe" style="color:#16a34a;font-size:.92rem;"></i>
             </div>
-            <div class="tn-avatar"><?php echo e($initials); ?></div>
+            <div>
+                <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;
+                            color:#111827;line-height:1.2;">
+                    <?php echo $__env->yieldContent('page-title', 'SWIFT Messages'); ?>
+                </div>
+                <div id="hdr-datetime" style="font-size:.71rem;color:#9ca3af;margin-top:2px;"></div>
+            </div>
+        </div>
+
+        
+        <div style="display:flex;align-items:center;gap:14px;">
+
+            
+            <button id="darkToggleBtn"
+                    style="width:38px;height:38px;background:#f9fafb;border:1px solid #e5e7eb;
+                           border-radius:50%;display:flex;align-items:center;justify-content:center;
+                           cursor:pointer;flex-shrink:0;transition:background .2s,border-color .2s;"
+                    title="Basculer mode sombre / clair">
+                <i class="fas fa-moon" id="darkToggleIcon" style="color:#6b7280;font-size:.78rem;"></i>
+            </button>
+
+            
+            <div>
+                
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+                    <span style="font-size:.84rem;font-weight:700;color:#111827;white-space:nowrap;">
+                        <?php echo e(auth()->user()->name); ?>
+
+                    </span>
+                    <span style="background:#dc2626;color:#fff;font-size:.58rem;font-weight:800;
+                                 letter-spacing:.07em;text-transform:uppercase;
+                                 padding:2px 9px;border-radius:20px;white-space:nowrap;">
+                        <?php echo e($primaryRole ?? 'Utilisateur'); ?>
+
+                    </span>
+                </div>
+                
+                <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:4px;">
+                    <span style="display:flex;align-items:center;gap:5px;font-size:.68rem;color:#6b7280;">
+                        <span class="online-dot"></span>En ligne
+                    </span>
+                    <span style="color:#d1d5db;font-size:.7rem;">·</span>
+                    <span style="font-size:.68rem;color:#9ca3af;">Tunisian Libyan Bank</span>
+                </div>
+            </div>
+
+            
+            <div style="position:relative;flex-shrink:0;">
+                <div style="width:38px;height:38px;background:#0a4d2b;border:2.5px solid #86efac;
+                            border-radius:50%;display:flex;align-items:center;justify-content:center;
+                            color:#fff;font-weight:700;font-size:.88rem;">
+                    <?php echo e($initials); ?>
+
+                </div>
+                <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;
+                             background:#22c55e;border-radius:50%;border:2px solid #fff;"></span>
+            </div>
+
         </div>
     </header>
 
     <main class="main-content">
         <?php echo $__env->yieldContent('content'); ?>
     </main>
+
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
 <script>
-    
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
             new bootstrap.Tooltip(el, { html: false, trigger: 'hover' });
         });
     });
 </script>
+
+
 <script>
-        // Global raw viewer modal (for MT / MX) — available on all pages
-        document.addEventListener('DOMContentLoaded', function () {
-                if (document.getElementById('modalRawFile') == null) {
-                        const rawModalEl = document.createElement('div');
-                        rawModalEl.innerHTML = `
-                        <div class="modal fade" id="modalRawFile" tabindex="-1">
-                            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="modalRawTitle">SWIFT Message</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body" style="padding:0;">
-                                        <iframe id="modalRawIframe" src="about:blank" style="width:100%; height:65vh; border:0; min-height:300px;"></iframe>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                        <button type="button" class="btn btn-primary" id="modalRawPrint">Imprimer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                        document.body.appendChild(rawModalEl);
-                }
+(function () {
+    const days   = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    const months = ['janvier','février','mars','avril','mai','juin',
+                    'juillet','août','septembre','octobre','novembre','décembre'];
 
-                const rawModalElNode = document.getElementById('modalRawFile');
-                const rawModal = new bootstrap.Modal(rawModalElNode);
+    function tick() {
+        const n   = new Date();
+        const h   = String(n.getHours()).padStart(2, '0');
+        const m   = String(n.getMinutes()).padStart(2, '0');
+        const txt = days[n.getDay()] + ' ' + n.getDate() + ' ' + months[n.getMonth()] +
+                    ' ' + n.getFullYear() + ' à ' + h + ':' + m;
+        const el  = document.getElementById('hdr-datetime');
+        if (el) el.textContent = txt;
+    }
+    tick();
+    setInterval(tick, 30000);
 
-                function openRawFile(url, title) {
-                    const iframe = document.getElementById('modalRawIframe');
-                    const titleEl = document.getElementById('modalRawTitle');
-                    if (!iframe || !titleEl) return;
-                    titleEl.textContent = title || 'SWIFT Message';
-                    iframe.src = url;
-                    rawModal.show();
-                }
-
-                document.addEventListener('click', function (e) {
-                        const el = e.target.closest && e.target.closest('.open-raw-file');
-                        if (!el) return;
-                        e.preventDefault();
-                        const url = el.getAttribute('data-url');
-                        const title = el.getAttribute('data-title') || el.textContent.trim();
-                        if (url) openRawFile(url, title);
-                });
-
-                document.getElementById('modalRawPrint')?.addEventListener('click', function () {
-                    const container = document.getElementById('modalRawContainer');
-                    if (!container) return;
-                    // expand all details for printing
-                    container.querySelectorAll('details').forEach(d => d.open = true);
-                    // open a new window with the container content and minimal styles
-                    const w = window.open('', '_blank');
-                    const styles = document.getElementById('xml-tree-styles')?.outerHTML || '';
-                    const headStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(l=>l.outerHTML).join('\n');
-                    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Imprimer SWIFT</title>'+headStyles+styles+'<style>body{font-family:monospace;padding:18px}</style></head><body>');
-                    w.document.write(container.innerHTML);
-                    w.document.write('</body></html>');
-                    w.document.close();
-                    w.focus();
-                    setTimeout(()=>{ try { w.print(); w.close(); } catch (err) { console.error(err); } }, 300);
-                });
+    /* Toggle dark / light */
+    var btn  = document.getElementById('darkToggleBtn');
+    var icon = document.getElementById('darkToggleIcon');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            var dark = document.body.classList.toggle('dark-mode');
+            if (dark) {
+                icon.classList.remove('fa-moon'); icon.classList.add('fa-sun');
+                btn.style.background  = '#1f2937';
+                btn.style.borderColor = '#374151';
+                icon.style.color      = '#facc15';
+            } else {
+                icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
+                btn.style.background  = '#f9fafb';
+                btn.style.borderColor = '#e5e7eb';
+                icon.style.color      = '#6b7280';
+            }
         });
+    }
+})();
 </script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('modalRawFile') == null) {
+            var wrap = document.createElement('div');
+            wrap.innerHTML = `
+            <div class="modal fade" id="modalRawFile" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalRawTitle">SWIFT Message</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" style="padding:0;">
+                            <iframe id="modalRawIframe" src="about:blank"
+                                    style="width:100%;height:65vh;border:0;min-height:300px;"></iframe>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <button type="button" class="btn btn-primary" id="modalRawPrint">Imprimer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.appendChild(wrap);
+        }
+
+        var rawModal = new bootstrap.Modal(document.getElementById('modalRawFile'));
+
+        function openRawFile(url, title) {
+            var iframe  = document.getElementById('modalRawIframe');
+            var titleEl = document.getElementById('modalRawTitle');
+            if (!iframe || !titleEl) return;
+            titleEl.textContent = title || 'SWIFT Message';
+            iframe.src = url;
+            rawModal.show();
+        }
+
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest && e.target.closest('.open-raw-file');
+            if (!el) return;
+            e.preventDefault();
+            var url   = el.getAttribute('data-url');
+            var title = el.getAttribute('data-title') || el.textContent.trim();
+            if (url) openRawFile(url, title);
+        });
+
+        var printBtn = document.getElementById('modalRawPrint');
+        if (printBtn) {
+            printBtn.addEventListener('click', function () {
+                var container = document.getElementById('modalRawContainer');
+                if (!container) return;
+                container.querySelectorAll('details').forEach(function(d){ d.open = true; });
+                var w = window.open('', '_blank');
+                var headStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                                      .map(function(l){ return l.outerHTML; }).join('\n');
+                w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Imprimer SWIFT</title>' +
+                    headStyles + '<style>body{font-family:monospace;padding:18px}</style></head><body>');
+                w.document.write(container.innerHTML);
+                w.document.write('</body></html>');
+                w.document.close();
+                w.focus();
+                setTimeout(function(){ try{ w.print(); w.close(); }catch(err){ console.error(err); } }, 300);
+            });
+        }
+    });
+</script>
+
 <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html><?php /**PATH /var/www/resources/views/layouts/app.blade.php ENDPATH**/ ?>

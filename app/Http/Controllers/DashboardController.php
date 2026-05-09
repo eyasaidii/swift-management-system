@@ -249,51 +249,77 @@ class DashboardController extends Controller
     // IA ANALYTICS — Graphiques BI (page dédiée)
     // =========================================================
 
-    public function iaAnalytics()
+    public function iaAnalytics(\Illuminate\Http\Request $request)
     {
         $sidebarData = $this->getSidebarData();
 
-        $anomalyByLevel = \App\Models\AnomalySwift::selectRaw('NIVEAU_RISQUE as niveau, COUNT(*) as total')
+        // ── Filtres BI : période, niveau de risque, type de message
+        $days        = (int) $request->get('days', 30);
+        $days        = in_array($days, [7, 30, 90, 180, 365]) ? $days : 30;
+        $filterLevel = $request->get('niveau');   // HIGH / MEDIUM / LOW / null
+        $filterType  = $request->get('type_msg'); // MT103 / PACS.008 / etc.
+        $dateFrom    = now()->subDays($days);
+
+        // ── Base query filtrée par période
+        $baseQuery = fn () => \App\Models\AnomalySwift::where('ANOMALIES_SWIFT.CREATED_AT', '>=', $dateFrom);
+
+        // Appliquer filtre niveau si demandé
+        $levelFilter = function ($q) use ($filterLevel) {
+            if ($filterLevel) $q->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', strtoupper($filterLevel));
+        };
+
+        $anomalyByLevel = ($baseQuery)()->selectRaw('NIVEAU_RISQUE as niveau, COUNT(*) as total')
             ->groupBy('NIVEAU_RISQUE')
-            ->get()
-            ->pluck('total', 'niveau')
-            ->toArray();
+            ->get()->pluck('total', 'niveau')->toArray();
 
         $anomalyByType = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
+            ->where('ANOMALIES_SWIFT.CREATED_AT', '>=', $dateFrom)
             ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', '!=', 'LOW')
             ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
             ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
-            ->get()
-            ->pluck('total', 'type_msg')
-            ->toArray();
+            ->get()->pluck('total', 'type_msg')->toArray();
 
+        // Timeline avec période variable
         $scoreTimeline = \App\Models\AnomalySwift::selectRaw('TRUNC(CREATED_AT) as jour, ROUND(AVG(SCORE), 1) as avg_score')
-            ->where('CREATED_AT', '>=', now()->subDays(30))
+            ->where('CREATED_AT', '>=', $dateFrom)
             ->groupByRaw('TRUNC(CREATED_AT)')
             ->orderByRaw('TRUNC(CREATED_AT)')
             ->get()
             ->map(fn ($r) => ['jour' => \Carbon\Carbon::parse($r->jour)->format('d/m'), 'avg_score' => (float) $r->avg_score])
             ->toArray();
 
-        $totalAnomalies = \App\Models\AnomalySwift::count();
-        $highCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'HIGH')->count();
-        $mediumCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'MEDIUM')->count();
-        $lowCount = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'LOW')->count();
-        $avgScore = round((float) \App\Models\AnomalySwift::avg('SCORE'), 1);
+        // ── KPIs sur la période filtrée
+        $totalAnomalies = ($baseQuery)()->count();
+        $highCount      = ($baseQuery)()->where('NIVEAU_RISQUE', 'HIGH')->count();
+        $mediumCount    = ($baseQuery)()->where('NIVEAU_RISQUE', 'MEDIUM')->count();
+        $lowCount       = ($baseQuery)()->where('NIVEAU_RISQUE', 'LOW')->count();
+        $avgScore       = round((float) ($baseQuery)()->avg('SCORE'), 1);
 
-        // Statut vérification par niveau
-        $verifiedCount = \App\Models\AnomalySwift::whereNotNull('verifie_par')->count();
-        $rejectedCount = \App\Models\AnomalySwift::whereNotNull('rejetee_par')->count();
-        $pendingCount = \App\Models\AnomalySwift::whereNull('verifie_par')->whereNull('rejetee_par')->count();
+        // ── KPI tendance : comparaison avec la période précédente (même durée)
+        $prevFrom  = now()->subDays($days * 2);
+        $prevTo    = now()->subDays($days);
+        $prevTotal = \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->count();
+        $prevHigh  = \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->where('NIVEAU_RISQUE', 'HIGH')->count();
+        $prevAvg   = round((float) \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->avg('SCORE'), 1);
+        $trendTotal = $prevTotal > 0 ? round((($totalAnomalies - $prevTotal) / $prevTotal) * 100, 1) : null;
+        $trendHigh  = $prevHigh  > 0 ? round((($highCount  - $prevHigh)  / $prevHigh)  * 100, 1) : null;
+        $trendAvg   = $prevAvg   > 0 ? round($avgScore - $prevAvg, 1) : null;
 
-        // Anomalies MEDIUM+HIGH par type, séparées
+        // Statut vérification
+        $verifiedCount = ($baseQuery)()->whereNotNull('verifie_par')->count();
+        $rejectedCount = ($baseQuery)()->whereNotNull('rejetee_par')->count();
+        $pendingCount  = ($baseQuery)()->whereNull('verifie_par')->whereNull('rejetee_par')->count();
+
+        // Anomalies MEDIUM+HIGH par type séparées
         $anomalyByTypeMedium = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
+            ->where('ANOMALIES_SWIFT.CREATED_AT', '>=', $dateFrom)
             ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', 'MEDIUM')
             ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
             ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
             ->get()->pluck('total', 'type_msg')->toArray();
 
         $anomalyByTypeHigh = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
+            ->where('ANOMALIES_SWIFT.CREATED_AT', '>=', $dateFrom)
             ->where('ANOMALIES_SWIFT.NIVEAU_RISQUE', 'HIGH')
             ->selectRaw('MESSAGES_SWIFT.TYPE_MESSAGE as type_msg, COUNT(*) as total')
             ->groupBy('MESSAGES_SWIFT.TYPE_MESSAGE')
@@ -302,23 +328,33 @@ class DashboardController extends Controller
         $allTypes = array_unique(array_merge(array_keys($anomalyByTypeMedium), array_keys($anomalyByTypeHigh)));
         sort($allTypes);
 
+        // ── Top règles déclenchées (BI : quelles règles sont les plus fréquentes ?)
+        $topRules = \App\Models\AnomalySwift::where('CREATED_AT', '>=', $dateFrom)
+            ->whereNotNull('RAISONS')
+            ->get(['RAISONS'])
+            ->flatMap(fn ($a) => is_array($a->raisons) ? $a->raisons : [])
+            ->countBy()
+            ->sortDesc()
+            ->take(8)
+            ->toArray();
+
         // Taux de résolution
         $resolutionRate = $totalAnomalies > 0
             ? round(($verifiedCount + $rejectedCount) / $totalAnomalies * 100, 1)
             : 0;
 
-        // Top 5 anomalies HIGH les plus récentes non traitées
+        // Top 5 HIGH non traitées
         $topHighAnomalies = \App\Models\AnomalySwift::where('NIVEAU_RISQUE', 'HIGH')
             ->whereNull('verifie_par')->whereNull('rejetee_par')
             ->with('message')->orderByDesc('SCORE')->limit(5)->get();
 
-        // Distribution des scores par tranches
+        // Distribution scores
         $scoreRanges = [
-            '0–19' => \App\Models\AnomalySwift::whereBetween('SCORE', [0, 19.99])->count(),
-            '20–39' => \App\Models\AnomalySwift::whereBetween('SCORE', [20, 39.99])->count(),
-            '40–59' => \App\Models\AnomalySwift::whereBetween('SCORE', [40, 59.99])->count(),
-            '60–79' => \App\Models\AnomalySwift::whereBetween('SCORE', [60, 79.99])->count(),
-            '80–100' => \App\Models\AnomalySwift::whereBetween('SCORE', [80, 100])->count(),
+            '0–19'   => ($baseQuery)()->whereBetween('SCORE', [0, 19.99])->count(),
+            '20–39'  => ($baseQuery)()->whereBetween('SCORE', [20, 39.99])->count(),
+            '40–59'  => ($baseQuery)()->whereBetween('SCORE', [40, 59.99])->count(),
+            '60–79'  => ($baseQuery)()->whereBetween('SCORE', [60, 79.99])->count(),
+            '80–100' => ($baseQuery)()->whereBetween('SCORE', [80, 100])->count(),
         ];
 
         return view('swift-manager.ia-analytics', array_merge(
@@ -326,7 +362,10 @@ class DashboardController extends Controller
                 'totalAnomalies', 'highCount', 'mediumCount', 'lowCount', 'avgScore',
                 'verifiedCount', 'rejectedCount', 'pendingCount',
                 'anomalyByTypeMedium', 'anomalyByTypeHigh', 'allTypes',
-                'resolutionRate', 'topHighAnomalies', 'scoreRanges'),
+                'resolutionRate', 'topHighAnomalies', 'scoreRanges',
+                'days', 'filterLevel', 'filterType',
+                'trendTotal', 'trendHigh', 'trendAvg',
+                'topRules'),
             $sidebarData
         ));
     }
