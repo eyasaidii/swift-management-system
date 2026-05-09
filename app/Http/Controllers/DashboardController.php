@@ -254,11 +254,11 @@ class DashboardController extends Controller
         $sidebarData = $this->getSidebarData();
 
         // ── Filtres BI : période, niveau de risque, type de message
-        $days        = (int) $request->get('days', 30);
-        $days        = in_array($days, [7, 30, 90, 180, 365]) ? $days : 30;
+        $days = (int) $request->get('days', 30);
+        $days = in_array($days, [7, 30, 90, 180, 365]) ? $days : 30;
         $filterLevel = $request->get('niveau');   // HIGH / MEDIUM / LOW / null
-        $filterType  = $request->get('type_msg'); // MT103 / PACS.008 / etc.
-        $dateFrom    = now()->subDays($days);
+        $filterType = $request->get('type_msg'); // MT103 / PACS.008 / etc.
+        $dateFrom = now()->subDays($days);
 
         // ── Base query filtrée par période
         $baseQuery = fn () => \App\Models\AnomalySwift::where('ANOMALIES_SWIFT.CREATED_AT', '>=', $dateFrom);
@@ -292,25 +292,25 @@ class DashboardController extends Controller
 
         // ── KPIs sur la période filtrée
         $totalAnomalies = ($baseQuery)()->count();
-        $highCount      = ($baseQuery)()->where('NIVEAU_RISQUE', 'HIGH')->count();
-        $mediumCount    = ($baseQuery)()->where('NIVEAU_RISQUE', 'MEDIUM')->count();
-        $lowCount       = ($baseQuery)()->where('NIVEAU_RISQUE', 'LOW')->count();
-        $avgScore       = round((float) ($baseQuery)()->avg('SCORE'), 1);
+        $highCount = ($baseQuery)()->where('NIVEAU_RISQUE', 'HIGH')->count();
+        $mediumCount = ($baseQuery)()->where('NIVEAU_RISQUE', 'MEDIUM')->count();
+        $lowCount = ($baseQuery)()->where('NIVEAU_RISQUE', 'LOW')->count();
+        $avgScore = round((float) ($baseQuery)()->avg('SCORE'), 1);
 
         // ── KPI tendance : comparaison avec la période précédente (même durée)
-        $prevFrom  = now()->subDays($days * 2);
-        $prevTo    = now()->subDays($days);
+        $prevFrom = now()->subDays($days * 2);
+        $prevTo = now()->subDays($days);
         $prevTotal = \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->count();
-        $prevHigh  = \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->where('NIVEAU_RISQUE', 'HIGH')->count();
-        $prevAvg   = round((float) \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->avg('SCORE'), 1);
+        $prevHigh = \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->where('NIVEAU_RISQUE', 'HIGH')->count();
+        $prevAvg = round((float) \App\Models\AnomalySwift::whereBetween('CREATED_AT', [$prevFrom, $prevTo])->avg('SCORE'), 1);
         $trendTotal = $prevTotal > 0 ? round((($totalAnomalies - $prevTotal) / $prevTotal) * 100, 1) : null;
-        $trendHigh  = $prevHigh  > 0 ? round((($highCount  - $prevHigh)  / $prevHigh)  * 100, 1) : null;
-        $trendAvg   = $prevAvg   > 0 ? round($avgScore - $prevAvg, 1) : null;
+        $trendHigh = $prevHigh > 0 ? round((($highCount - $prevHigh) / $prevHigh) * 100, 1) : null;
+        $trendAvg = $prevAvg > 0 ? round($avgScore - $prevAvg, 1) : null;
 
         // Statut vérification
         $verifiedCount = ($baseQuery)()->whereNotNull('verifie_par')->count();
         $rejectedCount = ($baseQuery)()->whereNotNull('rejetee_par')->count();
-        $pendingCount  = ($baseQuery)()->whereNull('verifie_par')->whereNull('rejetee_par')->count();
+        $pendingCount = ($baseQuery)()->whereNull('verifie_par')->whereNull('rejetee_par')->count();
 
         // Anomalies MEDIUM+HIGH par type séparées
         $anomalyByTypeMedium = \App\Models\AnomalySwift::join('MESSAGES_SWIFT', 'ANOMALIES_SWIFT.MESSAGE_ID', '=', 'MESSAGES_SWIFT.ID')
@@ -352,10 +352,10 @@ class DashboardController extends Controller
 
         // Distribution scores
         $scoreRanges = [
-            '0–19'   => ($baseQuery)()->whereBetween('SCORE', [0, 19.99])->count(),
-            '20–39'  => ($baseQuery)()->whereBetween('SCORE', [20, 39.99])->count(),
-            '40–59'  => ($baseQuery)()->whereBetween('SCORE', [40, 59.99])->count(),
-            '60–79'  => ($baseQuery)()->whereBetween('SCORE', [60, 79.99])->count(),
+            '0–19' => ($baseQuery)()->whereBetween('SCORE', [0, 19.99])->count(),
+            '20–39' => ($baseQuery)()->whereBetween('SCORE', [20, 39.99])->count(),
+            '40–59' => ($baseQuery)()->whereBetween('SCORE', [40, 59.99])->count(),
+            '60–79' => ($baseQuery)()->whereBetween('SCORE', [60, 79.99])->count(),
             '80–100' => ($baseQuery)()->whereBetween('SCORE', [80, 100])->count(),
         ];
 
