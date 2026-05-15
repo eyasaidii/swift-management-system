@@ -1052,23 +1052,23 @@ class MessageSwiftController extends Controller
         }
 
         $payload = [
-            'type_message'  => $message->type_message  ?? ($message->TYPE_MESSAGE  ?? null),
-            'amount'        => $message->amount         ?? ($message->AMOUNT        ?? null),
-            'currency'      => $message->currency       ?? ($message->CURRENCY      ?? null),
-            'sender_name'   => $message->sender_name    ?? ($message->SENDER_NAME   ?? null),
-            'reference'     => $message->reference      ?? ($message->REFERENCE     ?? null),
-            'score_ia'      => $anomaly ? (int) $anomaly->score : null,
+            'type_message' => $message->type_message ?? ($message->TYPE_MESSAGE ?? null),
+            'amount' => $message->amount ?? ($message->AMOUNT ?? null),
+            'currency' => $message->currency ?? ($message->CURRENCY ?? null),
+            'sender_name' => $message->sender_name ?? ($message->SENDER_NAME ?? null),
+            'reference' => $message->reference ?? ($message->REFERENCE ?? null),
+            'score_ia' => $anomaly ? (int) $anomaly->score : null,
             'niveau_risque' => $anomaly ? $anomaly->niveau_risque : null,
-            'raisons'       => $raisons,
-            'status'        => $message->status         ?? ($message->STATUS        ?? null),
-            'question'      => $request->input('question'),
+            'raisons' => $raisons,
+            'status' => $message->status ?? ($message->STATUS ?? null),
+            'question' => $request->input('question'),
         ];
 
         try {
-            $iaUrl  = env('SWIFT_IA_URL', 'http://python-api:8001');
+            $iaUrl = env('SWIFT_IA_URL', 'http://python-api:8001');
             $client = new \GuzzleHttp\Client(['timeout' => 30]);
             $response = $client->post("{$iaUrl}/api/chat", [
-                'json'    => $payload,
+                'json' => $payload,
                 'headers' => ['Accept' => 'application/json'],
             ]);
 
@@ -1079,21 +1079,21 @@ class MessageSwiftController extends Controller
             ]);
 
         } catch (\GuzzleHttp\Exception\ConnectException $e) {
-            \Log::warning('ChatIA — service IA injoignable : ' . $e->getMessage());
+            \Log::warning('ChatIA — service IA injoignable : '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Le service IA est actuellement indisponible. Veuillez réessayer dans quelques instants.',
             ], 503);
 
         } catch (\GuzzleHttp\Exception\RequestException $e) {
-            \Log::error('ChatIA — erreur HTTP : ' . $e->getMessage());
+            \Log::error('ChatIA — erreur HTTP : '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Erreur lors de la communication avec le service IA.',
             ], 502);
 
         } catch (\Exception $e) {
-            \Log::error('ChatIA — erreur inattendue : ' . $e->getMessage());
+            \Log::error('ChatIA — erreur inattendue : '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Une erreur inattendue s\'est produite.',

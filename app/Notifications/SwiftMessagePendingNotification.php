@@ -21,12 +21,12 @@ class SwiftMessagePendingNotification extends Notification
     {
         return [
             'message_id' => $this->message->id,
-            'reference'  => $this->message->REFERENCE,
-            'type'       => $this->message->TYPE_MESSAGE,
-            'direction'  => $this->message->DIRECTION,
-            'sender'     => $this->message->SENDER_NAME ?? $this->message->SENDER_BIC,
-            'amount'     => $this->message->AMOUNT,
-            'currency'   => $this->message->CURRENCY,
+            'reference' => $this->message->REFERENCE,
+            'type' => $this->message->TYPE_MESSAGE,
+            'direction' => $this->message->DIRECTION,
+            'sender' => $this->message->SENDER_NAME ?? $this->message->SENDER_BIC,
+            'amount' => $this->message->AMOUNT,
+            'currency' => $this->message->CURRENCY,
         ];
     }
 }

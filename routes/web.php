@@ -57,18 +57,20 @@ Route::middleware(['auth'])->group(function () {
                 $user = auth()->user();
                 // Charge toutes les notifs non lues (unreadNotifications() a déjà latest())
                 // Pas de ->latest() ni ->take() en SQL pour éviter le double ORDER BY Oracle
-                $all  = $user->unreadNotifications()->get();
+                $all = $user->unreadNotifications()->get();
                 $items = $all->take(20)->map(fn ($n) => [
-                    'id'         => $n->id,
-                    'data'       => $n->data,
+                    'id' => $n->id,
+                    'data' => $n->data,
                     'created_at' => optional($n->created_at)->diffForHumans() ?? 'récemment',
                 ]);
+
                 return response()->json([
                     'count' => $all->count(),
                     'items' => $items->values(),
                 ]);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('notifications/unread error: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('notifications/unread error: '.$e->getMessage());
+
                 return response()->json(['count' => 0, 'items' => []]);
             }
         })->name('unread');
@@ -77,8 +79,9 @@ Route::middleware(['auth'])->group(function () {
             try {
                 auth()->user()->notifications()->where('id', $id)->first()?->markAsRead();
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('notifications/read error: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('notifications/read error: '.$e->getMessage());
             }
+
             return response()->json(['ok' => true]);
         })->name('read');
 
@@ -86,8 +89,9 @@ Route::middleware(['auth'])->group(function () {
             try {
                 auth()->user()->unreadNotifications->markAsRead();
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('notifications/mark-all-read error: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('notifications/mark-all-read error: '.$e->getMessage());
             }
+
             return response()->json(['ok' => true]);
         })->name('mark-all-read');
     });
