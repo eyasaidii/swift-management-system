@@ -4,10 +4,14 @@
 
 namespace App\Observers;
 
+use App\Events\SwiftMessagePending;
 use App\Jobs\AnalyzeAnomalyJob;
 use App\Models\MessageSwift;
 use App\Models\Transaction;
+use App\Models\User;
+use App\Notifications\SwiftMessagePendingNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * MessageSwiftObserver
@@ -42,6 +46,29 @@ class MessageSwiftObserver
     public function created(MessageSwift $message): void
     {
         $this->syncTransaction($message, 'created');
+
+        // ─── Notification WebSocket temps réel → Swift Manager ───
+        try {
+            SwiftMessagePending::dispatch($message);
+        } catch (\Throwable $e) {
+            Log::warning('Broadcast SwiftMessagePending échoué', [
+                'message_id' => $message->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // ─── Notification persistante DB → tous les swift-manager / super-admin ───
+        try {
+            $managers = User::role(['swift-manager'])->get();
+            if ($managers->isNotEmpty()) {
+                Notification::send($managers, new SwiftMessagePendingNotification($message));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('DB SwiftMessagePendingNotification échoué', [
+                'message_id' => $message->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     // ─────────────────────────────────────────────────────────

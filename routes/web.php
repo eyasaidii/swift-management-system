@@ -50,6 +50,48 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // ============ NOTIFICATIONS SWIFT ============
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/unread', function () {
+            try {
+                $user = auth()->user();
+                // Charge toutes les notifs non lues (unreadNotifications() a déjà latest())
+                // Pas de ->latest() ni ->take() en SQL pour éviter le double ORDER BY Oracle
+                $all  = $user->unreadNotifications()->get();
+                $items = $all->take(20)->map(fn ($n) => [
+                    'id'         => $n->id,
+                    'data'       => $n->data,
+                    'created_at' => optional($n->created_at)->diffForHumans() ?? 'récemment',
+                ]);
+                return response()->json([
+                    'count' => $all->count(),
+                    'items' => $items->values(),
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('notifications/unread error: ' . $e->getMessage());
+                return response()->json(['count' => 0, 'items' => []]);
+            }
+        })->name('unread');
+
+        Route::post('/{id}/read', function ($id) {
+            try {
+                auth()->user()->notifications()->where('id', $id)->first()?->markAsRead();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('notifications/read error: ' . $e->getMessage());
+            }
+            return response()->json(['ok' => true]);
+        })->name('read');
+
+        Route::post('/mark-all-read', function () {
+            try {
+                auth()->user()->unreadNotifications->markAsRead();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('notifications/mark-all-read error: ' . $e->getMessage());
+            }
+            return response()->json(['ok' => true]);
+        })->name('mark-all-read');
+    });
+
     // ============ ADMIN ============
     Route::prefix('admin')->middleware('role:super-admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
@@ -247,6 +289,11 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/{id}/authorize', [MessageSwiftController::class, 'approveMessage'])->name('authorize')->middleware('role:super-admin,swift-manager');
         Route::patch('/{id}/suspend', [MessageSwiftController::class, 'suspend'])->name('suspend')->middleware('role:super-admin,swift-manager');
         Route::delete('/{id}', [MessageSwiftController::class, 'destroy'])->name('destroy')->middleware('role:super-admin,swift-manager');
+
+        // Chatbot IA — AVANT /{id}
+        Route::post('/{id}/chat-ia', [MessageSwiftController::class, 'chatIA'])
+            ->name('chat-ia')
+            ->middleware('role:super-admin,swift-manager');
 
         // Détail et PDF — EN DERNIER
         Route::get('/{id}', [MessageSwiftController::class, 'show'])->name('show');

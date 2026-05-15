@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Réentraînement automatique : nb minimum de nouveaux messages avant retrain
     RETRAIN_MIN_SAMPLES: int = 100
 
+    # Chatbot IA — Groq
+    GROQ_API_KEY: str = ""
+
     CORS_ORIGINS: str = "http://localhost"
 
     @property

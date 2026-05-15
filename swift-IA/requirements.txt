@@ -9,3 +9,5 @@ joblib
 httpx
 python-dotenv
 xgboost
+# Chatbot IA — Groq SDK
+groq

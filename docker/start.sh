@@ -17,5 +17,8 @@ php /var/www/artisan view:cache
 php $PHP_OPTS /var/www/artisan queue:work \
     --sleep=3 --tries=3 --timeout=60 --queue=default &
 
+# ── Reverb WebSocket server en arrière-plan ──────────────────────
+php /var/www/artisan reverb:start --host=0.0.0.0 --port=8080 &
+
 # ── PHP artisan serve en avant-plan (PHP_CLI_SERVER_WORKERS=4) ──
-exec php $PHP_OPTS /var/www/artisan serve --host=0.0.0.0 --port=8000 --no-reload
+exec php $PHP_OPTS /var/www/artisan serve --host=0.0.0.0 --port=8000

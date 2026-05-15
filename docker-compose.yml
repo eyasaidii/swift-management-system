@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
+    ports:
+      - "8080:8080"
     volumes:
       - .:/var/www
     env_file:

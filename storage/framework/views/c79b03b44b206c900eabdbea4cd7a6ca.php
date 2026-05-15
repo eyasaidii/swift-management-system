@@ -526,6 +526,50 @@
         
         <div style="display:flex;align-items:center;gap:14px;">
 
+            <?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'swift-manager')): ?>
+            
+            <div style="position:relative;" id="notif-bell-wrapper">
+                <button id="notif-bell-btn"
+                        style="width:38px;height:38px;background:#f9fafb;border:1px solid #e5e7eb;
+                               border-radius:50%;display:flex;align-items:center;justify-content:center;
+                               cursor:pointer;flex-shrink:0;transition:background .2s,border-color .2s;position:relative;"
+                        title="Notifications SWIFT">
+                    <i class="fas fa-bell" style="color:#6b7280;font-size:.78rem;"></i>
+                    <span id="notif-badge"
+                          style="display:none;position:absolute;top:-3px;right:-3px;
+                                 background:#dc2626;color:#fff;font-size:.58rem;font-weight:800;
+                                 min-width:17px;height:17px;border-radius:10px;
+                                 align-items:center;justify-content:center;
+                                 padding:0 4px;border:2px solid #fff;line-height:1;">0</span>
+                </button>
+                
+                <div id="notif-dropdown"
+                     style="display:none;position:absolute;top:46px;right:0;width:380px;
+                            background:#fff;border-radius:12px;
+                            box-shadow:0 8px 32px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.09);
+                            z-index:9998;border:1px solid #e5e7eb;overflow:hidden;">
+                    <div style="padding:14px 16px 10px;border-bottom:1px solid #f3f4f6;
+                                display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:.88rem;font-weight:700;color:#111827;">
+                            <i class="fas fa-bell" style="color:#16a34a;margin-right:6px;font-size:.8rem;"></i>
+                            Notifications SWIFT
+                        </span>
+                        <button id="notif-mark-all"
+                                style="font-size:.72rem;color:#16a34a;background:none;border:none;
+                                       cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px;">
+                            Tout marquer lu
+                        </button>
+                    </div>
+                    <div id="notif-list" style="max-height:360px;overflow-y:auto;"></div>
+                    <div id="notif-empty"
+                         style="display:none;padding:28px 16px;text-align:center;color:#9ca3af;font-size:.82rem;">
+                        <i class="fas fa-check-circle" style="font-size:1.6rem;color:#bbf7d0;display:block;margin-bottom:8px;"></i>
+                        Aucune nouvelle notification
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             
             <button id="darkToggleBtn"
                     style="width:38px;height:38px;background:#f9fafb;border:1px solid #e5e7eb;
@@ -641,19 +685,18 @@
             var wrap = document.createElement('div');
             wrap.innerHTML = `
             <div class="modal fade" id="modalRawFile" tabindex="-1">
-                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalRawTitle">SWIFT Message</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <div class="modal-header border-bottom-0 pb-2">
+                            <h5 class="modal-title fw-semibold" id="modalRawTitle">Swift-Mt</h5>
+                            <div class="d-flex align-items-center gap-2 ms-auto">
+                                <button type="button" class="btn btn-primary btn-sm px-3" id="modalRawPrint">Print</button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
                         </div>
-                        <div class="modal-body" style="padding:0;">
-                            <iframe id="modalRawIframe" src="about:blank"
-                                    style="width:100%;height:65vh;border:0;min-height:300px;"></iframe>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                            <button type="button" class="btn btn-primary" id="modalRawPrint">Imprimer</button>
+                        <div class="modal-body pt-1">
+                            <pre id="modalRawContent"
+                                 style="font-family:monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:#fff;border:none;margin:0;padding:4px 0;min-height:200px;"></pre>
                         </div>
                     </div>
                 </div>
@@ -664,12 +707,16 @@
         var rawModal = new bootstrap.Modal(document.getElementById('modalRawFile'));
 
         function openRawFile(url, title) {
-            var iframe  = document.getElementById('modalRawIframe');
-            var titleEl = document.getElementById('modalRawTitle');
-            if (!iframe || !titleEl) return;
-            titleEl.textContent = title || 'SWIFT Message';
-            iframe.src = url;
+            var contentEl = document.getElementById('modalRawContent');
+            var titleEl   = document.getElementById('modalRawTitle');
+            if (!contentEl || !titleEl) return;
+            titleEl.textContent = 'SWIFT Message Detail';
+            contentEl.textContent = 'Chargement…';
             rawModal.show();
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.text(); })
+                .then(function(text) { contentEl.textContent = text; })
+                .catch(function() { contentEl.textContent = 'Impossible de charger le contenu MT.'; });
         }
 
         document.addEventListener('click', function (e) {
@@ -684,15 +731,12 @@
         var printBtn = document.getElementById('modalRawPrint');
         if (printBtn) {
             printBtn.addEventListener('click', function () {
-                var container = document.getElementById('modalRawContainer');
-                if (!container) return;
-                container.querySelectorAll('details').forEach(function(d){ d.open = true; });
+                var content = document.getElementById('modalRawContent');
+                if (!content) return;
                 var w = window.open('', '_blank');
-                var headStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                                      .map(function(l){ return l.outerHTML; }).join('\n');
-                w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Imprimer SWIFT</title>' +
-                    headStyles + '<style>body{font-family:monospace;padding:18px}</style></head><body>');
-                w.document.write(container.innerHTML);
+                w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>SWIFT Message Detail</title>' +
+                    '<style>body{font-family:monospace;font-size:13px;padding:24px;white-space:pre-wrap;}</style></head><body>');
+                w.document.write(content.textContent.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
                 w.document.write('</body></html>');
                 w.document.close();
                 w.focus();
@@ -703,5 +747,310 @@
 </script>
 
 <?php echo $__env->yieldPushContent('scripts'); ?>
+
+<?php if (\Illuminate\Support\Facades\Blade::check('hasanyrole', 'swift-manager')): ?>
+
+
+<div id="swift-toast-container"
+     style="position:fixed;top:80px;right:24px;z-index:9999;
+            display:flex;flex-direction:column;gap:10px;
+            max-width:380px;pointer-events:none;">
+</div>
+
+<script>
+(function () {
+
+    /* ─── helpers direction ─── */
+    function dirLabel(dir) { return dir === 'IN' ? 'Reçu' : 'Émis'; }
+    function dirColor(dir) { return dir === 'IN' ? '#0d6e3d' : '#b45309'; }
+
+    /* ─────────────────────────────────────────────
+       TOAST  (temps réel)
+    ───────────────────────────────────────────── */
+    function showSwiftToast(data) {
+        var container = document.getElementById('swift-toast-container');
+        if (!container) return;
+
+        var amountLine = '';
+        if (data.amount && data.currency) {
+            amountLine = '<div style="margin-top:4px;font-size:.78rem;color:#374151;">' +
+                '<i class="fas fa-coins" style="color:#f59e0b;margin-right:4px;"></i>' +
+                data.amount + ' ' + data.currency + '</div>';
+        }
+        var senderLine = '';
+        if (data.sender) {
+            senderLine = '<div style="font-size:.74rem;color:#6b7280;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                '<i class="fas fa-building" style="margin-right:4px;"></i>' + data.sender + '</div>';
+        }
+
+        var toast = document.createElement('div');
+        toast.style.cssText = [
+            'background:#fff','border-radius:12px',
+            'box-shadow:0 8px 32px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.10)',
+            'border-left:4px solid ' + dirColor(data.direction),
+            'padding:14px 16px','display:flex','align-items:flex-start','gap:12px',
+            'pointer-events:all','animation:swiftSlideIn .35s ease','min-width:300px',
+        ].join(';');
+
+        toast.innerHTML =
+            '<div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;' +
+                'background:' + dirColor(data.direction) + ';' +
+                'display:flex;align-items:center;justify-content:center;">' +
+                '<i class="fas fa-envelope" style="color:#fff;font-size:.85rem;"></i>' +
+            '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
+                    '<span style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;' +
+                        'color:' + dirColor(data.direction) + ';">Nouveau message SWIFT</span>' +
+                    '<span style="font-size:.68rem;color:#9ca3af;white-space:nowrap;">' + (data.time || '') + '</span>' +
+                '</div>' +
+                '<div style="font-size:.84rem;font-weight:700;color:#111827;margin-top:3px;">' +
+                    (data.type || 'SWIFT') + ' &nbsp;<span style="font-weight:400;color:#6b7280;font-size:.78rem;">' + (data.reference || '') + '</span>' +
+                '</div>' +
+                '<div style="margin-top:2px;">' +
+                    '<span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;' +
+                        'background:' + dirColor(data.direction) + '22;color:' + dirColor(data.direction) + ';">' +
+                        dirLabel(data.direction) +
+                    '</span>' +
+                    ' <span style="font-size:.7rem;color:#6b7280;margin-left:4px;">• En attente d\'autorisation</span>' +
+                '</div>' +
+                senderLine + amountLine +
+            '</div>' +
+            '<button onclick="this.closest(\'[data-swift-toast]\').remove()" ' +
+                'style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:.75rem;' +
+                       'padding:2px;flex-shrink:0;line-height:1;align-self:flex-start;">' +
+                '<i class="fas fa-times"></i></button>';
+
+        toast.setAttribute('data-swift-toast', '1');
+        container.appendChild(toast);
+
+        // Pas d'auto-dismiss : le toast reste jusqu'au clic sur ×
+    }
+
+    /* ─────────────────────────────────────────────
+       BELL / DROPDOWN — Notifications persistantes
+    ───────────────────────────────────────────── */
+    var bellBtn     = null;
+    var dropdown    = null;
+    var badgeEl     = null;
+    var listEl      = null;
+    var emptyEl     = null;
+    var markAllBtn  = null;
+    var dropOpen    = false;
+    var unreadCount = 0;
+
+    function updateBadge(count) {
+        unreadCount = count;
+        if (!badgeEl) return;
+        if (count > 0) {
+            badgeEl.textContent = count > 99 ? '99+' : count;
+            badgeEl.style.display = 'flex';
+        } else {
+            badgeEl.style.display = 'none';
+        }
+    }
+
+    function renderNotifItem(item) {
+        var d   = item.data || {};
+        var dir = d.direction || 'IN';
+        var col = dirColor(dir);
+        return '<div data-notif-id="' + item.id + '" ' +
+            'style="padding:12px 16px;border-bottom:1px solid #f3f4f6;cursor:pointer;' +
+                   'display:flex;gap:10px;align-items:flex-start;transition:background .15s;" ' +
+            'onmouseover="this.style.background=\'#f9fafb\'" ' +
+            'onmouseout="this.style.background=\'\'">' +
+            '<div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;' +
+                'background:' + col + ';display:flex;align-items:center;justify-content:center;">' +
+                '<i class="fas fa-envelope" style="color:#fff;font-size:.72rem;"></i>' +
+            '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div style="display:flex;justify-content:space-between;gap:6px;">' +
+                    '<span style="font-size:.8rem;font-weight:700;color:#111827;">' +
+                        (d.type || 'SWIFT') + ' ' +
+                        '<span style="font-weight:400;color:#6b7280;">' + (d.reference || '') + '</span>' +
+                    '</span>' +
+                    '<span style="font-size:.66rem;color:#9ca3af;white-space:nowrap;">' + (item.created_at || '') + '</span>' +
+                '</div>' +
+                '<div style="margin-top:3px;display:flex;gap:6px;align-items:center;">' +
+                    '<span style="font-size:.67rem;font-weight:700;padding:1px 7px;border-radius:12px;' +
+                        'background:' + col + '22;color:' + col + ';">' + dirLabel(dir) + '</span>' +
+                    (d.amount ? '<span style="font-size:.68rem;color:#374151;">' +
+                        '<i class="fas fa-coins" style="color:#f59e0b;margin-right:2px;"></i>' +
+                        d.amount + ' ' + (d.currency || '') + '</span>' : '') +
+                '</div>' +
+                (d.sender ? '<div style="font-size:.68rem;color:#9ca3af;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                    '<i class="fas fa-building" style="margin-right:3px;"></i>' + d.sender + '</div>' : '') +
+            '</div>' +
+            '<span style="width:8px;height:8px;background:#dc2626;border-radius:50%;flex-shrink:0;margin-top:4px;"></span>' +
+        '</div>';
+    }
+
+    function loadNotifications() {
+        fetch('/notifications/unread', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function (r) {
+            if (!r.ok) { console.error('[Notifs] HTTP ' + r.status); return null; }
+            return r.json();
+        })
+        .then(function (res) {
+            if (!res) return;
+            updateBadge(res.count || 0);
+            if (!listEl || !emptyEl) return;
+            listEl.innerHTML = '';
+            if (!res.items || res.items.length === 0) {
+                emptyEl.style.display = 'block';
+            } else {
+                emptyEl.style.display = 'none';
+                res.items.forEach(function (item) {
+                    listEl.insertAdjacentHTML('beforeend', renderNotifItem(item));
+                });
+            }
+        })
+        .catch(function (err) { console.error('[Notifs] fetch error:', err); });
+    }
+
+    function markOneRead(id) {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]') ?
+            document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+        fetch('/notifications/' + id + '/read', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+        }).catch(function () {});
+
+        var el = listEl && listEl.querySelector('[data-notif-id="' + id + '"]');
+        if (el) el.remove();
+        updateBadge(Math.max(0, unreadCount - 1));
+        if (listEl && listEl.children.length === 0 && emptyEl) {
+            emptyEl.style.display = 'block';
+        }
+    }
+
+    function markAllRead() {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]') ?
+            document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+        fetch('/notifications/mark-all-read', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+        }).catch(function () {});
+
+        if (listEl) listEl.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'block';
+        updateBadge(0);
+    }
+
+    function prependNotification(data) {
+        if (!listEl || !emptyEl) return;
+        emptyEl.style.display = 'none';
+        var item = {
+            id: 'ws-' + Date.now(),
+            data: {
+                reference: data.reference,
+                type:      data.type,
+                direction: data.direction,
+                sender:    data.sender,
+                amount:    data.amount,
+                currency:  data.currency,
+            },
+            created_at: "à l'instant",
+        };
+        listEl.insertAdjacentHTML('afterbegin', renderNotifItem(item));
+    }
+
+    function openDropdown() {
+        if (!dropdown) return;
+        dropOpen = true;
+        dropdown.style.display = 'block';
+        loadNotifications();
+    }
+
+    function closeDropdown() {
+        if (!dropdown) return;
+        dropOpen = false;
+        dropdown.style.display = 'none';
+    }
+
+    /* ─────────────────────────────────────────────
+       WebSocket listener (toast + badge)
+    ───────────────────────────────────────────── */
+    function initEchoListener() {
+        if (!window.Echo) { setTimeout(initEchoListener, 300); return; }
+        window.Echo.private('swift-managers')
+            .listen('.swift.message.pending', function (data) {
+                showSwiftToast(data);
+                updateBadge(unreadCount + 1);
+                prependNotification(data);
+            });
+    }
+
+    /* ─────────────────────────────────────────────
+       Init (compatible script en bas de <body>)
+       DOMContentLoaded peut avoir déjà été déclenché
+       → on utilise readyState pour appeler directement
+    ───────────────────────────────────────────── */
+    function initNotifications() {
+        bellBtn    = document.getElementById('notif-bell-btn');
+        dropdown   = document.getElementById('notif-dropdown');
+        badgeEl    = document.getElementById('notif-badge');
+        listEl     = document.getElementById('notif-list');
+        emptyEl    = document.getElementById('notif-empty');
+        markAllBtn = document.getElementById('notif-mark-all');
+
+        /* charge le badge au chargement de page */
+        loadNotifications();
+
+        /* toggle dropdown */
+        if (bellBtn) {
+            bellBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (dropOpen) { closeDropdown(); } else { openDropdown(); }
+            });
+        }
+
+        /* clic en dehors -> fermer */
+        document.addEventListener('click', function (e) {
+            var wrapper = document.getElementById('notif-bell-wrapper');
+            if (dropOpen && wrapper && !wrapper.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        /* clic sur un item -> marquer lu */
+        if (listEl) {
+            listEl.addEventListener('click', function (e) {
+                var item = e.target.closest('[data-notif-id]');
+                if (item) markOneRead(item.getAttribute('data-notif-id'));
+            });
+        }
+
+        /* marquer tout lu */
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                markAllRead();
+            });
+        }
+
+        /* demarrer WebSocket */
+        initEchoListener();
+    }
+
+    /* Le script est en bas de body → DOM déjà parsé dans la plupart des cas */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNotifications);
+    } else {
+        initNotifications();
+    }
+
+})();
+</script>
+
+<style>
+@keyframes swiftSlideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0);    }
+}
+</style>
+<?php endif; ?>
 </body>
 </html><?php /**PATH /var/www/resources/views/layouts/app.blade.php ENDPATH**/ ?>

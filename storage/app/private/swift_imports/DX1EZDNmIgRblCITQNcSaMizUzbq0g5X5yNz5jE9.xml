@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.009.001.08">
+    <FICdtTrf>
+        <GrpHdr>
+            <MsgId>BTLMTNTT-COVER-20260416-001</MsgId>
+            <CreDtTm>2026-04-16T09:00:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <SttlmInf>
+                <SttlmMtd>INDA</SttlmMtd>
+            </SttlmInf>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>COV-2026041600001</InstrId>
+                <EndToEndId>E2E-COV-BTLMTNTT-001</EndToEndId>
+                <UETR>d4e5f6a7-b8c9-0123-defa-234567890123</UETR>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="EUR">500000.00</IntrBkSttlmAmt>
+            <IntrBkSttlmDt>2026-04-16</IntrBkSttlmDt>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>SOGEFRPP</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+            <IntrmyAgt1>
+                <FinInstnId>
+                    <BICFI>DEUTDEFF</BICFI>
+                    <Nm>Deutsche Bank AG Frankfurt</Nm>
+                </FinInstnId>
+            </IntrmyAgt1>
+            <Dbtr>
+                <FinInstnId>
+                    <BICFI>BTLMTNTT</BICFI>
+                    <Nm>Tunisian Libyan Bank</Nm>
+                </FinInstnId>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>TN5910006035000000000001</IBAN>
+                </Id>
+            </DbtrAcct>
+            <Cdtr>
+                <FinInstnId>
+                    <BICFI>SOGEFRPP</BICFI>
+                    <Nm>Societe Generale SA</Nm>
+                </FinInstnId>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>FR7630003010700005000000142</IBAN>
+                </Id>
+            </CdtrAcct>
+        </CdtTrfTxInf>
+    </FICdtTrf>
+</Document>

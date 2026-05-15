@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FICHIER TEST — Risque MOYEN (score attendu : 20-59/100)
+  Anomalies intentionnelles :
+    - Montant > 100 000  → +25 pts (MONTANT_ELEVE)
+    - Devise XOF (inhabituelle pour BTL) → +20 pts (DEVISE_INHABITUELLE)
+  Total règles brutes : 45 → score final ~27 (risque moyen)
+  Pour importer : aller sur Import SWIFT et uploader ce fichier .xml
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>TEST-ANOMALIE-MOYEN-002</MsgId>
+      <CreDtTm>2026-05-13T09:30:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>INGA</SttlmMtd>
+      </SttlmInf>
+      <InstgAgt>
+        <FinInstnId>
+          <BICFI>BCTNTNTX</BICFI>
+          <Nm>BTL Bank Tunisia</Nm>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <BICFI>ECOCGHAC</BICFI>
+          <Nm>Ecobank Ghana</Nm>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>TEST-ANOMALIE-MOYEN-002</InstrId>
+        <EndToEndId>E2E-TEST-MOYEN-002</EndToEndId>
+        <UETR>b2c3d4e5-0000-4000-8000-000000000002</UETR>
+      </PmtId>
+      <!-- Montant élevé > 100 000 → MONTANT_ELEVE +25 pts -->
+      <!-- Devise XOF inhabituelle → DEVISE_INHABITUELLE +20 pts -->
+      <IntrBkSttlmAmt Ccy="XOF">250000000</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-05-13</IntrBkSttlmDt>
+      <ChrgBr>SHAR</ChrgBr>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>BCTNTNTX</BICFI>
+          <Nm>BTL Bank Tunisia</Nm>
+        </FinInstnId>
+      </DbtrAgt>
+      <Dbtr>
+        <Nm>RAS LANUF COMPANY FOR OIL AND GAS</Nm>
+        <PstlAdr>
+          <AdrLine>Ras Lanuf Industrial Zone</AdrLine>
+          <AdrLine>Libya</AdrLine>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>TN5904018104001000058526710</IBAN>
+        </Id>
+      </DbtrAcct>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>ECOCGHAC</BICFI>
+          <Nm>Ecobank Ghana</Nm>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>GHANA OIL TRADING CORP</Nm>
+        <PstlAdr>
+          <AdrLine>15 Independence Avenue</AdrLine>
+          <AdrLine>Accra, Ghana</AdrLine>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <Othr>
+            <Id>GH-ACC-0012345678</Id>
+          </Othr>
+        </Id>
+      </CdtrAcct>
+      <Purp>
+        <Cd>TRAD</Cd>
+      </Purp>
+      <RmtInf>
+        <Ustrd>Paiement importation pétrole brut contrat 2026-XOF-002</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

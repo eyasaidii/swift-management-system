@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.api.routes import predict, train, health, stats, dashboard, retrain
+from app.api.routes import predict, train, health, stats, dashboard, retrain, chat
 
 # ── Logging
 logging.basicConfig(
@@ -57,6 +57,7 @@ app.include_router(train.router,     prefix="/api", tags=["Training"])
 app.include_router(retrain.router,   prefix="/api", tags=["Training"])
 app.include_router(health.router,    prefix="/api", tags=["Health"])
 app.include_router(stats.router,     prefix="/api", tags=["Statistics"])
+app.include_router(chat.router,      prefix="/api", tags=["Chat"])
 app.include_router(dashboard.router, prefix="",     tags=["Dashboard"])
 
 

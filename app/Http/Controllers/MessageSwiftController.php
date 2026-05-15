@@ -1030,6 +1030,78 @@ class MessageSwiftController extends Controller
     }
 
     // =========================================================
+    // CHATBOT IA — chatIA()
+    // =========================================================
+
+    public function chatIA(Request $request, $id)
+    {
+        $message = MessageSwift::with(['anomaly'])->findOrFail($id);
+        abort_unless($message->isReadableBy(auth()->user()), 403,
+            'Vous n\'êtes pas autorisé à accéder à ce message.');
+
+        $request->validate([
+            'question' => 'required|string|max:500',
+        ]);
+
+        $anomaly = $message->anomaly;
+        $raisons = [];
+        if ($anomaly) {
+            $raisons = is_array($anomaly->raisons)
+                ? $anomaly->raisons
+                : json_decode($anomaly->raisons ?? '[]', true);
+        }
+
+        $payload = [
+            'type_message'  => $message->type_message  ?? ($message->TYPE_MESSAGE  ?? null),
+            'amount'        => $message->amount         ?? ($message->AMOUNT        ?? null),
+            'currency'      => $message->currency       ?? ($message->CURRENCY      ?? null),
+            'sender_name'   => $message->sender_name    ?? ($message->SENDER_NAME   ?? null),
+            'reference'     => $message->reference      ?? ($message->REFERENCE     ?? null),
+            'score_ia'      => $anomaly ? (int) $anomaly->score : null,
+            'niveau_risque' => $anomaly ? $anomaly->niveau_risque : null,
+            'raisons'       => $raisons,
+            'status'        => $message->status         ?? ($message->STATUS        ?? null),
+            'question'      => $request->input('question'),
+        ];
+
+        try {
+            $iaUrl  = env('SWIFT_IA_URL', 'http://python-api:8001');
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->post("{$iaUrl}/api/chat", [
+                'json'    => $payload,
+                'headers' => ['Accept' => 'application/json'],
+            ]);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return response()->json([
+                'response' => $data['response'] ?? 'Réponse indisponible.',
+            ]);
+
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            \Log::warning('ChatIA — service IA injoignable : ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Le service IA est actuellement indisponible. Veuillez réessayer dans quelques instants.',
+            ], 503);
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            \Log::error('ChatIA — erreur HTTP : ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Erreur lors de la communication avec le service IA.',
+            ], 502);
+
+        } catch (\Exception $e) {
+            \Log::error('ChatIA — erreur inattendue : ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Une erreur inattendue s\'est produite.',
+            ], 500);
+        }
+    }
+
+    // =========================================================
     // PRIVÉ — Route dashboard selon rôle
     // =========================================================
 

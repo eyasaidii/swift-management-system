@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?><Saa:DataPDU xmlns:Saa="urn:swift:saa:xsd:saa.2.0" xmlns:Sw="urn:swift:snl:ns.Sw" xmlns:SwInt="urn:swift:snl:ns.SwInt" xmlns:SwGbl="urn:swift:snl:ns.SwGbl" xmlns:SwSec="urn:swift:snl:ns.SwSec"><Saa:Revision>2.0.15</Saa:Revision><Saa:Header><Saa:Message><Saa:SenderReference>OLAFBLYLTXXX008$2511241692355</Saa:SenderReference><Saa:MessageIdentifier>pacs.008.001.08</Saa:MessageIdentifier><Saa:Format>MX</Saa:Format><Saa:SubFormat>Output</Saa:SubFormat><Saa:Sender><Saa:DN>ou=xxx,o=lafblylt,o=swift</Saa:DN><Saa:FullName><Saa:X1>LAFBLYLTXXX</Saa:X1><Saa:X2>xxx</Saa:X2></Saa:FullName></Saa:Sender><Saa:Receiver><Saa:DN>ou=xxx,o=atldtntt,o=swift</Saa:DN><Saa:FullName><Saa:X1>ATLDTNTTXXX</Saa:X1><Saa:X2>xxx</Saa:X2></Saa:FullName></Saa:Receiver><Saa:InterfaceInfo><Saa:MessageCreator>SWIFTNetInterface</Saa:MessageCreator><Saa:MessageContext>Original</Saa:MessageContext><Saa:MessageNature>Financial</Saa:MessageNature><Saa:Sumid>16DBE9C2FFE62D3C</Saa:Sumid></Saa:InterfaceInfo><Saa:NetworkInfo><Saa:Priority>Normal</Saa:Priority><Saa:IsPossibleDuplicate>false</Saa:IsPossibleDuplicate><Saa:Service>swift.finplus</Saa:Service><Saa:Network>SWIFTNet</Saa:Network><Saa:SessionNr>000449</Saa:SessionNr><Saa:SeqNr>000003872</Saa:SeqNr><Saa:TransactionData><Saa:TransactionDataResult>CONV</Saa:TransactionDataResult></Saa:TransactionData><Saa:TranslatedResult>Partial</Saa:TranslatedResult><Saa:TranslationResultDetails>TranslationInfo version 1.0.0.1
+{
+	"errors": [
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '20' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+			"path": "MT103CORE"
+		},
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '&lt;Othr&gt;&lt;Id&gt;NOTPROVIDED&lt;/Id&gt;&lt;/Othr&gt;' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Id/OrgId/Othr[]",
+			"path": "MT103CORE"
+		}
+	]
+}
+</Saa:TranslationResultDetails><Saa:SWIFTNetNetworkInfo><Saa:RequestType>pacs.008.001.08</Saa:RequestType><Saa:RequestSubtype>swift.cbprplus.03</Saa:RequestSubtype><Saa:SWIFTRef>swi99998-2025-11-23T11:45:56.7097.000188Z</Saa:SWIFTRef><Saa:SNLRef>SNL99998-2025-11-23T11:46:17.7120.786958Z</Saa:SNLRef><Saa:Reference>251123LAFBLYLTAXXX1248576300</Saa:Reference><Saa:SnFQueueName>atldtntt_finplus</Saa:SnFQueueName><Saa:SnFInputTime>0402:2025-11-23T11:46:17</Saa:SnFInputTime><Saa:SnFDeliveryTime>2025-11-24T08:20:04Z</Saa:SnFDeliveryTime><Saa:ValidationDescriptor><SwInt:ValResult>Success</SwInt:ValResult></Saa:ValidationDescriptor></Saa:SWIFTNetNetworkInfo></Saa:NetworkInfo><Saa:SecurityInfo><Saa:TransactionDataSecurityResult>Success</Saa:TransactionDataSecurityResult><Saa:SWIFTNetSecurityInfo><Saa:SignatureResult>Success</Saa:SignatureResult><Saa:SignatureValue><SwSec:Signature><SwSec:SignedInfo><Sw:Reference><Sw:DigestValue>BFNk/Jb+fYyX31xidfQt+pWSoPPlNxKQIYbp5xRkxeo=</Sw:DigestValue></Sw:Reference></SwSec:SignedInfo><SwSec:SignatureValue>PEMF@Proc-Type: 4,MIC-ONLY
+Content-Domain: RFC822
+EntrustFile-Version: 2.0
+Originator-DN: cn=%2,cn=live,ou=transaction-signing,ou=transactionmanager,o=swift,o=swift
+Orig-SN: 1740290303
+MIC-Info: SHA256, RSA,
+ PCVEnWXMX5ppmho3gyc1aESQf7RluuRhyYtzD2RfDpIk1X/FgwyysamOh8Ba9vvz
+ dN34lRhGT3xfXn14U8eI/+ITdveZkriYhxboXeXcwDL+QdBprru8VXNprD4benCF
+ Gi6R4/cd9/O4IYfZdBEgDqhyQWc3Fym6Sd5gND+BcnXayI5VOrq6H2/1852Kbpl7
+ eiwVGeWd74hPQoC9iI+3xjoy9VY1VxWdKS0Uwgg/RrL9D3qPMCOOU0MjOh83milr
+ NcyR9MSaLp8Q0itCQ+3PTRnonIPKzVErZ2VEPpPqyqkTDtKrSyQWLIODrW0Udzyz
+ VjhDUQ0Fa0ieE8/kvsIrWA==
+</SwSec:SignatureValue><SwSec:KeyInfo><SwSec:SignDN>cn=%2,cn=live,ou=transaction-signing,ou=transactionmanager,o=swift,o=swift</SwSec:SignDN><SwSec:CertPolicyId>1.3.21.6.3.10.200.4</SwSec:CertPolicyId></SwSec:KeyInfo><SwSec:Manifest><Sw:Reference><Sw:DigestRef>TRD</Sw:DigestRef><Sw:DigestValue>1DJLqs5SY5nUFqYaPki7SJZEWBZzRwY2kbkDiTabAys=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.IARequestHeader</Sw:DigestRef><Sw:DigestValue>JM2N1OYCr82zh2gkQSBkbDTVolbk1AHjLcfBmdV2TnE=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.RequestPayload and RND</Sw:DigestRef><Sw:DigestValue>JMmFKJyl9Va5ZWESaiyIPpJjPC4TefGVah6EV7ajtjQ=</Sw:DigestValue></Sw:Reference></SwSec:Manifest><Sw:Object><Sw:RND>Q109LyVqLTclUllFWkJJZFtLQ3E=</Sw:RND></Sw:Object></SwSec:Signature><SwSec:Signature><SwSec:SignedInfo><Sw:Reference><Sw:DigestValue>StegBQzcEL2uBFp4PbVzVgt3r3b7D/7YIWpNa7KHaCo=</Sw:DigestValue></Sw:Reference></SwSec:SignedInfo><SwSec:SignatureValue>PEMF@Proc-Type: 4,MIC-ONLY
+Content-Domain: RFC822
+EntrustFile-Version: 2.0
+Originator-DN: cn=%2,cn=sfm,o=swift,o=swift
+Orig-SN: 1756003492
+MIC-Info: SHA256, RSA,
+ DYRPim371+E47Fx93d4ebe35iC4sf1E6fOtkn/eXOxWZOc5NREOnLGmBmeREfVRC
+ 88Qc+RTffL1DBy+uMghMGJe5NYOeU2K40X97D6CNU2ypjcZLM0uezYDRj7rCF9eu
+ +lmqR5aLMrdDpptU+UdxuBif84khCQNYsFNMlYlERcVYp5YAfFu2wXYrW0ypo4UD
+ B5YGYtyM2jLXa8q2jx+3BFWAvi7JG/wNLeRtybDljJctAUSHuYPLHKXtGXR7XgWu
+ SURJWJL50kQYx5FOqi1fzJ8dXrcnsEJapKOuD7N/NqKD4MfQRDBrUoXh22mzn1+O
+ R66qd1IcO8SoY0475aNK/g==
+</SwSec:SignatureValue><SwSec:KeyInfo><SwSec:SignDN>cn=%2,cn=sfm,o=swift,o=swift</SwSec:SignDN><SwSec:CertPolicyId>1.3.21.6.3.10.100.3</SwSec:CertPolicyId></SwSec:KeyInfo><SwSec:Manifest><Sw:Reference><Sw:DigestRef>TRD</Sw:DigestRef><Sw:DigestValue>1DJLqs5SY5nUFqYaPki7SJZEWBZzRwY2kbkDiTabAys=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.IARequestHeader</Sw:DigestRef><Sw:DigestValue>JM2N1OYCr82zh2gkQSBkbDTVolbk1AHjLcfBmdV2TnE=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Sw.RequestPayload and RND</Sw:DigestRef><Sw:DigestValue>JMmFKJyl9Va5ZWESaiyIPpJjPC4TefGVah6EV7ajtjQ=</Sw:DigestValue></Sw:Reference><Sw:Reference><Sw:DigestRef>Translated MT</Sw:DigestRef><Sw:DigestValue>qSSIA95z8ggVLG492eZWc2vM9ZNa3Zh5YQ3MQAKudoU=</Sw:DigestValue></Sw:Reference></SwSec:Manifest><Sw:Object><Sw:RND>Q109LyVqLTclUllFWkJJZFtLQ3E=</Sw:RND></Sw:Object></SwSec:Signature></Saa:SignatureValue></Saa:SWIFTNetSecurityInfo></Saa:SecurityInfo><Saa:ExpiryDateTime>20251214082014</Saa:ExpiryDateTime></Saa:Message></Saa:Header><Saa:Body><head:AppHdr xmlns:head="urn:iso:std:iso:20022:tech:xsd:head.001.001.02"><head:Fr><head:FIId><head:FinInstnId><head:BICFI>LAFBLYLTXXX</head:BICFI></head:FinInstnId></head:FIId></head:Fr><head:To><head:FIId><head:FinInstnId><head:BICFI>ATLDTNTTXXX</head:BICFI></head:FinInstnId></head:FIId></head:To><head:BizMsgIdr>FT2532731533</head:BizMsgIdr><head:MsgDefIdr>pacs.008.001.08</head:MsgDefIdr><head:BizSvc>swift.cbprplus.03</head:BizSvc><head:CreDt>2025-11-23T11:45:55+00:00</head:CreDt></head:AppHdr><pacs:Document xmlns:pacs="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"><pacs:FIToFICstmrCdtTrf><pacs:GrpHdr><pacs:MsgId>FT2532731533</pacs:MsgId><pacs:CreDtTm>2025-11-23T11:45:55+00:00</pacs:CreDtTm><pacs:NbOfTxs>1</pacs:NbOfTxs><pacs:SttlmInf><pacs:SttlmMtd>INGA</pacs:SttlmMtd><pacs:SttlmAcct><pacs:Id><pacs:IBAN>LY57009001000000000007943</pacs:IBAN></pacs:Id></pacs:SttlmAcct></pacs:SttlmInf></pacs:GrpHdr><pacs:CdtTrfTxInf><pacs:PmtId><pacs:InstrId>FT2532731533</pacs:InstrId><pacs:EndToEndId>NOTPROVIDED</pacs:EndToEndId><pacs:UETR>19516bcb-58c0-4a6f-88c0-730d1499eb8b</pacs:UETR></pacs:PmtId><pacs:PmtTpInf><pacs:SvcLvl><pacs:Cd>G001</pacs:Cd></pacs:SvcLvl></pacs:PmtTpInf><pacs:IntrBkSttlmAmt Ccy="USD">5232.05</pacs:IntrBkSttlmAmt><pacs:IntrBkSttlmDt>2025-11-24</pacs:IntrBkSttlmDt><pacs:ChrgBr>DEBT</pacs:ChrgBr><pacs:InstgAgt><pacs:FinInstnId><pacs:BICFI>LAFBLYLTXXX</pacs:BICFI></pacs:FinInstnId></pacs:InstgAgt><pacs:InstdAgt><pacs:FinInstnId><pacs:BICFI>ATLDTNTTXXX</pacs:BICFI></pacs:FinInstnId></pacs:InstdAgt><pacs:Dbtr><pacs:Nm>RAS LANUF COMPANY FOR OIL AND GAS </pacs:Nm><pacs:PstlAdr><pacs:AdrLine>OMAR AL-MOKHATER STREET</pacs:AdrLine><pacs:AdrLine>P.O BOX 2323.TRIPOLI - LIBYA</pacs:AdrLine></pacs:PstlAdr></pacs:Dbtr><pacs:DbtrAcct><pacs:Id><pacs:IBAN>LY63009001000000000041106</pacs:IBAN></pacs:Id></pacs:DbtrAcct><pacs:DbtrAgt><pacs:FinInstnId><pacs:BICFI>LAFBLYLTXXX</pacs:BICFI></pacs:FinInstnId></pacs:DbtrAgt><pacs:CdtrAgt><pacs:FinInstnId><pacs:BICFI>ATLDTNTTXXX</pacs:BICFI></pacs:FinInstnId></pacs:CdtrAgt><pacs:Cdtr><pacs:Nm>EMADULDIN MUSTAFA ABDULKAFI HASOUN</pacs:Nm><pacs:PstlAdr><pacs:AdrLine>PASS NO:AF730599</pacs:AdrLine></pacs:PstlAdr><pacs:Id><pacs:OrgId><pacs:Othr><pacs:Id>NOTPROVIDED</pacs:Id></pacs:Othr></pacs:OrgId></pacs:Id></pacs:Cdtr><pacs:Purp><pacs:Prtry>:26T:540</pacs:Prtry></pacs:Purp><pacs:RmtInf><pacs:Ustrd>CASH AT COUNTER TRAINING ALLOWANCE</pacs:Ustrd></pacs:RmtInf></pacs:CdtTrfTxInf></pacs:FIToFICstmrCdtTrf></pacs:Document><!-- {1:F01ATLDTNTTXXXX0000000000}{2:O1031346251123LAFBLYLTXXXX00000000002511231246N}{3:{111:001}{121:19516bcb-58c0-4a6f-88c0-730d1499eb8b}}{4:^~:20:FT2532731533^~:23B:CRED^~:26T:540^~:32A:251124USD5232,05^~:50K:/LY63009001000000000041106^~RAS LANUF COMPANY FOR OIL AND GAS ^~OMAR AL-MOKHATER STREET^~P.O BOX 2323.TRIPOLI - LIBYA^~:52A:LAFBLYLTXXX^~:53B:/C/LY57009001000000000007943^~:57A:ATLDTNTTXXX^~:59:EMADULDIN MUSTAFA ABDULKAFI HASOUN^~PASS NO:AF730599^~:70:CASH AT COUNTER TRAINING ALLOWANCE^~:71A:OUR^~-}{5:{CHK:A3718C58F681}} --><!-- TranslationResult=TRAK --><!-- TranslationInfo version 1.0.0.1
+{
+	"errors": [
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '20' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+			"path": "MT103CORE"
+		},
+		{
+			"code": "TRAK",
+			"message": "IGNORED.T0000M Input content is ignored.\r\nValue '<Othr><Id>NOTPROVIDED</Id></Othr>' has been dropped.\r\nInput path: Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Id/OrgId/Othr[]",
+			"path": "MT103CORE"
+		}
+	]
+}
+ --></Saa:Body></Saa:DataPDU>

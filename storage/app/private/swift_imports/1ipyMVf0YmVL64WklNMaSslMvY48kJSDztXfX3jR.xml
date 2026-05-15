@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FICHIER TEST — Risque FAIBLE (score attendu : 0-19/100)
+  Aucune anomalie : montant normal, devise standard, BICs présents
+  Pour importer : aller sur Import SWIFT et uploader ce fichier .xml
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>TEST-NORMAL-FAIBLE-003</MsgId>
+      <CreDtTm>2026-05-13T10:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>INGA</SttlmMtd>
+      </SttlmInf>
+      <InstgAgt>
+        <FinInstnId>
+          <BICFI>BCTNTNTX</BICFI>
+          <Nm>BTL Bank Tunisia</Nm>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <BICFI>BNPAFRPP</BICFI>
+          <Nm>BNP Paribas France</Nm>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>TEST-NORMAL-FAIBLE-003</InstrId>
+        <EndToEndId>E2E-TEST-FAIBLE-003</EndToEndId>
+        <UETR>c3d4e5f6-0000-4000-8000-000000000003</UETR>
+      </PmtId>
+      <!-- Montant normal, devise standard EUR -->
+      <IntrBkSttlmAmt Ccy="EUR">5200.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-05-13</IntrBkSttlmDt>
+      <ChrgBr>SHAR</ChrgBr>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>BCTNTNTX</BICFI>
+          <Nm>BTL Bank Tunisia</Nm>
+        </FinInstnId>
+      </DbtrAgt>
+      <Dbtr>
+        <Nm>SOCIETE TUNISIENNE EXPORT</Nm>
+        <PstlAdr>
+          <AdrLine>12 Avenue Habib Bourguiba</AdrLine>
+          <AdrLine>Tunis 1000, Tunisia</AdrLine>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>TN5904018104001000058526710</IBAN>
+        </Id>
+      </DbtrAcct>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>BNPAFRPP</BICFI>
+          <Nm>BNP Paribas Paris</Nm>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>MARTIN IMPORT EXPORT SARL</Nm>
+        <PstlAdr>
+          <AdrLine>45 Rue de la Paix</AdrLine>
+          <AdrLine>75002 Paris, France</AdrLine>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>FR7630004000031234567890143</IBAN>
+        </Id>
+      </CdtrAcct>
+      <Purp>
+        <Cd>TRAD</Cd>
+      </Purp>
+      <RmtInf>
+        <Ustrd>Facture 2026-EXPORT-0045 marchandises textiles</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FICHIER TEST — Risque CRITIQUE (score attendu : 60+/100)
+  Anomalies intentionnelles :
+    - Montant = 0         → +40 pts (MONTANT_ZERO sur PACS.008)
+    - BIC sender manquant → +15 pts (BIC_MANQUANT)
+    - Statut implicite rejected (sera mis par l'import si parsing échoue)
+  Total règles brutes : 55 → score final ~33-60 selon ML
+  Pour importer : aller sur Import SWIFT et uploader ce fichier .xml
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>TEST-ANOMALIE-HAUTE-001</MsgId>
+      <CreDtTm>2026-05-13T08:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+      <!-- BIC de l'agent instructeur volontairement absent → BIC_MANQUANT -->
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>TEST-ANOMALIE-HAUTE-001</InstrId>
+        <EndToEndId>E2E-TEST-HAUTE-001</EndToEndId>
+        <UETR>a1b2c3d4-0000-4000-8000-000000000001</UETR>
+      </PmtId>
+      <!-- Montant = 0 intentionnel → MONTANT_ZERO +40 pts -->
+      <IntrBkSttlmAmt Ccy="USD">0</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-05-13</IntrBkSttlmDt>
+      <ChrgBr>SHAR</ChrgBr>
+      <!-- Agent débiteur sans BIC → BIC_MANQUANT -->
+      <DbtrAgt>
+        <FinInstnId>
+          <Nm>Banque Inconnue Sans BIC</Nm>
+        </FinInstnId>
+      </DbtrAgt>
+      <Dbtr>
+        <Nm>SUSPECT ENTITY LTD</Nm>
+        <PstlAdr>
+          <AdrLine>123 Unknown Street</AdrLine>
+          <AdrLine>Offshore Island</AdrLine>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <Othr>
+            <Id>99999999999</Id>
+          </Othr>
+        </Id>
+      </DbtrAcct>
+      <!-- Agent créditeur sans BIC également -->
+      <CdtrAgt>
+        <FinInstnId>
+          <Nm>Receiving Bank Unknown</Nm>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>OFFSHORE HOLDINGS LLC</Nm>
+        <PstlAdr>
+          <AdrLine>PO Box 0000</AdrLine>
+          <AdrLine>Tax Haven Territory</AdrLine>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <Othr>
+            <Id>00000000000</Id>
+          </Othr>
+        </Id>
+      </CdtrAcct>
+      <Purp>
+        <Cd>OTHR</Cd>
+      </Purp>
+      <RmtInf>
+        <Ustrd>Virement sans objet clair - TEST ANOMALIE HAUTE</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>
