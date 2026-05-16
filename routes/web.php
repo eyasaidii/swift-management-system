@@ -386,6 +386,11 @@ Route::get('/debug-swift-permissions', function () {
     ]);
 })->middleware('auth');
 
+// Route pour le chatbot global (accessible à tous les utilisateurs authentifiés)
+Route::post('/chat-global', [\App\Http\Controllers\SwiftController::class, 'chatGlobal'])
+    ->name('swift.chat.global')
+    ->middleware('auth');
+
 Route::fallback(function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');

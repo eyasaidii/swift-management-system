@@ -125,6 +125,35 @@
     border-radius: 20px !important; font-size: .76rem !important;
     padding: .3rem .75rem !important;
 }
+
+/* ── Chatbot response zone ── */
+.chat-response-box {
+    background: #f8fffe;
+    border: 1px solid #d1e7dd;
+    border-radius: 10px;
+    min-height: 80px;
+    padding: .85rem 1rem;
+}
+.chat-spinner {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    color: #6c757d;
+    font-size: .84rem;
+}
+.chat-error {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    color: #dc3545;
+    font-size: .84rem;
+}
+.chat-answer {
+    white-space: pre-wrap;
+    line-height: 1.65;
+    color: #1a2e1a;
+    font-size: .87rem;
+}
 </style>
 
 <div class="container-fluid py-4">
@@ -471,6 +500,11 @@
     @endif
 
     {{-- ── CHATBOT IA ── --}}
+    {{--
+        FIX : remplacement des 3 booléens (loading / response / errorMsg)
+        par un état unique `phase` : 'idle' | 'loading' | 'success' | 'error'
+        → élimine tout risque d'affichage simultané spinner + réponse
+    --}}
     @role('super-admin|swift-manager')
     <div class="btl-card"
          style="border-left:4px solid var(--btl-green);"
@@ -517,20 +551,38 @@
                 </div>
             </div>
 
-            {{-- Zone de réponse --}}
-            <div class="mb-3" x-show="response || loading || errorMsg">
-                <div class="rounded-3 p-3" style="background:#f8fffe; border:1px solid #d1e7dd; min-height:80px;">
-                    <div x-show="loading" class="d-flex align-items-center gap-2 text-muted">
-                        <div class="spinner-border spinner-border-sm" style="color:#0a4d2b;"></div>
-                        <span class="small">Analyse en cours…</span>
-                    </div>
-                    <div x-show="errorMsg && !loading" class="d-flex align-items-start gap-2 text-danger small">
-                        <i class="fas fa-exclamation-triangle mt-1"></i>
-                        <span x-text="errorMsg"></span>
-                    </div>
-                    <div x-show="response && !loading && !errorMsg"
-                         class="small lh-base" style="white-space:pre-wrap; color:#1a2e1a;"
-                         x-text="response"></div>
+            {{-- ── Zone de réponse ── --}}
+            {{--
+                Un seul conteneur, rendu conditionnel via `phase`.
+                phase === 'idle'    → rien affiché
+                phase === 'loading' → spinner uniquement
+                phase === 'success' → réponse uniquement
+                phase === 'error'   → message d'erreur uniquement
+            --}}
+            <div class="mb-3" x-show="phase !== 'idle'" x-transition>
+                <div class="chat-response-box">
+
+                    {{-- Spinner --}}
+                    <template x-if="phase === 'loading'">
+                        <div class="chat-spinner">
+                            <div class="spinner-border spinner-border-sm" style="color:#0a4d2b;"></div>
+                            <span>Analyse en cours…</span>
+                        </div>
+                    </template>
+
+                    {{-- Erreur --}}
+                    <template x-if="phase === 'error'">
+                        <div class="chat-error">
+                            <i class="fas fa-exclamation-triangle mt-1 flex-shrink-0"></i>
+                            <span x-text="errorMsg"></span>
+                        </div>
+                    </template>
+
+                    {{-- Réponse --}}
+                    <template x-if="phase === 'success'">
+                        <div class="chat-answer" x-text="response"></div>
+                    </template>
+
                 </div>
             </div>
 
@@ -538,25 +590,28 @@
             <div class="input-group">
                 <input type="text" class="form-control form-control-sm"
                        placeholder="Posez votre question en français…"
-                       x-model="question" :disabled="loading"
+                       x-model="question" :disabled="phase === 'loading'"
                        @keydown.enter.prevent="ask(question)" maxlength="500"
                        style="border-color:#0a4d2b; border-right:none; border-radius:8px 0 0 8px;">
                 <button class="btn btn-sm" type="button"
                         style="background:#0a4d2b;color:#fff;border-color:#0a4d2b;border-radius:0 8px 8px 0;"
-                        :disabled="loading || !question.trim()" @click="ask(question)">
+                        :disabled="phase === 'loading' || !question.trim()" @click="ask(question)">
                     <i class="fas fa-paper-plane me-1"></i>
-                    <span x-show="!loading">Envoyer</span><span x-show="loading">…</span>
+                    <span x-show="phase !== 'loading'">Envoyer</span>
+                    <span x-show="phase === 'loading'">…</span>
                 </button>
             </div>
+
             <div class="d-flex justify-content-between mt-2">
                 <small class="text-muted"><i class="fas fa-lock me-1"></i>Échanges confidentiels — non conservés</small>
-                <small x-show="response">
+                <small x-show="phase === 'success' || phase === 'error'">
                     <button class="btn btn-link btn-sm p-0 text-muted text-decoration-none" type="button"
-                            @click="response=''; errorMsg=''; question=''">
+                            @click="phase = 'idle'; response = ''; errorMsg = ''; question = ''">
                         <i class="fas fa-trash-alt me-1"></i>Effacer
                     </button>
                 </small>
             </div>
+
         </div>
     </div>
     @endrole
@@ -734,7 +789,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('authorizeRef').textContent = btn.getAttribute('data-ref');
             document.getElementById('formAuthorize').action =
                 '/swift/' + btn.getAttribute('data-id') + '/authorize';
-            // Vider la note à chaque ouverture
             const noteField = document.getElementById('authorizeNote');
             if (noteField) noteField.value = '';
         });
@@ -750,10 +804,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 '/swift/' + btn.getAttribute('data-id') + '/suspend';
         });
     }
-
-        // Raw file viewer — use global modal from layout
-        // (no duplicate modal creation needed here)
-
 });
 </script>
 
@@ -770,25 +820,35 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 /**
  * Composant Alpine.js — Chatbot IA SWIFT
- * @param {string} chatUrl   Route Laravel POST /{id}/chat-ia
- * @param {string} csrfToken Token CSRF Laravel
+ *
+ * CORRECTIF : état unique `phase` remplace les 3 variables indépendantes
+ * (loading, response, errorMsg) qui causaient l'affichage simultané
+ * du spinner et de la réponse.
+ *
+ * phase : 'idle' | 'loading' | 'success' | 'error'
+ *
+ * Les <template x-if="phase === '...'"> garantissent qu'un seul bloc
+ * est dans le DOM à la fois → impossible d'avoir spinner + réponse ensemble.
  */
 function swiftChatbot(chatUrl, csrfToken) {
     return {
         open: true,
+
+        // ── état unique ──────────────────────────────
+        phase: 'idle',   // 'idle' | 'loading' | 'success' | 'error'
         question: '',
         response: '',
         errorMsg: '',
-        loading: false,
 
         async ask(q) {
             q = (q || '').trim();
-            if (!q) return;
+            if (!q || this.phase === 'loading') return;
 
-            this.question  = q;
-            this.response  = '';
-            this.errorMsg  = '';
-            this.loading   = true;
+            // 1. Passer en mode loading — efface tout résultat précédent
+            this.question = q;
+            this.response = '';
+            this.errorMsg = '';
+            this.phase    = 'loading';   // ← un seul assignement atomique
 
             try {
                 const res = await fetch(chatUrl, {
@@ -804,17 +864,23 @@ function swiftChatbot(chatUrl, csrfToken) {
                 const data = await res.json();
 
                 if (!res.ok || data.error) {
+                    // 2a. Erreur serveur
                     this.errorMsg = data.error
                         || 'Le service IA a retourné une erreur (' + res.status + ').';
+                    this.phase = 'error';       // ← spinner disparaît, erreur apparaît
                 } else {
+                    // 2b. Succès
                     this.response = data.response || 'Réponse vide.';
+                    this.phase    = 'success';   // ← spinner disparaît, réponse apparaît
                     this.question = '';
                 }
+
             } catch (err) {
+                // 2c. Erreur réseau
                 this.errorMsg = 'Impossible de joindre le service IA. Vérifiez votre connexion.';
-            } finally {
-                this.loading = false;
+                this.phase    = 'error';
             }
+            // Pas de `finally` : phase est déjà correcte dans chaque branche
         },
     };
 }

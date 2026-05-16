@@ -9,6 +9,9 @@ LABEL description="Microservice de détection d'anomalies SWIFT (XGBoost + Isola
 # Répertoire de travail
 WORKDIR /app
 
+# Installer utilitaires réseau utiles (curl, wget) pour faciliter les tests en conteneur
+RUN apt-get update && apt-get install -y curl wget && rm -rf /var/lib/apt/lists/*
+
 # Copier les dépendances en premier (layer cache Docker)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

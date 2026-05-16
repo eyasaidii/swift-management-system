@@ -57,6 +57,8 @@ services:
       - CORS_ORIGINS=http://btl_swift_app:8000,http://localhost:8000
       - LARAVEL_BASE_URL=http://btl_swift_app:8000
     volumes:
+      # Montage live du code source pour dev instantané
+      - ./swift-IA/:/app
       - python_model:/app/model
       - python_data:/app/data
     healthcheck:

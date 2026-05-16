@@ -1057,5 +1057,223 @@
 }
 </style>
 @endhasanyrole
+
+@php
+    $quickQuestions = match($primaryRole) {
+        'swift-manager', 'super-admin' => [
+            'Anomalies HIGH du jour ?',
+            'Messages en attente ?',
+            'Volume traité ce mois ?',
+            'Risques à surveiller ?'
+        ],
+        'swift-operator' => [
+            'Mes derniers imports ?','Messages rejetés ?','Comment créer un MT103 ?','Statut de la queue ?'
+        ],
+        'backoffice', 'monetique' => [
+            'PACS.008 reçus aujourd\'hui ?','CAMT.053 en attente ?','Volume USD reçu ?','Rapprochements à faire ?'
+        ],
+        default => [
+            'Transactions de mon agence ?','Volume ce mois ?','Messages MT103 émis ?','Comment lire un SWIFT ?'
+        ]
+    };
+@endphp
+
+<!-- Floating Chat FAB + Panel -->
+    <style>
+    .fab-chat { position: fixed; bottom: 24px; right: 24px; z-index: 9998; }
+    .fab-btn {
+        width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+        background: transparent; color:#fff; box-shadow:0 8px 28px rgba(6,24,44,.14);
+        border:none; cursor:pointer; transition:transform .18s ease; padding:0;
+    }
+    .fab-dot { position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 rgba(34,197,94, .7); }
+    .fab-dot::after { content:''; position:absolute; inset:-6px; border-radius:50%; background:#22c55e; opacity:.3; animation:onlinePulse 1.8s infinite; }
+
+    .chat-panel {
+        position: fixed; bottom: 88px; right: 24px; z-index: 9997; width:380px; max-width:94vw; border-radius:14px;
+        box-shadow:0 12px 48px rgba(6,24,44,.18); background:var(--panel-bg,#fff); overflow:hidden;
+        transform: translateY(8px); opacity:0; transition:transform .28s ease,opacity .28s ease;
+        border:1px solid #eef2f3;
+    }
+    .chat-panel.show { transform: translateY(0); opacity:1; }
+    .chat-header { padding:14px 16px; display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f6f7; background: linear-gradient(180deg, #ffffff, #fbfdff); }
+    .chat-header .avatar { width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(10,77,43,.08) }
+    .chat-header .title { font-weight:800; font-size:1rem; color:#0f172a }
+    .chat-header .subtitle { font-size:.78rem;color:#6b7280;display:flex;align-items:center;gap:8px }
+    .chat-body { height:220px; overflow-y:auto; padding:12px; background:var(--chat-bg,#fff); }
+    .chat-footer { padding:10px; border-top:1px solid #f3f4f6; display:flex; gap:8px; align-items:center }
+    .suggestions { padding:10px 12px;border-bottom:1px solid #f3f4f6; }
+    .suggestions-scroll { display:flex;gap:8px;flex-wrap:wrap; }
+    .chip { display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#f7fafb;color:#0f172a;font-size:.86rem;margin:6px 6px 0 0;cursor:pointer;border:1px solid #eef2f3;transition:transform .12s ease,box-shadow .12s ease }
+    .chip:hover { transform:translateY(-3px); box-shadow:0 6px 18px rgba(15,23,42,.06) }
+    .chip .c-icon { width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;background:linear-gradient(135deg,#ecfeff,#dbeafe);color:#0369a1;font-size:.78rem }
+    .chip.btn { border:none;background:#fff }
+    .chip:active { transform:translateY(-1px) }
+    .chat-input { flex:1;padding:10px;border-radius:10px;border:1px solid #e6eef0;font-size:.92rem;transition:box-shadow .12s,border-color .12s }
+    .chat-input:focus { outline:none; box-shadow:0 6px 20px rgba(16,185,129,.08); border-color:#10b981 }
+    .send-btn { background:linear-gradient(135deg,#0a4d2b,#16a34a);border:none;padding:9px 11px;border-radius:10px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px }
+    .send-btn[disabled] { opacity:.6; cursor:not-allowed }
+    .fa-spin { animation: fa-spin 1s linear infinite; }
+    @keyframes fa-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .msg-user { text-align:right }
+    .bubble { display:inline-block;padding:10px 14px;border-radius:12px;max-width:78%;font-size:.9rem;line-height:1.25 }
+    .bubble.user { background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#064e23 }
+    .bubble.ai { background:#fbfbfc;color:#0f172a;border:1px solid #eef2f3 }
+
+    /* Actualités */
+    .chat-news { padding:10px;border-top:1px solid #f3f4f6;background:linear-gradient(180deg,#ffffff,#fbfdff); }
+    .chat-news .news-item { display:flex;gap:10px;padding:8px;border-radius:8px;align-items:flex-start;text-decoration:none;color:inherit;transition:background .12s }
+    .chat-news .news-item:hover { background:#f8fafb }
+    .chat-news .news-item img { width:64px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0 }
+    .chat-news .news-title { font-size:.86rem;font-weight:700;color:#0f172a }
+    .chat-news .news-excerpt { font-size:.72rem;color:#6b7280;margin-top:4px }
+    @media (max-width:600px) { .chat-panel { right: 5vw; left:5vw; width:90vw; bottom: 80px } }
+</style>
+
+<div x-data="{
+    open:false, question:'', loading:false, history:[], messages:[], news:[], loadingNews:false,
+    send(q){
+        if(!q) return; if(this.loading) return;
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+        this.messages.push({from:'user', text:q, time:time});
+        this.history.push({role:'user', content:q});
+        if(this.history.length>10) this.history = this.history.slice(-10);
+        this.question=''; this.loading=true;
+        const payload = { question: q, history: this.history, role: '{{ $primaryRole ?? 'user' }}', page: 'dashboard', stats: this.getStats() };
+        const token = document.querySelector('meta[name=csrf-token]').content;
+        fetch('/chat-global', { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json'}, body: JSON.stringify(payload) })
+            .then(r=>{ if(!r.ok) throw r; return r.json(); })
+            .then(data=>{
+                const ans = data.answer || 'Réponse indisponible.';
+                const now2 = new Date(); const time2 = now2.getHours().toString().padStart(2,'0')+':'+now2.getMinutes().toString().padStart(2,'0');
+                this.messages.push({from:'ai', text: ans, time: time2});
+                this.history.push({role:'assistant', content: ans});
+                if(this.history.length>10) this.history = this.history.slice(-10);
+            })
+            .catch(err=>{
+                const msg = 'Service temporairement indisponible';
+                const now3 = new Date(); const time3 = now3.getHours().toString().padStart(2,'0')+':'+now3.getMinutes().toString().padStart(2,'0');
+                this.messages.push({from:'ai', text: msg, time: time3});
+            })
+            .finally(()=>{ this.loading=false; this.$nextTick(()=>{ const el=this.$refs.scroll; if(el) el.scrollTop = el.scrollHeight; }); });
+    },
+    loadNews(){
+        try {
+            this.loadingNews = true;
+            const self = this;
+            fetch('/api/news?limit=3', { headers: { 'Accept': 'application/json' } })
+                .then(function(r){ if(!r.ok) throw r; return r.json(); })
+                .then(function(res){
+                    // expected res.items = [{id,title,excerpt,url,image}]
+                    self.news = Array.isArray(res.items) ? res.items : (res.items || []);
+                }).catch(function(){ self.news = []; })
+                .finally(function(){ self.loadingNews = false; });
+        } catch (e) { this.news = []; this.loadingNews = false; }
+    },
+    getStats(){ return {
+        total: '{{ $transCount ?? 0 }}', pending: '{{ $pendingAuth ?? 0 }}', anomalies: '{{ $criticalCount ?? 0 }}',
+        volume: '{{ $volumeFormatted ?? "0" }}', received: '{{ $receivedTotal ?? 0 }}', emitted: '{{ $emittedTotal ?? 0 }}'
+    }; }
+}" x-init="loadNews()">
+
+    <div class="fab-chat" style="{{ request()->is('login') ? 'display:none' : '' }}">
+        <div style="position:relative">
+            <button class="fab-btn" @click="open = !open" :class="{'rotated': open}" :aria-expanded="open.toString()" title="Assistant IA" aria-label="Assistant IA">
+                <svg width="40" height="40" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="gFab" x1="0" x2="1" y1="0" y2="1">
+                            <stop offset="0" stop-color="#0a702f" />
+                            <stop offset="1" stop-color="#16a34a" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="24" cy="24" r="22" fill="url(#gFab)" />
+                    <!-- robot head -->
+                    <rect x="14" y="14" width="20" height="16" rx="4" fill="#ffffff" />
+                    <!-- eyes -->
+                    <rect x="18.5" y="18.5" width="3" height="3" rx="0.8" fill="#0a4d2b" />
+                    <rect x="26.5" y="18.5" width="3" height="3" rx="0.8" fill="#0a4d2b" />
+                    <!-- mouth -->
+                    <rect x="20.5" y="23.5" width="7" height="2" rx="1" fill="#d1ffd8" />
+                    <!-- antenna -->
+                    <circle cx="24" cy="11.5" r="2" fill="#ffffff" />
+                    <rect x="23.4" y="12.5" width="1.2" height="4" rx="0.6" fill="#ffffff" />
+                </svg>
+            </button>
+            <span class="fab-dot"></span>
+        </div>
+    </div>
+
+    <div class="chat-panel" x-show="open" x-bind:class="open ? 'show' : ''" x-transition @click.outside="open = false">
+            <div class="chat-header">
+            <div class="avatar" style="background:transparent;padding:0;">
+                <img src="{{ asset('images/logo-btl.png') }}" alt="BTL" style="width:42px;height:42px;object-fit:contain;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff;padding:4px;" />
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:700">Assistant IA</div>
+                <div style="font-size:.78rem;color:#6b7280;display:flex;align-items:center;gap:6px;">
+                    <span class="online-dot"></span>
+                    <span>En ligne</span>
+                </div>
+            </div>
+            <button @click="open=false" style="background:none;border:none;font-size:1.05rem;color:#6b7280">✕</button>
+        </div>
+
+        <div class="suggestions">
+            <div class="suggestions-scroll">
+                @foreach($quickQuestions as $q)
+                    <button type="button" class="chip" @click.prevent="send('{{ addslashes($q) }}')" aria-label="Suggestion: {{ $q }}">
+                        <span class="c-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="12" rx="2" fill="#ecfeff" />
+                                <rect x="7" y="8" width="3" height="3" rx="0.6" fill="#0369a1" />
+                                <rect x="14" y="8" width="3" height="3" rx="0.6" fill="#0369a1" />
+                                <rect x="9" y="12" width="6" height="1.6" rx="0.6" fill="#cfeffd" />
+                            </svg>
+                        </span>
+                        <span style="font-weight:600;font-size:.85rem;">{{ $q }}</span>
+                    </button>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="chat-body" x-ref="scroll">
+            <template x-if="messages.length === 0">
+                <div style="font-size:.9rem;color:#6b7280;padding:8px">Bonjour {{ auth()->user()->name }} ! Je connais vos stats en temps réel. Que souhaitez-vous analyser ?</div>
+            </template>
+            <template x-for="m in messages" :key="m.time + m.text">
+                <div style="margin-bottom:8px;display:flex;flex-direction:column;">
+                    <div x-bind:class="m.from === 'user' ? 'msg-user' : ''">
+                        <span class="bubble" x-bind:class="m.from === 'user' ? 'user' : 'ai'" x-text="m.text"></span>
+                    </div>
+                    <div style="font-size:.68rem;color:#9ca3af;margin-top:4px;" x-text="m.time"></div>
+                </div>
+            </template>
+        </div>
+
+        <div class="chat-news" x-show="news.length > 0" x-cloak>
+            <div style="font-weight:700;margin-bottom:8px;font-size:.9rem">Actualités</div>
+            <template x-for="n in news" :key="n.id">
+                <a :href="n.url || '#'" target="_blank" class="news-item">
+                    <img x-show="n.image" :src="n.image" alt="" />
+                    <div>
+                        <div class="news-title" x-text="n.title"></div>
+                        <div class="news-excerpt" x-text="n.excerpt"></div>
+                    </div>
+                </a>
+            </template>
+        </div>
+
+        <div class="chat-footer">
+            <input x-model="question" @keyup.enter="send(question)" :disabled="loading" placeholder="Posez votre question..." class="chat-input" />
+            <button class="send-btn" @click.prevent="send(question)" :disabled="loading" aria-label="Envoyer">
+                <i class="fas fa-circle-notch fa-spin" x-show="loading" style="font-size:1rem;display:none"></i>
+                <i class="fas fa-paper-plane" x-show="!loading" style="font-size:1rem"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+
 </body>
 </html>
